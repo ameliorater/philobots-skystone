@@ -23,7 +23,8 @@ public class ModulePosition {
 
         double startingAngle = (lastM1Encoder + lastM2Encoder)/2.0 * module.DEGREES_PER_TICK;
         double finalAngle = (newM1Encoder + newM2Encoder)/2.0 * module.DEGREES_PER_TICK;
-        double angleChange = Math.toRadians(finalAngle - startingAngle);
+        double angleChange = Math.toRadians(finalAngle - startingAngle); //in radians
+        double averageAngle = (startingAngle + finalAngle)/2.0;
 
         telemetry.addData("Starting angle: ", startingAngle);
         telemetry.addData("Final angle: ", finalAngle);
@@ -43,8 +44,12 @@ public class ModulePosition {
         Vector2d displacementVec;
         //derivation documented elsewhere
         if (angleChange != 0) {
-            double deltaXPos = positionChange/angleChange * (Math.sin(Math.toRadians(startingAngle)) - Math.sin(Math.toRadians(finalAngle)));
-            double deltaYPos = positionChange/angleChange * (Math.cos(Math.toRadians(finalAngle)) - Math.cos(Math.toRadians(startingAngle)));
+            //circular arc approximation
+            //double deltaXPos = positionChange/angleChange * (Math.sin(Math.toRadians(startingAngle)) - Math.sin(Math.toRadians(finalAngle)));
+            //double deltaYPos = positionChange/angleChange * (Math.cos(Math.toRadians(finalAngle)) - Math.cos(Math.toRadians(startingAngle)));
+            //straight line approximation
+            double deltaXPos = Math.sin(averageAngle) * positionChange;
+            double deltaYPos = Math.cos(averageAngle) * positionChange;
             displacementVec = new Vector2d(deltaXPos, deltaYPos);
             telemetry.addData("Doing the fancy way ", displacementVec.getX());
         } else if (positionChange == 0) {
