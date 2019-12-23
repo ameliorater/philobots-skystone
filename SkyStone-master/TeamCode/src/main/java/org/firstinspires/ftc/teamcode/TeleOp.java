@@ -52,13 +52,13 @@ public class TeleOp extends OpMode {
             joystick2 = joystick2.scale(0.3);
         }
         else if (gamepad1.left_bumper || gamepad1.right_bumper) {
-            if (robot.getRange(false) < 10) {
+            if (robot.getRange(false) < 5) {
                 joystick1 = joystick1.normalize(0);
                 joystick2 = joystick2.normalize(0);
             }
             else {
-                joystick1 = joystick1.scale(robot.getRange(false) / 20);
-                joystick2 = joystick2.scale(robot.getRange(false) / 20);
+                joystick1 = joystick1.scale(0.3);
+                joystick2 = joystick2.scale(0.3);
             }
         }
 
