@@ -38,10 +38,11 @@ public class TeleOp extends OpMode {
     }
 
     public void loop() {
+        robot.updateBulkData(); //read data once per loop, access it through robot class variable
+        robot.driveController.updatePositionTracking(telemetry);
+
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
         Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
-
-        robot.driveController.updatePositionTracking(telemetry);
 
         if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);

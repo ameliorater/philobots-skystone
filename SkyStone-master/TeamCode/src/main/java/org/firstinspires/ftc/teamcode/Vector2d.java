@@ -66,7 +66,7 @@ public class Vector2d {
         Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
         return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
     }
-//
+
     //terrible naming - means the way it should be, with atan2(y, x)
     public Angle getRealAngle () {
         double angRad = Math.atan2(y, x);

@@ -19,6 +19,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.openftc.revextensions2.ExpansionHubEx;
+import org.openftc.revextensions2.ExpansionHubMotor;
+import org.openftc.revextensions2.RevBulkData;
 
 public class Robot {
     //SERVO OBJECTS
@@ -41,6 +44,11 @@ public class Robot {
     //SENSORS
     DistanceSensor frontRangeSensor;
     DistanceSensor backRangeSensor;
+
+    //BULK DATA (RevExtensions2)
+    RevBulkData bulkData;
+    ExpansionHubMotor motor0, motor1, motor2, motor3;
+    ExpansionHubEx expansionHub;
 
     final DcMotor.RunMode DEFAULT_RUN_MODE;
     final boolean IS_AUTO;
@@ -111,6 +119,14 @@ public class Robot {
 
         frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");
+
+        //bulk data
+        expansionHub = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 1");
+        bulkData = expansionHub.getBulkInputData();
+    }
+
+    public void updateBulkData () {
+        bulkData = expansionHub.getBulkInputData();
     }
 
     public void initIMU () {
@@ -231,12 +247,12 @@ public class Robot {
         //the obvious things
         lift1 = hardwareMap.dcMotor.get("liftMotorLeft");
         lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setTargetPosition(lift1.getCurrentPosition());
+        lift1.setTargetPosition(bulkData.getMotorCurrentPosition(lift1));
         setupMotor(lift1, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_TO_POSITION);
 
         lift2 = hardwareMap.dcMotor.get("liftMotorRight");
         lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift2.setTargetPosition(lift2.getCurrentPosition());
+        lift2.setTargetPosition(bulkData.getMotorCurrentPosition(lift2));
         setupMotor(lift2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_TO_POSITION);
 
         for (int i = 0; i < encoderTicksAtLiftPositions.length; i++) {
@@ -265,52 +281,13 @@ public class Robot {
     }
 
     public void moveLift(double moveRate) {
-//        double deltaTime = System.currentTimeMillis() - lastTimeLift;
-//        wasAtZero = true;
-//        int lift1CurrentPos = lift1.getCurrentPosition();
-//        int lift2CurrentPos = lift2.getCurrentPosition();
-//        //int position = (lift1CurrentPos + lift2CurrentPos)/2; //integer division, i know (i think it's fine)
-//        int position = lift1CurrentPos; //integer division, i know (i think it's fine)
-//
-//        if (Math.abs(moveRate) < 0.1) {
-//            moveRate = 0;
-//        } else {
-//            wasAtZero = false;
-//        }
-//
-//        //double scaledMoveRate = scaleLiftRate(moveRate, deltaTime);
-//        double scaledMoveRate = moveRate * LIFT_TICKS_PER_MS * deltaTime;
-//        //double scaledMoveRate = moveRate * 60;
-//        targetPosLift += scaledMoveRate;
-//        if (moveRate == 0) {
-//            if (!wasAtZero) {
-//                wasAtZero = true;
-//                //position = (lift1CurrentPos + lift2CurrentPos)/2;
-//                position = lift1CurrentPos;
-//            }
-//            targetPosLift = position;
-//        }
-//
-//        if (lift1.getMode() != DcMotor.RunMode.RUN_TO_POSITION) lift1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        if (lift2.getMode() != DcMotor.RunMode.RUN_TO_POSITION) lift2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        lift1.setTargetPosition(targetPosLift);
-//        lift1.setPower(1);
-//        lift2.setTargetPosition(targetPosLift);
-//        lift2.setPower(1);
-//
-//        lastTimeLift = System.currentTimeMillis();
-//
-//        telemetry.addData("Target Position for Lift", targetPosLift);
-//        telemetry.addData("Current Lift Power", scaledMoveRate);
-//        telemetry.addData("Loop time", deltaTime);
-//        telemetry.addData("Lift ticks/ms", LIFT_TICKS_PER_MS);
 
         double deltaTime = System.currentTimeMillis() - lastTimeLift;
-        // don't reset static varuable wasAtZero every loop
+        // don't reset static variable wasAtZero every loop
         //wasAtZero = true;
 
-        int lift1CurrentPos = lift1.getCurrentPosition();
-        int lift2CurrentPos = lift2.getCurrentPosition();
+        int lift1CurrentPos = bulkData.getMotorCurrentPosition(lift1);
+        int lift2CurrentPos = bulkData.getMotorCurrentPosition(lift2);
         //int position = (lift1CurrentPos + lift2CurrentPos)/2; //integer division, i know (i think it's fine)
         int position = lift1CurrentPos; //integer division, i know (i think it's fine)
 
@@ -367,15 +344,6 @@ public class Robot {
 
         wasLastPositive = moveRate > 0;
 
-//        telemetry.addData("lift level 0", encoderTicksAtLiftPositions[0] );
-//        telemetry.addData("lift level 1", encoderTicksAtLiftPositions[1] );
-//        telemetry.addData("lift level 2", encoderTicksAtLiftPositions[2] );
-//        telemetry.addData("lift level 3", encoderTicksAtLiftPositions[3] );
-//        telemetry.addData("lift level 4", encoderTicksAtLiftPositions[4] );
-//        telemetry.addData("lift level 5", encoderTicksAtLiftPositions[5] );
-//        telemetry.addData("lift level 6", encoderTicksAtLiftPositions[6] );
-//        telemetry.addData("lift level 7", encoderTicksAtLiftPositions[7] );
-
         telemetry.addData("Target Position for Lift", targetPosLift);
         telemetry.addData("Current Lift Power", scaledMoveRate);
         telemetry.addData("Loop time", deltaTime);
@@ -402,7 +370,7 @@ public class Robot {
     }
 
     public double intakeEncoderValue() {
-        return (intake1.getCurrentPosition() + intake2.getCurrentPosition()) / 2.0;
+        return (bulkData.getMotorCurrentPosition(intake1) + bulkData.getMotorCurrentPosition(intake2)) / 2.0;
     }
 
     public void moveIntake(IntakeState state, IntakeSpeed speed) {

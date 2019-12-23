@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.openftc.revextensions2.ExpansionHubMotor;
 
 public class DriveModule {
     Robot robot;
@@ -80,9 +81,6 @@ public class DriveModule {
             positionVector = new Vector2d((double)-18/2, 0); //points from robot center to left module
         }
 
-        lastMotor1Encoder = motor1.getCurrentPosition();
-        lastMotor2Encoder = motor2.getCurrentPosition();
-
         //added (was undefined mode)
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -90,8 +88,8 @@ public class DriveModule {
         motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        lastM1Encoder = motor1.getCurrentPosition();
-        lastM2Encoder = motor1.getCurrentPosition();
+        lastM1Encoder = robot.bulkData.getMotorCurrentPosition(motor1);
+        lastM2Encoder = robot.bulkData.getMotorCurrentPosition(motor2);
     }
 
 
@@ -270,9 +268,9 @@ public class DriveModule {
 
     //returns module orientation relative to ROBOT (not field) in degrees and NEG_180_TO_180_HEADING type
     public Angle getCurrentOrientation() {
-        robot.telemetry.addData(moduleSide + "Motor 1 Encoder", motor1.getCurrentPosition());
-        robot.telemetry.addData(moduleSide + "Motor 2 Encoder", motor2.getCurrentPosition());
-        double rawAngle = (double)(motor2.getCurrentPosition() + motor1.getCurrentPosition())/2.0 * DEGREES_PER_TICK; //motor2-motor1 makes ccw positive (?)
+        robot.telemetry.addData(moduleSide + "Motor 1 Encoder", robot.bulkData.getMotorCurrentPosition(motor1));
+        robot.telemetry.addData(moduleSide + "Motor 2 Encoder", robot.bulkData.getMotorCurrentPosition(motor2));
+        double rawAngle = (double)(robot.bulkData.getMotorCurrentPosition(motor2) + robot.bulkData.getMotorCurrentPosition(motor1))/2.0 * DEGREES_PER_TICK; //motor2-motor1 makes ccw positive (?)
         return new Angle(rawAngle, Angle.AngleType.ZERO_TO_360_HEADING);
     }
 
@@ -282,8 +280,8 @@ public class DriveModule {
 
     //new position tracking
     public Vector2d updatePositionTracking (Telemetry telemetry) {
-        double newM1Encoder = motor1.getCurrentPosition();
-        double newM2Encoder = motor2.getCurrentPosition();
+        double newM1Encoder = robot.bulkData.getMotorCurrentPosition(motor1);
+        double newM2Encoder = robot.bulkData.getMotorCurrentPosition(motor2);
 
         //angles are in radians
         double startingAngle = Math.toRadians((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK);
@@ -352,9 +350,9 @@ public class DriveModule {
     }
 
     public void updateTracking () {
-        //important to set these to a variable so getCurrentPosition() is not called multiple times in single cycle
-        double currentMotor1Encoder = motor1.getCurrentPosition();
-        double currentMotor2Encoder = motor2.getCurrentPosition();
+        //edit - not anymore : important to set these to a variable so getCurrentPosition() is not called multiple times in single cycle
+        double currentMotor1Encoder = robot.bulkData.getMotorCurrentPosition(motor1);
+        double currentMotor2Encoder = robot.bulkData.getMotorCurrentPosition(motor2);
 
         double motor1Change = currentMotor1Encoder - lastMotor1Encoder;
         double motor2Change = currentMotor2Encoder - lastMotor2Encoder;
@@ -377,8 +375,8 @@ public class DriveModule {
 
     public void resetDistanceTraveled () {
         distanceTraveled = 0;
-        lastMotor1Encoder = motor1.getCurrentPosition();
-        lastMotor2Encoder = motor2.getCurrentPosition();
+        lastMotor1Encoder = robot.bulkData.getMotorCurrentPosition(motor1);
+        lastMotor2Encoder = robot.bulkData.getMotorCurrentPosition(motor2);
     }
 
     //returns distance (in cm) traveled since distance was last reset
