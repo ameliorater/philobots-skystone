@@ -136,6 +136,21 @@ public class DriveModule {
 //        double rotMag = getRotMag(targetHeading, robotHeading, new Angle(90, Angle.AngleType.NEG_180_TO_180_HEADING));
 //        updateTarget(transVec, rotMag);
 //    }
+    public void updateTargetAbsRotation (Vector2d transVec, Angle targetHeading) { //translation vector and rotation magnitude
+        Angle robotHeading = robot.getRobotHeading();
+        double rotMag = getRotMag(targetHeading, robotHeading);
+        updateTarget(transVec, rotMag);
+    }
+
+    public double getRotMag (Angle targetHeading, Angle robotHeading)
+    {
+        double unsignedDifference = RobotUtil.scaleVal(targetHeading.getDifference(robotHeading),15, 60, .3, 1);
+        if (targetHeading.directionTo(robotHeading) == Angle.Direction.CLOCKWISE) {
+            return unsignedDifference * -1;
+        } else {
+            return unsignedDifference;
+        }
+    }
 
     //sets motor powers for robot to best approach given target vector
     public void goToTarget (Vector2d targetVector, int directionMultiplier) {

@@ -70,8 +70,12 @@ public class DriveController {
     //converts joystick vectors to parameters for update() method
     //called every loop cycle in TeleOp
     public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
-        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
-        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+//        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
+//        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+        if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2);
+        else updateAbsRotation(joystick1, joystick2);
+
+
     }
 
     //should be called every loop cycle when driving (auto or TeleOp)
@@ -79,6 +83,18 @@ public class DriveController {
     public void update(Vector2d translationVector, double rotationMagnitude) {
         moduleLeft.updateTarget(translationVector, rotationMagnitude);
         moduleRight.updateTarget(translationVector, rotationMagnitude);
+
+    }
+    public void updateAbsRotation(Vector2d translationVector, Vector2d joystick2) {
+        Angle targetAngle = joystick2.getAngleAngle();
+        if (joystick2.getMagnitude() > 0.1 && joystick2.getAngleAngle().getDifference(robot.getRobotHeading()) > 5) {
+            moduleLeft.updateTargetAbsRotation(translationVector, targetAngle);
+            moduleRight.updateTargetAbsRotation(translationVector, targetAngle);
+        } else {
+            moduleLeft.updateTarget(translationVector, 0);
+            moduleRight.updateTarget(translationVector, 0);
+
+        }
     }
 
     //AUTONOMOUS METHODS
