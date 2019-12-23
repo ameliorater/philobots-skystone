@@ -145,6 +145,9 @@ public class Robot {
         //heading is of NEG_180_TO_180_HEADING type by default (no need for conversion)
         double heading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         telemetry.addData("Robot Heading", heading);
+        telemetry.addData("Angle class version of Robot Heading", new Angle(heading, Angle.AngleType.NEG_180_TO_180_HEADING));
+        telemetry.addData("Angle class negative version of Robot Heading", new Angle(-heading, Angle.AngleType.NEG_180_TO_180_HEADING));
+
 //        if (IMUReversed) {
 //            return new Angle(heading-180, Angle.AngleType.NEG_180_TO_180_HEADING);
 //        }

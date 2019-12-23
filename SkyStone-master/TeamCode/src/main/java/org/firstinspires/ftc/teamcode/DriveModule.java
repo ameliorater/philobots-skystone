@@ -144,6 +144,7 @@ public class DriveModule {
 
     public double getRotMag (Angle targetHeading, Angle robotHeading)
     {
+        robot.telemetry.addData("Difference between joystick and robot", targetHeading.getDifference(robotHeading));
         double unsignedDifference = RobotUtil.scaleVal(targetHeading.getDifference(robotHeading),15, 60, .3, 1);
         if (targetHeading.directionTo(robotHeading) == Angle.Direction.CLOCKWISE) {
             return unsignedDifference * -1;

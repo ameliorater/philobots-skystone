@@ -74,8 +74,6 @@ public class DriveController {
 //        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
         if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2);
         else updateAbsRotation(joystick1, joystick2);
-
-
     }
 
     //should be called every loop cycle when driving (auto or TeleOp)
