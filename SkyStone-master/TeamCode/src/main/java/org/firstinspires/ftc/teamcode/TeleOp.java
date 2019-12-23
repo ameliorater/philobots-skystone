@@ -41,15 +41,29 @@ public class TeleOp extends OpMode {
 
     public void loop() {
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
-        Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
+        Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, gamepad1.right_stick_y); //RIGHT joystick
 
         positionTracker.update(telemetry);
         telemetry.addData("Robot X Position: ", positionTracker.robotAbsXPos);
         telemetry.addData("Robot Y Position: ", positionTracker.robotAbsYPos);
 
+
+        telemetry.addData("Robot Angle ", robot.getRobotHeading().getAngle());
+        telemetry.addData("Joystick 2 angle ", joystick2.getAngleAngle().getAngle());
+        telemetry.addData("Heading to joystick difference ", joystick2.getAngleAngle().getDifference(robot.getRobotHeading()));
         if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
             joystick2 = joystick2.scale(0.3);
+        }
+        else if (gamepad1.left_bumper || gamepad1.right_bumper) {
+            if (robot.getRange(false) < 10) {
+                joystick1 = joystick1.normalize(0);
+                joystick2 = joystick2.normalize(0);
+            }
+            else {
+                joystick1 = joystick1.scale(robot.getRange(false) / 20);
+                joystick2 = joystick2.scale(robot.getRange(false) / 20);
+            }
         }
 
         robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)));
