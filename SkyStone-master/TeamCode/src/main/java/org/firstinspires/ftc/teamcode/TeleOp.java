@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Skystone TeleOp", group = "TeleOp")
 public class TeleOp extends OpMode {
     Robot robot;
-    RobotPosition positionTracker;
     public double DEADBAND_MAG = 0.1;
     public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
@@ -26,7 +25,6 @@ public class TeleOp extends OpMode {
 
     public void init() {
         robot = new Robot(this, false);
-        positionTracker = new RobotPosition(robot.driveController, 0, 0);
     }
 
     public void init_loop() {
@@ -43,9 +41,7 @@ public class TeleOp extends OpMode {
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
         Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, gamepad1.right_stick_y); //RIGHT joystick
 
-        positionTracker.update(telemetry);
-        telemetry.addData("Robot X Position: ", positionTracker.robotAbsXPos);
-        telemetry.addData("Robot Y Position: ", positionTracker.robotAbsYPos);
+        robot.driveController.updatePositionTracking(telemetry);
 
 
         telemetry.addData("Robot Angle ", robot.getRobotHeading().getAngle());

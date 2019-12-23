@@ -2,12 +2,17 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class DriveModule {
     Robot robot;
 
     //TODO: make sure these motors are not flipped on your drive
     DcMotor motor1; //top motor
     DcMotor motor2; //bottom motor
+
+    double lastM1Encoder;
+    double lastM2Encoder;
 
     public final ModuleSide moduleSide;
     public final Vector2d positionVector; //position of module relative to robot COM (center of mass)
@@ -84,6 +89,9 @@ public class DriveModule {
 
         motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        lastM1Encoder = motor1.getCurrentPosition();
+        lastM2Encoder = motor1.getCurrentPosition();
     }
 
 
@@ -286,6 +294,77 @@ public class DriveModule {
 
     //TRACKING METHODS
     //used for straight line distance tracking
+
+    //new position tracking
+    public Vector2d updatePositionTracking (Telemetry telemetry) {
+        double newM1Encoder = motor1.getCurrentPosition();
+        double newM2Encoder = motor2.getCurrentPosition();
+
+        //angles are in radians
+        double startingAngle = Math.toRadians((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK);
+        double finalAngle = Math.toRadians((newM1Encoder + newM2Encoder)/2.0 * DEGREES_PER_TICK);
+        double angleChange = (finalAngle - startingAngle);
+        double averageAngle = (startingAngle + finalAngle)/2.0;
+
+        telemetry.addData("Starting angle: ", startingAngle);
+        telemetry.addData("Final angle: ", finalAngle);
+        telemetry.addData("Starting angle radians: ", Math.toRadians(startingAngle));
+        telemetry.addData("Final angle radians: ", Math.toRadians(finalAngle));
+        telemetry.addData("Angle change: ", angleChange);
+
+//        //positions in cm
+//        double startingPosition = (lastM1Encoder - lastM2Encoder)/2.0  * CM_PER_TICK;
+//        double finalPosition = (newM1Encoder - newM2Encoder)/2.0 * CM_PER_TICK;
+//        double positionChange = finalPosition - startingPosition;
+//        if (reversed) {
+//            positionChange *= -1;
+//        }
+
+        double motor1Change = newM1Encoder - lastM1Encoder;
+        double motor2Change = newM2Encoder - lastM2Encoder;
+        double positionChange;
+
+        //if module is reversed, subtract distance traveled instead of adding
+        //module is driving in the opposite direction that the encoders "think" it is
+        if (reversed) {
+            positionChange = -(motor1Change - motor2Change)/2.0 * CM_PER_TICK;
+        } else {
+            positionChange = (motor1Change - motor2Change)/2.0 * CM_PER_TICK;
+        }
+
+//        telemetry.addData("Starting position: ", startingPosition);
+//        telemetry.addData("Final position: ", finalPosition);
+        telemetry.addData("Position change: ", positionChange);
+
+        Vector2d displacementVec;
+        //derivation documented elsewhere
+        if (angleChange != 0) {
+            //circular arc approximation
+            //double deltaYPos = positionChange/angleChange * (Math.sin(Math.toRadians(startingAngle)) - Math.sin(Math.toRadians(finalAngle)));
+            //double deltaXPos = positionChange/angleChange * (Math.cos(Math.toRadians(finalAngle)) - Math.cos(Math.toRadians(startingAngle)));
+            //straight line approximation
+            double deltaXPos = Math.sin(averageAngle) * positionChange;
+            double deltaYPos = Math.cos(averageAngle) * positionChange;
+            displacementVec = new Vector2d(deltaXPos, deltaYPos);
+            telemetry.addData("Doing the fancy way ", displacementVec.getX());
+        } else if (positionChange == 0) {
+            telemetry.addData("Nothing is moving ", "");
+            displacementVec = new Vector2d(0, 0);
+        } else {
+            displacementVec = new Vector2d(new Angle(startingAngle, Angle.AngleType.ZERO_TO_360_HEADING));
+            displacementVec.normalize(positionChange);
+            telemetry.addData("Doing the straight line way ","");
+        }
+
+        telemetry.addData("Delta X Pos: ", displacementVec.getX());
+        telemetry.addData("Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
+        //telemetry.addData("Position change/angle change: ",positionChange/angleChange);
+
+        lastM1Encoder = newM1Encoder;
+        lastM2Encoder = newM2Encoder;
+
+        return displacementVec;
+    }
 
     public void updateTracking () {
         //important to set these to a variable so getCurrentPosition() is not called multiple times in single cycle

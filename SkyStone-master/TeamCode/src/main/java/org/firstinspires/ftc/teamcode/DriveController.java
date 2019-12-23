@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.DO_NOT_ROTATE_MODULES;
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.ROTATE_MODULES;
 
@@ -14,11 +16,17 @@ public class DriveController {
     DriveModule moduleLeft;
     DriveModule moduleRight;
 
+    double robotAbsXPos;
+    double robotAbsYPos;
+    double robotAbsHeading; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
+
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
     double previousRobotDistanceTraveled = 0;
     double moduleLeftLastDistance;
     double moduleRightLastDistance;
+
+    final double ROBOT_WIDTH = 18*2.54;
 
     //tolerance for module rotation (in degrees)
     public final double ALLOWED_MODULE_ROT_ERROR = 5;
@@ -52,6 +60,11 @@ public class DriveController {
 
         moduleLeftLastDistance = moduleLeft.getDistanceTraveled();
         moduleRightLastDistance = moduleRight.getDistanceTraveled();
+
+        //todo: change to parameter
+        robotAbsXPos = 0;
+        robotAbsYPos = 0;
+        robotAbsHeading = 0;
     }
 
     //converts joystick vectors to parameters for update() method
@@ -114,6 +127,8 @@ public class DriveController {
 
             linearOpMode.telemetry.addData("Driving robot", "");
             linearOpMode.telemetry.update();
+
+            updatePositionTracking(robot.telemetry); //update position tracking
         }
         update(Vector2d.ZERO, 0);
         setRotateModuleMode(ROTATE_MODULES); //reset mode
@@ -167,6 +182,7 @@ public class DriveController {
 
             linearOpMode.telemetry.addData("Driving robot", "");
             linearOpMode.telemetry.update();
+            updatePositionTracking(robot.telemetry); //update position tracking
         } while (continueLoop && System.currentTimeMillis() - startTime < DRIVE_TIMEOUT && System.currentTimeMillis() - startTime < timeout && linearOpMode.opModeIsActive());
 
         update(Vector2d.ZERO, 0);
@@ -205,6 +221,7 @@ public class DriveController {
 
             linearOpMode.telemetry.addData("Driving robot", "");
             linearOpMode.telemetry.update();
+            updatePositionTracking(robot.telemetry); //update position tracking
         }
         update(Vector2d.ZERO, 0);
         setRotateModuleMode(ROTATE_MODULES); //reset mode
@@ -239,6 +256,7 @@ public class DriveController {
             }
             linearOpMode.telemetry.addData("Rotating ROBOT", "");
             linearOpMode.telemetry.update();
+            updatePositionTracking(robot.telemetry); //update position tracking
         }
         update(Vector2d.ZERO, 0);
     }
@@ -264,6 +282,7 @@ public class DriveController {
             linearOpMode.telemetry.addData("Top level module left difference", moduleLeftDifference);
             linearOpMode.telemetry.addData("Top level module right difference", moduleRightDifference);
             linearOpMode.telemetry.update();
+            updatePositionTracking(robot.telemetry); //update position tracking
         } while ((moduleLeftDifference > ALLOWED_MODULE_ROT_ERROR || moduleRightDifference > ALLOWED_MODULE_ROT_ERROR) && linearOpMode.opModeIsActive() && System.currentTimeMillis() < startTime + timemoutMS);
         update(Vector2d.ZERO, 0);
     }
@@ -272,6 +291,29 @@ public class DriveController {
 
     //TRACKING METHODS
     //methods for path length tracking in autonomous (only useful for driving in straight lines)
+
+    //new tracking method
+    public void updatePositionTracking (Telemetry telemetry) {
+        Vector2d rightDisp = moduleRight.updatePositionTracking(telemetry);
+        Vector2d leftDisp = moduleLeft.updatePositionTracking(telemetry);
+
+        rightDisp.setX(rightDisp.getX() + ROBOT_WIDTH/2);
+        leftDisp.setX(leftDisp.getX() - ROBOT_WIDTH/2);
+
+        Vector2d robotCenterDisp = new Vector2d((rightDisp.getX() + leftDisp.getX())/2, (rightDisp.getY() + leftDisp.getY())/2);
+        robotCenterDisp.rotate(robotAbsHeading); //make field centric using previous heading
+        robotAbsXPos += robotCenterDisp.getX();
+        robotAbsYPos += robotCenterDisp.getY();
+
+        Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
+        //todo: check that get angle methods return correct things
+        double robotAngleChange = wheelToWheel.getAngle();
+        robotAbsHeading -= robotAngleChange; //minus because clockwise vs. counterclockwise (which one is positive changes)
+        robotAbsHeading = robotAbsHeading % 360; //todo: check if we want this or the Python mod function
+
+        telemetry.addData("Robot X Position: ", robotAbsXPos);
+        telemetry.addData("Robot Y Position: ", robotAbsYPos);
+    }
 
     public void resetDistanceTraveled() {
         previousRobotDistanceTraveled = robotDistanceTraveled;
