@@ -18,7 +18,7 @@ public class DriveController {
 
     double robotAbsXPos;
     double robotAbsYPos;
-    double robotAbsHeading; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
+    double robotAbsHeading = 0; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
 
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
@@ -72,26 +72,26 @@ public class DriveController {
     public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
 //        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
 //        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
-        if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2);
-        else updateAbsRotation(joystick1, joystick2);
+        //note: if statement is redundant because rotation power is not currently being scaled 
+        if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR);
+        else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
     }
 
     //should be called every loop cycle when driving (auto or TeleOp)
     //note: positive rotationMagnitude is CCW rotation
+    //this method is for "power-based rotation mode"
     public void update(Vector2d translationVector, double rotationMagnitude) {
         moduleLeft.updateTarget(translationVector, rotationMagnitude);
         moduleRight.updateTarget(translationVector, rotationMagnitude);
-
     }
-    public void updateAbsRotation(Vector2d translationVector, Vector2d joystick2) {
-        Angle targetAngle = joystick2.getAngleAngle();
-        if (joystick2.getMagnitude() > 0.1 && joystick2.getAngleAngle().getDifference(robot.getRobotHeading()) > 5) {
-            moduleLeft.updateTargetAbsRotation(translationVector, targetAngle);
-            moduleRight.updateTargetAbsRotation(translationVector, targetAngle);
+    public void updateAbsRotation(Vector2d translationVector, Vector2d joystick2, double scaleFactor) {
+        Angle targetAngle = joystick2.getRealAngle().convertAngle(Angle.AngleType.NEG_180_TO_180_HEADING);
+        if (joystick2.getMagnitude() > 0.1 && joystick2.getRealAngle().getDifference(robot.getRobotHeading()) > 3) {
+            moduleLeft.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
+            moduleRight.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
         } else {
             moduleLeft.updateTarget(translationVector, 0);
             moduleRight.updateTarget(translationVector, 0);
-
         }
     }
 
@@ -311,6 +311,7 @@ public class DriveController {
 
         telemetry.addData("Robot X Position: ", robotAbsXPos);
         telemetry.addData("Robot Y Position: ", robotAbsYPos);
+        telemetry.addData("Robot Abs Heading: ", robotAbsHeading);
     }
 
     public void resetDistanceTraveled() {

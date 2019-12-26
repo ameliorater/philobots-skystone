@@ -42,11 +42,12 @@ public class TeleOp extends OpMode {
         robot.driveController.updatePositionTracking(telemetry);
 
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
-        Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, gamepad1.right_stick_y); //RIGHT joystick
+        Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
 
-        telemetry.addData("Robot Angle ", robot.getRobotHeading().getAngle());
-        telemetry.addData("Joystick 2 angle ", joystick2.getAngleAngle().getAngle());
-        telemetry.addData("Heading to joystick difference ", joystick2.getAngleAngle().getDifference(robot.getRobotHeading()));
+        telemetry.addData("Robot Heading: ", robot.getRobotHeading().getAngle());
+        telemetry.addData("Joystick 2 Cartesian Angle: ", joystick2.getRealAngle().getAngle());
+        telemetry.addData("Heading to joystick difference: ", joystick2.getRealAngle().getDifference(robot.getRobotHeading()));
+
 
         if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);

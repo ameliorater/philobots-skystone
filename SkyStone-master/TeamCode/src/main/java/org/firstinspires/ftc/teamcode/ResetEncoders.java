@@ -22,6 +22,7 @@ public class ResetEncoders extends LinearOpMode {
         robot = new Robot(this, false);
 
         waitForStart();
+        robot.updateBulkData();
 
         robot.driveController.resetEncoders();
         telemetry.addData("LEFT Module Orientation: ", robot.driveController.moduleLeft.getCurrentOrientation().getAngle());

@@ -31,9 +31,9 @@ public class Robot {
     Servo armServo1, armServo2;
     Servo servoLink1, servoLink2;
 
-    //MOTOR OBJECTS
-    DcMotor lift1, lift2;
-    DcMotor intake1, intake2;
+    //MOTORS
+    ExpansionHubMotor lift1, lift2;
+    ExpansionHubMotor intake1, intake2;
 
     DriveController driveController;
     BNO055IMU imu;
@@ -46,9 +46,10 @@ public class Robot {
     DistanceSensor backRangeSensor;
 
     //BULK DATA (RevExtensions2)
-    RevBulkData bulkData;
-    ExpansionHubMotor motor0, motor1, motor2, motor3;
-    ExpansionHubEx expansionHub;
+    RevBulkData bulkData1;
+    RevBulkData bulkData2;
+    ExpansionHubEx expansionHub1;
+    ExpansionHubEx expansionHub2;
 
     final DcMotor.RunMode DEFAULT_RUN_MODE;
     final boolean IS_AUTO;
@@ -84,6 +85,12 @@ public class Robot {
         IS_AUTO = isAuto;
         DEFAULT_RUN_MODE = isAuto ? AUTO_RUN_MODE : TELEOP_RUN_MODE;
 
+        //bulk data
+        expansionHub1 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 1");
+        expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
+        bulkData1 = expansionHub1.getBulkInputData();
+        bulkData2 = expansionHub2.getBulkInputData();
+
         //the cooper thing
         latchServo1 = hardwareMap.servo.get("latchServo1");
         setupServo(latchServo1);
@@ -112,21 +119,18 @@ public class Robot {
 
         setupLift();
 
-        intake1 = hardwareMap.dcMotor.get("intakeMotor1");
+        intake1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intakeMotor1");
         setupMotor(intake1, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_USING_ENCODER);
-        intake2 = hardwareMap.dcMotor.get("intakeMotor2");
+        intake2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intakeMotor2");
         setupMotor(intake2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_USING_ENCODER);
 
         frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");
-
-        //bulk data
-        expansionHub = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 1");
-        bulkData = expansionHub.getBulkInputData();
     }
 
     public void updateBulkData () {
-        bulkData = expansionHub.getBulkInputData();
+        bulkData1 = expansionHub1.getBulkInputData();
+        bulkData2 = expansionHub2.getBulkInputData();
     }
 
     public void initIMU () {
@@ -144,14 +148,11 @@ public class Robot {
     public Angle getRobotHeading () {
         //heading is of NEG_180_TO_180_HEADING type by default (no need for conversion)
         double heading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-        telemetry.addData("Robot Heading", heading);
-        telemetry.addData("Angle class version of Robot Heading", new Angle(heading, Angle.AngleType.NEG_180_TO_180_HEADING));
-        telemetry.addData("Angle class negative version of Robot Heading", new Angle(-heading, Angle.AngleType.NEG_180_TO_180_HEADING));
 
 //        if (IMUReversed) {
 //            return new Angle(heading-180, Angle.AngleType.NEG_180_TO_180_HEADING);
 //        }
-        return new Angle(heading, Angle.AngleType.NEG_180_TO_180_HEADING);
+        return new Angle(-heading, Angle.AngleType.NEG_180_TO_180_HEADING);
     }
 
     //SETUP METHODS
@@ -248,14 +249,14 @@ public class Robot {
 
     public void setupLift() {
         //the obvious things
-        lift1 = hardwareMap.dcMotor.get("liftMotorLeft");
+        lift1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("liftMotorLeft");
         lift1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift1.setTargetPosition(bulkData.getMotorCurrentPosition(lift1));
+        lift1.setTargetPosition(bulkData1.getMotorCurrentPosition(lift1));
         setupMotor(lift1, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_TO_POSITION);
 
-        lift2 = hardwareMap.dcMotor.get("liftMotorRight");
+        lift2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("liftMotorRight");
         lift2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift2.setTargetPosition(bulkData.getMotorCurrentPosition(lift2));
+        lift2.setTargetPosition(bulkData1.getMotorCurrentPosition(lift2));
         setupMotor(lift2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_TO_POSITION);
 
         for (int i = 0; i < encoderTicksAtLiftPositions.length; i++) {
@@ -289,8 +290,8 @@ public class Robot {
         // don't reset static variable wasAtZero every loop
         //wasAtZero = true;
 
-        int lift1CurrentPos = bulkData.getMotorCurrentPosition(lift1);
-        int lift2CurrentPos = bulkData.getMotorCurrentPosition(lift2);
+        int lift1CurrentPos = bulkData1.getMotorCurrentPosition(lift1);
+        int lift2CurrentPos = bulkData1.getMotorCurrentPosition(lift2);
         //int position = (lift1CurrentPos + lift2CurrentPos)/2; //integer division, i know (i think it's fine)
         int position = lift1CurrentPos; //integer division, i know (i think it's fine)
 
@@ -373,7 +374,7 @@ public class Robot {
     }
 
     public double intakeEncoderValue() {
-        return (bulkData.getMotorCurrentPosition(intake1) + bulkData.getMotorCurrentPosition(intake2)) / 2.0;
+        return (bulkData1.getMotorCurrentPosition(intake1) + bulkData1.getMotorCurrentPosition(intake2)) / 2.0;
     }
 
     public void moveIntake(IntakeState state, IntakeSpeed speed) {
