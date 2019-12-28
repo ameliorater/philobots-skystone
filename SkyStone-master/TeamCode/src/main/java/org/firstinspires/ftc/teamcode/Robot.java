@@ -152,7 +152,12 @@ public class Robot {
 //        if (IMUReversed) {
 //            return new Angle(heading-180, Angle.AngleType.NEG_180_TO_180_HEADING);
 //        }
-        return new Angle(-heading, Angle.AngleType.NEG_180_TO_180_HEADING);
+        //todo: check if heading should be negative or not
+        return new Angle(heading, Angle.AngleType.NEG_180_TO_180_HEADING);
+    }
+
+    public double getRobotHeadingDouble (Angle.AngleType type){
+        return getRobotHeading().convertAngle(type).getAngle();
     }
 
     //SETUP METHODS

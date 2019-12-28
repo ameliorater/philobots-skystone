@@ -49,29 +49,41 @@ public class Vector2d {
 //        return new Angle(Math.toDegrees(Math.atan2(y, x)), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
 //    }
 
-    //returns in degrees, in NEG_180_TO_180_CARTESIAN type
-    public double getAngle() {
-        //don't know why all this is needed, but it works
-        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
-        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
-        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle();
+//    //returns in degrees, in NEG_180_TO_180_CARTESIAN type
+//    public double getAngle() {
+//        //don't know why all this is needed, but it works
+//        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
+//        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
+//        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle();
+//
+//        //the thing that should work in theory but doesn't:
+//        //return Math.toDegrees(Math.atan2(y, x));
+//    }
 
-        //the thing that should work in theory but doesn't:
-        //return Math.toDegrees(Math.atan2(y, x));
-    }
-
-    //forgive this bad naming - returns Angle type instead of double of NEG_180_TO_180_CARTESIAN type
-    public Angle getAngleAngle () {
-        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
-        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
-        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
-    }
-
-    //terrible naming - means the way it should be, with atan2(y, x)
-    public Angle getRealAngle () {
+    //returns Angle object
+    public Angle getAngle() {
         double angRad = Math.atan2(y, x);
         return new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
     }
+
+    //returns value for angle in specified type
+    public double getAngleDouble(Angle.AngleType type) {
+        double angRad = Math.atan2(y, x);
+        return new Angle(Math.toDegrees(angRad), type).getAngle();
+    }
+
+//    //forgive this bad naming - returns Angle type instead of double of NEG_180_TO_180_CARTESIAN type
+//    public Angle getAngleAngle () {
+//        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
+//        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
+//        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
+//    }
+
+//    //terrible naming - means the way it should be, with atan2(y, x)
+//    public Angle getRealAngle () {
+//        double angRad = Math.atan2(y, x);
+//        return new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
+//    }
 
 
     public Vector2d add(Vector2d other) {

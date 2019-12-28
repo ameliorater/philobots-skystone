@@ -44,10 +44,9 @@ public class TeleOp extends OpMode {
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
         Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
 
-        telemetry.addData("Robot Heading: ", robot.getRobotHeading().getAngle());
-        telemetry.addData("Joystick 2 Cartesian Angle: ", joystick2.getRealAngle().getAngle());
-        telemetry.addData("Heading to joystick difference: ", joystick2.getRealAngle().getDifference(robot.getRobotHeading()));
-
+        telemetry.addData("Robot Heading (180 heading mode): ", robot.getRobotHeading().getAngle());
+        telemetry.addData("Joystick 2 Angle (180 heading mode): ", joystick2.getAngleDouble(Angle.AngleType.NEG_180_TO_180_HEADING));
+        telemetry.addData("Heading to joystick difference: ", joystick2.getAngle().getDifference(robot.getRobotHeading()));
 
         if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
