@@ -38,6 +38,26 @@ public class Position {
         heading = heading.rotateBy(deltaHeading, Angle.Direction.CLOCKWISE);
     }
 
+    public boolean withinRange (Position otherPosition, double xMaxError, double yMaxError, double headingMaxError) {
+        double xError = getXDifference(otherPosition);
+        double yError = getYDifference(otherPosition);
+        double headingError = getHeadingDifference(otherPosition);
+        return xError < xMaxError && yError < yMaxError && headingError < headingMaxError;
+    }
+
+    public double getXDifference (Position otherPosition) {
+        return Math.abs(this.x - otherPosition.x);
+    }
+
+    public double getYDifference (Position otherPosition) {
+        return Math.abs(this.y - otherPosition.y);
+    }
+
+    public double getHeadingDifference (Position otherPosition) {
+        return this.heading.getDifference(otherPosition.heading);
+    }
+
+
     //completely resets robot position
     public void reset () {
         x = 0;

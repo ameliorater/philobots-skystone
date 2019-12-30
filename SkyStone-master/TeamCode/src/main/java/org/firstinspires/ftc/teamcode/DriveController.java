@@ -50,6 +50,12 @@ public class DriveController {
     public double ROTATE_ROBOT_TIMEOUT = 3000;
     public double DRIVE_TIMEOUT = 4000;
 
+    //drive to position constants
+    double MAX_AUTO_DRIVE_SPEED = 0.7;
+    double MIN_AUTO_DRIVE_SPEED = 0.3;
+    double MAX_AUTO_ROTATE_SPEED = 0.5;
+    double MIN_AUTO_ROTATE_SPEED = 0.3;
+
     public DriveController(Robot robot, boolean debuggingMode) {
         this.robot = robot;
         moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
@@ -230,8 +236,22 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
-    public void driveToPosition(double current) {
+    //todo: finish this method
+    public void driveToPosition(Position currentPosition, Position targetPosition) {
+        double totalXDistance = currentPosition.getXDifference(targetPosition);
+        double totalYDistance = currentPosition.getYDifference(targetPosition);
+        double totalHeadingDifference = currentPosition.getHeadingDifference(targetPosition);
 
+        while (!targetPosition.withinRange(currentPosition, 5, 5, 5)){
+            double xSpeed = RobotUtil.scaleVal(currentPosition.getXDifference(targetPosition),
+                    0, totalXDistance, MIN_AUTO_DRIVE_SPEED, MAX_AUTO_DRIVE_SPEED);
+
+            double ySpeed = RobotUtil.scaleVal(currentPosition.getYDifference(targetPosition),
+                    0, totalYDistance, MIN_AUTO_DRIVE_SPEED, MAX_AUTO_DRIVE_SPEED);
+
+            double rotationSpeed = RobotUtil.scaleVal(currentPosition.getHeadingDifference(targetPosition),
+                    0, totalHeadingDifference, MIN_AUTO_ROTATE_SPEED, MAX_AUTO_ROTATE_SPEED);
+        }
     }
 
 
