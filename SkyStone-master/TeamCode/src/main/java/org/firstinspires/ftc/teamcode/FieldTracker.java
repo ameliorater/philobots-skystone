@@ -33,6 +33,10 @@ public class FieldTracker {
     //
     // NOTE: If you are running on a CONTROL HUB, with only one USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     //
+
+    public final boolean USING_WEBCAM;
+    public final boolean USING_GRAPHICS;
+
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false;
 
@@ -71,7 +75,19 @@ public class FieldTracker {
     List<VuforiaTrackable> allTrackables;
     VuforiaTrackables targetsSkyStone;
 
-    public FieldTracker(HardwareMap m, Telemetry t) {
+    //Distances from camera/webcam to center of robot
+    final static float CAMERA_FORWARD_DISPLACEMENT = 0;
+    final static float CAMERA_VERTICAL_DISPLACEMENT = 0;
+    final static float CAMERA_LEFT_DISPLACEMENT = 0;
+    //TODO CHANGE THESE VALUES TO MATCH THE WEBCAM PLACEMENT
+    final static float WEBCAM_FORWARD_DISPLACEMENT = 3.75f * mmPerInch;
+    final static float WEBCAM_VERTICAL_DISPLACEMENT = 4.75f * mmPerInch;
+    final static float WEBCAM_LEFT_DISPLACEMENT = -6.5f * mmPerInch;
+
+    public FieldTracker(HardwareMap m, Telemetry t, boolean usingWebcam, boolean usingGraphics) {
+        USING_WEBCAM = usingWebcam;
+        USING_GRAPHICS = usingGraphics;
+
         hardwareMap = m;
         telemetry = t;
 
@@ -79,18 +95,31 @@ public class FieldTracker {
     }
 
     public void setupTracker() {
+
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        VuforiaLocalizer.Parameters parameters = (USING_GRAPHICS ?
+                new VuforiaLocalizer.Parameters(
+                        hardwareMap.appContext.getResources().getIdentifier(
+                                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName()
+                        )
+                ) :
+                new VuforiaLocalizer.Parameters()
+        );
 
         //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
+
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CAMERA_CHOICE;
+        if (USING_WEBCAM) {
+            parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        } else {
+            parameters.cameraDirection = CAMERA_CHOICE;
+        }
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
@@ -212,12 +241,10 @@ public class FieldTracker {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
-        final float CAMERA_VERTICAL_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT = 0.0f * mmPerInch;     // eg: Camera is ON the robot's center line
 
-        OpenGLMatrix robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+        OpenGLMatrix robotFromCamera = ( USING_WEBCAM ?
+                OpenGLMatrix.translation(WEBCAM_FORWARD_DISPLACEMENT, WEBCAM_LEFT_DISPLACEMENT, WEBCAM_VERTICAL_DISPLACEMENT) :
+                OpenGLMatrix.translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT) )
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 
         /**  Let all the trackable listeners know where the phone is.  */

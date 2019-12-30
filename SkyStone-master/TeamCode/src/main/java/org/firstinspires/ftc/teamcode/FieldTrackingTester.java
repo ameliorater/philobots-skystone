@@ -14,20 +14,25 @@ public class FieldTrackingTester extends LinearOpMode {
     static FieldTracker tracker;
     BNO055IMU imu;
 
-    public void runOpMode() {
-        tracker = new FieldTracker(hardwareMap, telemetry);
+    public void setupIMU() {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         imu.initialize(parameters);
+    }
 
-        waitForStart();
+    public void runOpMode() {
+        //CHANGE PARAMETERS FOR WEBCAM/GRAPHICS USAGE
+        tracker = new FieldTracker(hardwareMap, telemetry, false, true);
+        setupIMU();
 
         double imuAngle, trackerAngle;
 
-        while (opModeIsActive() && !isStopRequested()) {
+        waitForStart();
+
+        while (opModeIsActive()) {
 
             imuAngle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
             TargetInfo trackerInfo = tracker.getTargetInfo();
