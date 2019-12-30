@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -16,9 +15,7 @@ public class DriveController {
     DriveModule moduleLeft;
     DriveModule moduleRight;
 
-    double robotAbsXPos;
-    double robotAbsYPos;
-    double robotAbsHeading; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
+    Position robotPosition;
 
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
@@ -53,21 +50,24 @@ public class DriveController {
     public double ROTATE_ROBOT_TIMEOUT = 3000;
     public double DRIVE_TIMEOUT = 4000;
 
-    public DriveController(Robot robot) {
+    public DriveController(Robot robot, boolean debuggingMode) {
         this.robot = robot;
-        moduleLeft = new DriveModule(robot, ModuleSide.LEFT);
-        moduleRight = new DriveModule(robot, ModuleSide.RIGHT);
+        moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
+        moduleRight = new DriveModule(robot, ModuleSide.RIGHT, debuggingMode);
 
         moduleLeftLastDistance = moduleLeft.getDistanceTraveled();
         moduleRightLastDistance = moduleRight.getDistanceTraveled();
 
         //todo: change to parameter
-        robotAbsXPos = 0;
-        robotAbsYPos = 0;
-        robotAbsHeading = 0;
+        robotPosition = new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING));
     }
 
-    //converts joystick vectors to parameters for update() method
+    //defaults to debugging mode off
+    public DriveController(Robot robot) {
+        this(robot, false);
+    }
+
+        //converts joystick vectors to parameters for update() method
     //called every loop cycle in TeleOp
     public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
 //        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
@@ -230,6 +230,10 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
+    public void driveToPosition(double current) {
+
+    }
+
 
 
     public void rotateRobot(Angle targetAngle, double power, LinearOpMode linearOpMode) {
@@ -299,19 +303,20 @@ public class DriveController {
         leftDisp.setX(leftDisp.getX() - ROBOT_WIDTH/2);
 
         Vector2d robotCenterDisp = new Vector2d((rightDisp.getX() + leftDisp.getX())/2, (rightDisp.getY() + leftDisp.getY())/2);
-        robotCenterDisp.rotate(robotAbsHeading); //make field centric using previous heading
-        robotAbsXPos += robotCenterDisp.getX();
-        robotAbsYPos += robotCenterDisp.getY();
+        robotCenterDisp = robotCenterDisp.rotateTo(robotPosition.heading); //make field centric using previous heading
+        robotPosition.incrementX(robotCenterDisp.getX());
+        robotPosition.incrementY(robotCenterDisp.getY());
 
         Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
         //todo: check this angle math
-        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING);
-        robotAbsHeading -= robotAngleChange; //minus because clockwise vs. counterclockwise (which one is positive changes)
-        robotAbsHeading = robotAbsHeading % 360; //todo: check if we want this or the Python mod function
+        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING);  //todo: CW (should be) positive
+        //todo: check if heading change should be negative (it was before)
+        robotPosition.incrementHeading(robotAngleChange); //minus because clockwise vs. counterclockwise (which one is positive changes)
+        //robotAbsHeading = robotAbsHeading % 360;
 
-        telemetry.addData("Robot X Position: ", robotAbsXPos);
-        telemetry.addData("Robot Y Position: ", robotAbsYPos);
-        telemetry.addData("Robot Abs Heading: ", robotAbsHeading);
+        telemetry.addData("Robot X Position: ", robotPosition.x);
+        telemetry.addData("Robot Y Position: ", robotPosition.y);
+        telemetry.addData("Robot Abs Heading: ", robotPosition.heading);
     }
 
     public void resetDistanceTraveled() {

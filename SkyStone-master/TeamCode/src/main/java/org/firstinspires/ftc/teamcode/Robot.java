@@ -75,11 +75,11 @@ public class Robot {
     final double ticksPerEntireRotation = 28*13.7*302.0/14;
     final double twoPi = 2 * Math.PI;
 
-    public Robot (OpMode opMode, boolean isAuto) {
+    public Robot (OpMode opMode, boolean isAuto, boolean debuggingMode) {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.opMode = opMode;
-        driveController = new DriveController(this);
+        driveController = new DriveController(this, debuggingMode);
         imu = opMode.hardwareMap.get(BNO055IMU.class, "imu 1");
 
         IS_AUTO = isAuto;
@@ -128,6 +128,11 @@ public class Robot {
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");
     }
 
+    //defaults to debugging mode off
+    public Robot (OpMode opMode, boolean isAuto) {
+        this(opMode, isAuto, false);
+    }
+
     public void updateBulkData () {
         bulkData1 = expansionHub1.getBulkInputData();
         bulkData2 = expansionHub2.getBulkInputData();
@@ -153,7 +158,7 @@ public class Robot {
 //            return new Angle(heading-180, Angle.AngleType.NEG_180_TO_180_HEADING);
 //        }
         //todo: check if heading should be negative or not
-        return new Angle(heading, Angle.AngleType.NEG_180_TO_180_HEADING);
+        return new Angle(-heading, Angle.AngleType.NEG_180_TO_180_HEADING);
     }
 
     public double getRobotHeadingDouble (Angle.AngleType type){

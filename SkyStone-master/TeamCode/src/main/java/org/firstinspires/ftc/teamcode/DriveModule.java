@@ -105,14 +105,14 @@ public class DriveModule {
     public void updateTarget (Vector2d transVec, double rotMag) { //translation vector and rotation magnitude
         //converts robot heading to the angle type used by Vector2d class
 
-        //todo: -90 or 90?
-        transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
+        //transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
 
         //converts the translation vector from a robot centric to a field centric one
-        Vector2d transVecFC = transVec.rotate(robot.getRobotHeading().getAngle()); //was converted robot heading
+        Vector2d transVecFC = transVec.rotateTo(robot.getRobotHeading()); //was converted robot heading
 
         //vector needed to rotate robot at the desired magnitude
         //based on positionVector of module (see definition for more info)
+        //todo: find out if this should be rotated 90
         Vector2d rotVec = positionVector.normalize(rotMag);//.rotate(90); //theoretically this should be rotated 90, not sure sure it doesn't need to be
 
         //combine desired robot translation and robot rotation to get goal vector for the module
@@ -176,7 +176,7 @@ public class DriveModule {
         setMotorPowers(powerVector);
 
         if (debuggingMode) {
-            robot.telemetry.addData(moduleSide + " Target Vector Angle: ", targetVector.getAngle());
+            robot.telemetry.addData(moduleSide + " Target Vector Angle: ", targetVector.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING));
             robot.telemetry.addData(moduleSide + " Power Vector: ", powerVector);
             robot.telemetry.addData(moduleSide + " Current orientation: ", getCurrentOrientation().getAngle());
         }
@@ -262,7 +262,8 @@ public class DriveModule {
         Angle convertedRobotHeading = robot.getRobotHeading().convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
 
         //pass 0 as moveComponent
-        Vector2d directionFC = direction.rotate(robot.getRobotHeading().getAngle()); //was converted robot heading
+        //todo: check if fixes broke this
+        Vector2d directionFC = direction.rotateTo(robot.getRobotHeading()); //was converted robot heading
 
         //ADDED
         if (reversed) { //reverse direction of translation because module is reversed

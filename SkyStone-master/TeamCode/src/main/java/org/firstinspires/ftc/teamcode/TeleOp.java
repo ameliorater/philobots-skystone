@@ -24,7 +24,7 @@ public class TeleOp extends OpMode {
 
 
     public void init() {
-        robot = new Robot(this, false);
+        robot = new Robot(this, false, true);
     }
 
     public void init_loop() {

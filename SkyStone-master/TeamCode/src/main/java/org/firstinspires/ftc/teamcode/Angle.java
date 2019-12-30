@@ -60,6 +60,11 @@ public class Angle {
     public double getAngle () { return angle; }
     public AngleType getType () { return type; }
 
+    @Override
+    public String toString () {
+        return "" + angle + " :" + type;
+    }
+
 
     //assumes DEGREES for input and output!! use built-in Java method to convert between radians and degrees
     //no other assumptions related to inputAngle value (can be -infinity to infinity)
@@ -125,7 +130,23 @@ public class Angle {
         }
     }
 
+    //passing a negative degrees will work, but will reverse the direction
+    //direction should indicate positive direction of the angle system being used
+    public Angle rotateBy (double degrees, Direction direction) {
+        Angle thisConverted = this.convertAngle(AngleType.ZERO_TO_360_HEADING);
+        double newAngle;
+        if (direction == Direction.CLOCKWISE) {
+            newAngle = thisConverted.getAngle() + degrees;
+        } else {
+            newAngle = thisConverted.getAngle() - degrees;
+        }
+        return new Angle(newAngle, AngleType.ZERO_TO_360_HEADING).convertAngle(this.type);
+    }
 
+    //defaults to positive direction of this angle
+    public Angle rotateBy (double degrees) {
+        return rotateBy(degrees, this.getPositiveDirection());
+    }
 
     //INTERNAL METHODS - don't worry about these unless you're interested in how this class works
 
@@ -191,6 +212,13 @@ public class Angle {
         else if (!isZeroTo360(numericalType) && isCartesian(coordinateType)) return AngleType.NEG_180_TO_180_CARTESIAN;
         else if (isZeroTo360(numericalType) && !isCartesian(coordinateType)) return AngleType.ZERO_TO_360_HEADING;
         else return AngleType.NEG_180_TO_180_HEADING; //!isZeroTo360(numericalType) && !isCartesian(coordinateType)
+    }
+
+    public Direction getPositiveDirection () {
+        if (this.type == AngleType.NEG_180_TO_180_HEADING || this.type == AngleType.ZERO_TO_360_HEADING) {
+            return Direction.CLOCKWISE;
+        }
+        return Direction.COUNTER_CLOCKWISE;
     }
 
     //returns an angle between max and min, assuming a coordinate system starting at min and wrapping back to max

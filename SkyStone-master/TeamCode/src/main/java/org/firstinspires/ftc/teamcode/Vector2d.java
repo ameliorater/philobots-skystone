@@ -21,12 +21,14 @@ public class Vector2d {
     public Vector2d(double x, double y) {
         this.x = x;
         this.y = y;
+        this.fixFloatingPointErrors();
     }
 
     //makes a unit vector with a certain angle
     public Vector2d(Angle angle) {
         this.x = Math.cos(Math.toRadians(angle.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle()));
         this.y = Math.sin(Math.toRadians(angle.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle()));
+        this.fixFloatingPointErrors();
     }
 
     public double getX() {
@@ -43,6 +45,15 @@ public class Vector2d {
 
     public double getMagnitude() {
         return Math.sqrt(x * x + y * y);
+    }
+
+    public void fixFloatingPointErrors() {
+        if (Math.abs(this.x) < 1e-5) {
+            this.x = 0;
+        }
+        if (Math.abs(this.y) < 1e-5) {
+            this.y = 0;
+        }
     }
 
 //    public Angle getAngle () {
@@ -104,9 +115,19 @@ public class Vector2d {
     }
 
     //returns Vector2d rotated by ang degrees
-    public Vector2d rotate(double ang) {
-        double angRads = Math.toRadians(ang);
+    public Vector2d rotateBy(double ang, Angle.Direction direction) {
+        double angRads;
+        if (direction == Angle.Direction.COUNTER_CLOCKWISE) {
+            angRads = Math.toRadians(ang); //default vector rotation direction is CCW
+        } else {
+            angRads = -1 * Math.toRadians(ang);
+        }
         return new Vector2d(x * Math.cos(angRads) - y * Math.sin(angRads), x * Math.sin(angRads) + y * Math.cos(angRads));
+    }
+
+    //returns Vector2d with the same magnitude as this but at the same angle as an Angle object
+    public Vector2d rotateTo (Angle ang) {
+        return new Vector2d(ang).scale(this.getMagnitude());
     }
 
     //dot product
