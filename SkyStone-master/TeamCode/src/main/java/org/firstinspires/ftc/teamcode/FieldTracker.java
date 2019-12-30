@@ -212,9 +212,9 @@ public class FieldTracker {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
-        final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+        final float CAMERA_FORWARD_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
+        final float CAMERA_VERTICAL_DISPLACEMENT = 0.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
+        final float CAMERA_LEFT_DISPLACEMENT = 0.0f * mmPerInch;     // eg: Camera is ON the robot's center line
 
         OpenGLMatrix robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -241,45 +241,50 @@ public class FieldTracker {
 
     }
 
-    public void logInfo() {
-        // check all the trackable targets to see which one (if any) is visible.
-        targetVisible = false;
+    public TargetInfo getTargetInfo() {
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                telemetry.addData("Visible Target", trackable.getName());
-                targetVisible = true;
 
-                // getUpdatedRobotLocation() will return null if no new information is available since
-                // the last time that call was made, or if the trackable is not currently visible.
-                /*
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                 if (robotLocationTransform != null) {
                     lastLocation = robotLocationTransform;
-                }*/
-                //break;
+                }
+
+                VectorF translation = lastLocation.getTranslation();
+                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+
+                return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch/*,
+                        trackable.getName()*/);
             }
         }
-        /*
-        // Provide feedback as to where the robot is located (if we know).
-        if (targetVisible) {
-            // express position (translation) of robot in inches.
-            VectorF translation = lastLocation.getTranslation();
-            telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+        return null;
+    }
+}
 
-            // express the rotation of the robot in degrees.
-            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-            telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-        }
-        else {
-            telemetry.addData("Visible Target", "none");
-        }
-        telemetry.update();*/
+class TargetInfo {
+    double xRotation, yRotation, zRotation;
+    double xPosition, yPosition, zPosition;
+    //String name;
+
+    public TargetInfo(double xRot, double yRot, double zRot,
+                      double xPos, double yPos, double zPos/*,
+                      String name*/) {
+
+        xRotation = xRot;
+        yRotation = yRot;
+        zRotation = zRot;
+
+        xPosition = xPos;
+        yPosition = yPos;
+        zPosition = zPos;
+
+        //this.name = name;
     }
 
-    public void closeTracker() {
-        // Disable Tracking when we are done;
-        targetsSkyStone.deactivate();
+    public String toString() {
+        return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
+                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition /*+
+                "\nName: " + name*/;
     }
-
 }
