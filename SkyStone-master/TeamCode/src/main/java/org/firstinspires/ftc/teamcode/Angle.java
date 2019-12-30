@@ -82,9 +82,8 @@ public class Angle {
         else {
             //even though input and output types are not true to the type of intermediate angle...
             // they have the correct important characteristic (numerical or coordinate)
-            double angleNewNumericalSystem = convertNumericalSystem(angle, type, numericalAndCoordinate(outputType, type)); //was type, output type
-            double angleNewCoordinateSystem = convertCoordinateSystem(angleNewNumericalSystem, numericalAndCoordinate(outputType, type), outputType); //was type, output type
-            return angleNewCoordinateSystem;
+            double angleNewCoordinateSystem = convertCoordinateSystem(angle, type, numericalAndCoordinate(type, outputType));
+            return convertNumericalSystem(angleNewCoordinateSystem, numericalAndCoordinate(type, outputType), outputType);
         }
     }
 
@@ -104,7 +103,6 @@ public class Angle {
     //returns direction of travel FROM this angle TO other angle
     //example: direction FROM 0 degrees TO 90 degrees (both in NEG_180_TO_180_HEADING type) is CLOCKWISE
     //returns either CLOCKWISE or COUNTER_CLOCKWISE
-    //defaults to CLOCKWISE if angles are identical (difference is zero)
     public Direction directionTo (Angle other) {
         Angle otherConverted = other.convertAngle(AngleType.ZERO_TO_360_CARTESIAN);
         Angle thisConverted = this.convertAngle(AngleType.ZERO_TO_360_CARTESIAN);
@@ -132,35 +130,23 @@ public class Angle {
     //input and output type should have the same numerical system
     public static double convertCoordinateSystem (double inputAngle, AngleType inputType, AngleType outputType) {
         //ensure input and output coordinate system not same- assumed different later on (bc of *-1)
-        if (sameCoordinateSystem(inputType, outputType)) {
-            return inputAngle; //not sure about this
-        }
+        if (sameCoordinateSystem(inputType, outputType)) return inputAngle; //not sure about this
 
         if (isCartesian(inputType)) {
             //+90 is to convert coordinate systems
             //wrapAngle is to make sure within bounds of numerical system
             //*-1 or 360- is to flip direction (coordinate system change always causes positive to flip between CW and CCW)
-            if (isZeroTo360(inputType)) {
-                return 360 - wrapAngle(inputAngle - 90, outputType); //flipped plus to minus (correct with minus)
-            }
-            else {
-                return -1 * wrapAngle(inputAngle - 90, outputType);
-            }
+            if (isZeroTo360(inputType)) return 360 - wrapAngle(inputAngle - 90, outputType); //flipped plus to minus (correct with minus)
+            else return -1 * wrapAngle(inputAngle - 90, outputType);
         } else { //input type is heading system
-            if (isZeroTo360(inputType)) {
-                return 360 - wrapAngle(inputAngle - 90, outputType); //WAS +90
-            }
-            else {
-                return -1 * wrapAngle(inputAngle - 90, outputType); //WAS +90
-            }
+            if (isZeroTo360(inputType)) return 360 - wrapAngle(inputAngle + 90, outputType);
+            else return -1 * wrapAngle(inputAngle + 90, outputType);
         }
     }
 
     //although this method currently is just a pass through, I think it may need to do more in the future (and it adds uniformity)
     public static double convertNumericalSystem (double inputAngle, AngleType inputType, AngleType outputType) {
-        if (sameNumericalSystem(inputType, outputType)) {
-            return inputAngle; //for uniformity
-        }
+        if (sameNumericalSystem(inputType, outputType)) return inputAngle; //for uniformity
         return wrapAngle(inputAngle, outputType);
     }
 

@@ -105,7 +105,6 @@ public class DriveModule {
     public void updateTarget (Vector2d transVec, double rotMag) { //translation vector and rotation magnitude
         //converts robot heading to the angle type used by Vector2d class
 
-        //todo: -90 or 90?
         transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
 
         //converts the translation vector from a robot centric to a field centric one
@@ -147,8 +146,6 @@ public class DriveModule {
     public double getRotMag (Angle targetHeading, Angle robotHeading)
     {
         robot.telemetry.addData("Difference between joystick and robot", targetHeading.getDifference(robotHeading));
-        robot.telemetry.addData("Direction from robot to joystick", robotHeading.directionTo(targetHeading));
-
         double unsignedDifference = RobotUtil.scaleVal(targetHeading.getDifference(robotHeading),15, 60, .3, 1);
         if (robotHeading.directionTo(targetHeading) == Angle.Direction.CLOCKWISE) {
             return unsignedDifference * -1;
@@ -186,7 +183,7 @@ public class DriveModule {
     //returns a scalar corresponding to how much power the module needs to apply to rotating
     //this is necessary because of the differential nature of a diff swerve drive
     public double getPivotComponent (Vector2d targetVector, Angle currentAngle) {
-        Angle targetAngle = targetVector.getAngle();
+        Angle targetAngle = targetVector.getAngleAngle();
         double angleDiff = targetAngle.getDifference(currentAngle); //number from 0 to 180 (always positive)
 
         //allows module to rotate to the opposite position of (180 degrees away from) its target

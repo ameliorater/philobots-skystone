@@ -18,7 +18,7 @@ public class DriveController {
 
     double robotAbsXPos;
     double robotAbsYPos;
-    double robotAbsHeading; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
+    double robotAbsHeading = 0; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
 
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
@@ -85,8 +85,8 @@ public class DriveController {
         moduleRight.updateTarget(translationVector, rotationMagnitude);
     }
     public void updateAbsRotation(Vector2d translationVector, Vector2d joystick2, double scaleFactor) {
-        Angle targetAngle = joystick2.getAngle(); //was + .convertAngle(Angle.AngleType.NEG_180_TO_180_HEADING)
-        if (joystick2.getMagnitude() > 0.1 && targetAngle.getDifference(robot.getRobotHeading()) > 3) {
+        Angle targetAngle = joystick2.getRealAngle().convertAngle(Angle.AngleType.NEG_180_TO_180_HEADING);
+        if (joystick2.getMagnitude() > 0.1 && joystick2.getRealAngle().getDifference(robot.getRobotHeading()) > 3) {
             moduleLeft.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
             moduleRight.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
         } else {
@@ -270,8 +270,8 @@ public class DriveController {
         double moduleLeftDifference, moduleRightDifference;
         double startTime = System.currentTimeMillis();
         do {
-            moduleLeftDifference = moduleLeft.getCurrentOrientation().getDifference(direction.getAngle()); //was getRealAngle() (don't ask)
-            moduleRightDifference = moduleRight.getCurrentOrientation().getDifference(direction.getAngle());
+            moduleLeftDifference = moduleLeft.getCurrentOrientation().getDifference(direction.getRealAngle()); //was getRealAngle() (don't ask)
+            moduleRightDifference = moduleRight.getCurrentOrientation().getDifference(direction.getRealAngle());
             moduleLeft.rotateModule(direction, fieldCentric);
             moduleLeft.rotateModule(direction, fieldCentric);
             moduleRight.rotateModule(direction, fieldCentric);
@@ -304,8 +304,8 @@ public class DriveController {
         robotAbsYPos += robotCenterDisp.getY();
 
         Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
-        //todo: check this angle math
-        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING);
+        //todo: check that get angle methods return correct things
+        double robotAngleChange = wheelToWheel.getAngle();
         robotAbsHeading -= robotAngleChange; //minus because clockwise vs. counterclockwise (which one is positive changes)
         robotAbsHeading = robotAbsHeading % 360; //todo: check if we want this or the Python mod function
 
