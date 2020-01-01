@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.Vector;
+
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.DO_NOT_ROTATE_MODULES;
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.ROTATE_MODULES;
 
@@ -51,10 +53,11 @@ public class DriveController {
     public double DRIVE_TIMEOUT = 4000;
 
     //drive to position constants
-    double MAX_AUTO_DRIVE_SPEED = 0.7;
-    double MIN_AUTO_DRIVE_SPEED = 0.3;
-    double MAX_AUTO_ROTATE_SPEED = 0.5;
-    double MIN_AUTO_ROTATE_SPEED = 0.3;
+    //todo: tune these constants
+    double MAX_AUTO_DRIVE_FACTOR = 1;
+    double MIN_AUTO_DRIVE_FACTOR = 0.1;
+    double MAX_AUTO_ROTATE_FACTOR = 0.5;
+    double MIN_AUTO_ROTATE_FACTOR = 0.1;
 
     public DriveController(Robot robot, boolean debuggingMode) {
         this.robot = robot;
@@ -236,21 +239,37 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
-    //todo: finish this method
     public void driveToPosition(Position currentPosition, Position targetPosition) {
         double totalXDistance = currentPosition.getXDifference(targetPosition);
         double totalYDistance = currentPosition.getYDifference(targetPosition);
         double totalHeadingDifference = currentPosition.getHeadingDifference(targetPosition);
 
+        Vector2d translationDirection = currentPosition.getDirectionTo(targetPosition);
+        Angle.Direction rotationDirection = currentPosition.getRotationDirectionTo(targetPosition);
+
         while (!targetPosition.withinRange(currentPosition, 5, 5, 5)){
-            double xSpeed = RobotUtil.scaleVal(currentPosition.getXDifference(targetPosition),
-                    0, totalXDistance, MIN_AUTO_DRIVE_SPEED, MAX_AUTO_DRIVE_SPEED);
+            //scale speeds based on remaining distance from target, bounded by 0 and original distance
+            //at the very beginning, x & y trans and rot will be max speed (different for each)
+            //at the end, all three speeds will be min speed (different for each)
+            //in between, the speeds will scale linearly depending on distance from target position
 
-            double ySpeed = RobotUtil.scaleVal(currentPosition.getYDifference(targetPosition),
-                    0, totalYDistance, MIN_AUTO_DRIVE_SPEED, MAX_AUTO_DRIVE_SPEED);
+            double xPower = RobotUtil.scaleVal(currentPosition.getXDifference(targetPosition),
+                    0, totalXDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
 
-            double rotationSpeed = RobotUtil.scaleVal(currentPosition.getHeadingDifference(targetPosition),
-                    0, totalHeadingDifference, MIN_AUTO_ROTATE_SPEED, MAX_AUTO_ROTATE_SPEED);
+            double yPower = RobotUtil.scaleVal(currentPosition.getYDifference(targetPosition),
+                    0, totalYDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
+
+            double rotationPower = RobotUtil.scaleVal(currentPosition.getHeadingDifference(targetPosition),
+                    0, totalHeadingDifference, MIN_AUTO_ROTATE_FACTOR, MAX_AUTO_ROTATE_FACTOR);
+
+            //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
+            Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
+            if (rotationDirection == Angle.Direction.COUNTER_CLOCKWISE) {
+                //todo: check CCW vs CW
+                rotationPower *= -1;
+            }
+
+            update(translationVector, rotationPower);
         }
     }
 
@@ -308,7 +327,6 @@ public class DriveController {
         } while ((moduleLeftDifference > ALLOWED_MODULE_ROT_ERROR || moduleRightDifference > ALLOWED_MODULE_ROT_ERROR) && linearOpMode.opModeIsActive() && System.currentTimeMillis() < startTime + timemoutMS);
         update(Vector2d.ZERO, 0);
     }
-
 
 
     //TRACKING METHODS

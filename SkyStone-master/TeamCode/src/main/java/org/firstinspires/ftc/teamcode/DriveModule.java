@@ -10,6 +10,8 @@ public class DriveModule {
     public final ModuleSide moduleSide;
     boolean debuggingMode;
 
+    DataLogger dataLogger;
+
     //module specific drive motors
     ExpansionHubMotor motor1; //top motor
     ExpansionHubMotor motor2; //bottom motor
@@ -94,6 +96,18 @@ public class DriveModule {
         //lastM2Encoder = robot.bulkData2.getMotorCurrentPosition(motor2);
         lastM1Encoder = 0;
         lastM2Encoder = 0;
+
+        dataLogger = new DataLogger(moduleSide + "ModuleLog");
+        dataLogger.addField("Target Vector X");
+        dataLogger.addField("Target Vector Y");
+        dataLogger.addField("Module Orientation");
+        dataLogger.addField("Power Vector X");
+        dataLogger.addField("Power Vector Y");
+        dataLogger.addField("Motor 1 Power");
+        dataLogger.addField("Motor 2 Power");
+        dataLogger.addField("Motor 1 Encoder");
+        dataLogger.addField("Motor 2 Encoder");
+        dataLogger.newLine();
     }
 
     //defaults to false for debugging mode (optional parameter)
@@ -125,6 +139,9 @@ public class DriveModule {
             targetVector = targetVector.reflect();
             directionMultiplier = -1;
         }
+
+        dataLogger.addField(targetVector.getX());
+        dataLogger.addField(targetVector.getY());
 
         //calls method that will apply motor powers necessary to reach target vector in the best way possible, based on current position
         goToTarget(targetVector, directionMultiplier);
@@ -173,6 +190,10 @@ public class DriveModule {
 
         //vector in an (invented) coordinate system that represents desired (relative) module translation and module rotation
         Vector2d powerVector = new Vector2d(moveComponent, pivotComponent); //order very important here
+
+        dataLogger.addField(powerVector.getX());
+        dataLogger.addField(powerVector.getY());
+
         setMotorPowers(powerVector);
 
         if (debuggingMode) {
@@ -180,6 +201,10 @@ public class DriveModule {
             robot.telemetry.addData(moduleSide + " Power Vector: ", powerVector);
             robot.telemetry.addData(moduleSide + " Current orientation: ", getCurrentOrientation().getAngle());
         }
+
+        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor1));
+        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor2));
+        dataLogger.newLine();
     }
 
 
@@ -253,6 +278,9 @@ public class DriveModule {
         }
         motor1.setPower(motor1power);
         motor2.setPower(motor2power);
+
+        dataLogger.addField(motor1power);
+        dataLogger.addField(motor2power);
     }
 
 

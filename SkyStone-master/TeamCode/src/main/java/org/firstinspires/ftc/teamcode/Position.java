@@ -45,16 +45,29 @@ public class Position {
         return xError < xMaxError && yError < yMaxError && headingError < headingMaxError;
     }
 
+    //returns abs value
     public double getXDifference (Position otherPosition) {
         return Math.abs(this.x - otherPosition.x);
     }
 
+    //returns abs value
     public double getYDifference (Position otherPosition) {
         return Math.abs(this.y - otherPosition.y);
     }
 
+    //returns abs value
     public double getHeadingDifference (Position otherPosition) {
         return this.heading.getDifference(otherPosition.heading);
+    }
+
+    //returns unit vector FROM this position TO target position
+    public Vector2d getDirectionTo (Position targetPosition) {
+        return new Vector2d(getXDifference(targetPosition), getYDifference(targetPosition)).getUnitVector();
+    }
+
+    //returns Direction FROM this position TO target position
+    public Angle.Direction getRotationDirectionTo (Position targetPosition) {
+        return this.heading.directionTo(targetPosition.heading);
     }
 
 

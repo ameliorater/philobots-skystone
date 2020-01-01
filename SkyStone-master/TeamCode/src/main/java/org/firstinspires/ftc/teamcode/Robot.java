@@ -51,6 +51,9 @@ public class Robot {
     ExpansionHubEx expansionHub1;
     ExpansionHubEx expansionHub2;
 
+    //data logger
+    DataLogger dataLogger;
+
     final DcMotor.RunMode DEFAULT_RUN_MODE;
     final boolean IS_AUTO;
     int targetPosLift;
@@ -126,6 +129,8 @@ public class Robot {
 
         frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");
+
+        dataLogger = new DataLogger("SkystoneRobot");
     }
 
     //defaults to debugging mode off
