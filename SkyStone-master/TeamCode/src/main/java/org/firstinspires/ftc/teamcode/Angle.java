@@ -60,6 +60,10 @@ public class Angle {
     public double getAngle () { return angle; }
     public AngleType getType () { return type; }
 
+    public double getAngle (AngleType type) {
+        return new Angle(getAngle(), getType()).getAngle();
+    }
+
     @Override
     public String toString () {
         return "" + angle + " :" + type;

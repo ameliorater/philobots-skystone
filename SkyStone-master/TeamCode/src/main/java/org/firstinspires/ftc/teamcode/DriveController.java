@@ -76,12 +76,11 @@ public class DriveController {
         this(robot, false);
     }
 
-        //converts joystick vectors to parameters for update() method
+    //converts joystick vectors to parameters for update() method
     //called every loop cycle in TeleOp
     public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
 //        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
 //        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
-        //note: if statement is redundant because rotation power is not currently being scaled 
         if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR);
         else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
     }
