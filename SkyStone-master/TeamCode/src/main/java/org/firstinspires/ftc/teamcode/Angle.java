@@ -152,6 +152,12 @@ public class Angle {
         return rotateBy(degrees, this.getPositiveDirection());
     }
 
+    public static Angle getAverageAngle (Angle angle1, Angle angle2) {
+        double difference = angle1.getDifference(angle2);
+        Direction direction = angle1.directionTo(angle2);
+        return angle1.rotateBy(difference/2.0, direction);
+    }
+
     //INTERNAL METHODS - don't worry about these unless you're interested in how this class works
 
     //input and output type should have the same numerical system

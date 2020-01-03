@@ -358,13 +358,14 @@ public class DriveModule {
         //angles are in radians
         Angle startingAngleObj = new Angle((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
         Angle finalAngleObj = new Angle((newM1Encoder + newM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
-        double startingAngle = Math.toRadians(startingAngleObj.getAngle());
-        double finalAngle = Math.toRadians(finalAngleObj.getAngle());
-        double angleChange = (finalAngle - startingAngle);
-        double averageAngle = (startingAngle + finalAngle)/2.0;
+//        double startingAngle = Math.toRadians(startingAngleObj.getAngle());
+//        double finalAngle = Math.toRadians(finalAngleObj.getAngle());
+        //double angleChange = (finalAngle - startingAngle);
+        double angleChange = Math.toRadians(startingAngleObj.getDifference(finalAngleObj));
+        double averageAngle = Math.toRadians(Angle.getAverageAngle(startingAngleObj, finalAngleObj).getAngle(Angle.AngleType.NEG_180_TO_180_HEADING));
 
-        telemetry.addData("Starting angle: ", startingAngle);
-        telemetry.addData("Final angle: ", finalAngle);
+        telemetry.addData("Starting angle: ", startingAngleObj);
+        telemetry.addData("Final angle: ", finalAngleObj);
         telemetry.addData("Angle change: ", angleChange);
 
 //        //positions in cm
@@ -406,7 +407,7 @@ public class DriveModule {
             telemetry.addData("Nothing is moving ", "");
             displacementVec = new Vector2d(0, 0);
         } else {
-            displacementVec = new Vector2d(new Angle(startingAngle, Angle.AngleType.ZERO_TO_360_HEADING));
+            displacementVec = new Vector2d(startingAngleObj);
             displacementVec.normalize(positionChange);
             telemetry.addData("Doing the straight line way ","");
         }

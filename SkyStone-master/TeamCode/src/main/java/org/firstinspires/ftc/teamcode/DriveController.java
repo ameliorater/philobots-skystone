@@ -4,8 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.util.Vector;
-
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.DO_NOT_ROTATE_MODULES;
 import static org.firstinspires.ftc.teamcode.DriveModule.RotateModuleMode.ROTATE_MODULES;
 
@@ -25,7 +23,7 @@ public class DriveController {
     double moduleLeftLastDistance;
     double moduleRightLastDistance;
 
-    final double ROBOT_WIDTH = 18*2.54;
+    final double WHEEL_TO_WHEEL_CM = 32.5; //in cm (was 18*2.54)
 
     //tolerance for module rotation (in degrees)
     public final double ALLOWED_MODULE_ROT_ERROR = 5;
@@ -46,6 +44,9 @@ public class DriveController {
     //will multiply the input from the rotation joystick (max value of 1) by this factor
     public final double ROBOT_ROTATION_SCALE_FACTOR = 0.7;
     public final double ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR = 0.2;
+    public final double ROBOT_ROTATION_SCALE_FACTOR_ABS = 1;
+    public final double ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR_ABS = 1;
+
 
     //default timeouts
     public double DEFAULT_TIMEOUT_ROT_MODULES = 750; //was 500
@@ -78,11 +79,15 @@ public class DriveController {
 
     //converts joystick vectors to parameters for update() method
     //called every loop cycle in TeleOp
-    public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
-//        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
-//        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
-        if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR);
-        else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+    public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2, boolean absHeadingMode) {
+        if (absHeadingMode) {
+            if (joystick1.getMagnitude() == 0)
+                updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR_ABS);
+            else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR_ABS);
+        } else {
+            if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
+            else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+        }
     }
 
     //should be called every loop cycle when driving (auto or TeleOp)
@@ -336,8 +341,8 @@ public class DriveController {
         Vector2d rightDisp = moduleRight.updatePositionTracking(telemetry);
         Vector2d leftDisp = moduleLeft.updatePositionTracking(telemetry);
 
-        rightDisp.setX(rightDisp.getX() + ROBOT_WIDTH/2);
-        leftDisp.setX(leftDisp.getX() - ROBOT_WIDTH/2);
+        rightDisp.setX(rightDisp.getX() + WHEEL_TO_WHEEL_CM /2);
+        leftDisp.setX(leftDisp.getX() - WHEEL_TO_WHEEL_CM /2);
 
         Vector2d robotCenterDisp = new Vector2d((rightDisp.getX() + leftDisp.getX())/2, (rightDisp.getY() + leftDisp.getY())/2);
         robotCenterDisp = robotCenterDisp.rotateTo(robotPosition.heading); //make field centric using previous heading
@@ -346,13 +351,14 @@ public class DriveController {
 
         Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
         //todo: check this angle math
-        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING);  //todo: CW (should be) positive
+        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN);  //todo: CW (should be) positive
         //todo: check if heading change should be negative (it was before)
         robotPosition.incrementHeading(robotAngleChange); //minus because clockwise vs. counterclockwise (which one is positive changes)
-        //robotAbsHeading = robotAbsHeading % 360;
 
         telemetry.addData("Robot X Position: ", robotPosition.x);
         telemetry.addData("Robot Y Position: ", robotPosition.y);
+        telemetry.addData("Wheel to wheel angle", wheelToWheel.getAngle());
+        telemetry.addData("Robot angle change: ", robotAngleChange);
         telemetry.addData("Robot Abs Heading: ", robotPosition.heading);
     }
 

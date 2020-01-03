@@ -79,8 +79,7 @@ public class Vector2d {
 
     //returns value for angle in specified type
     public double getAngleDouble(Angle.AngleType type) {
-        double angRad = Math.atan2(y, x);
-        return new Angle(Math.toDegrees(angRad), type).getAngle();
+        return getAngle().convertAngle(type).getAngle();
     }
 
 //    //forgive this bad naming - returns Angle type instead of double of NEG_180_TO_180_CARTESIAN type
