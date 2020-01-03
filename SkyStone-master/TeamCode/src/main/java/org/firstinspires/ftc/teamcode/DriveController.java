@@ -236,6 +236,7 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
+    /*
     //Methods for moving with position tracking (Vuforia targets); UNTESTED
     public Position2D getCurrentPositionOnField() {
         TargetInfo info = vuforiaTracker.getTargetInfo();
@@ -279,6 +280,7 @@ public class DriveController {
         update(Vector2d.ZERO, 0);
         setRotateModuleMode(ROTATE_MODULES); //reset mode
     }
+    */
 
     public void rotateRobot(Angle targetAngle, double power, LinearOpMode linearOpMode) {
         double startTime = System.currentTimeMillis();

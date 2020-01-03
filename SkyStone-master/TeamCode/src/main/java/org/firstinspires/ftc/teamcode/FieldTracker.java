@@ -25,6 +25,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
+import static org.firstinspires.ftc.teamcode.Measurement.*;
+
 public class FieldTracker {
 
     // IMPORTANT:  For Phone Camera, set 1) the camera source and 2) the orientation, based on how your phone is mounted:
@@ -284,7 +286,10 @@ public class FieldTracker {
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
 
                 return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
-                        translation.get(0) / 10.0, translation.get(1) / 10.0, translation.get(2) / 10.0);
+                        convert(translation.get(0), MM_UNIT, CM_UNIT),
+                        convert(translation.get(1), MM_UNIT, CM_UNIT),
+                        convert(translation.get(2), MM_UNIT, CM_UNIT)
+                );
             }
         }
         return null;
