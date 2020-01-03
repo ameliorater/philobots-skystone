@@ -38,7 +38,7 @@ public class FieldTracker {
     public final boolean USING_GRAPHICS;
 
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
-    private static final boolean PHONE_IS_PORTRAIT = false;
+    private /*static*/ final boolean PHONE_IS_PORTRAIT;
 
     private static final String VUFORIA_KEY = "ARpGp0L/////AAABmY6ADA+dukfMs/X24JXU8YRheKdGFV7szbwDkeI7jTplRDGmGnMA+BeTijOEFY0pIFGENtdE8mpCFNSoDzG/nOdm93IHmNj/ZDz2FW91f8iv8loCXPGkQ7WncbiSLvPI4xgqFUDPqGhnoPfbCzdaD4anZ3lN62ViI6ltBRZpGoesIx1f3d06R0wDQtEZ6xuPl8Io9nWfElWlhTOY3yWnK2nXjnVw7ClPTduID/ODgFUyUMQ6G+xDhpDM5mLbq8r2macx7sRJzT500eoStVs55R4+Jm/VsifUCqW0LHpPm4g8u+2c5NRN+d3vJzOy0I8DWgpCfACFv59qriM9xDyHn4UemqcPWgLVyr3DU2p5dGN5";
 
@@ -80,13 +80,14 @@ public class FieldTracker {
     final static float CAMERA_VERTICAL_DISPLACEMENT = 0;
     final static float CAMERA_LEFT_DISPLACEMENT = 0;
     //TODO CHANGE THESE VALUES TO MATCH THE WEBCAM PLACEMENT
-    final static float WEBCAM_FORWARD_DISPLACEMENT = 3.75f * mmPerInch;
-    final static float WEBCAM_VERTICAL_DISPLACEMENT = 4.75f * mmPerInch;
-    final static float WEBCAM_LEFT_DISPLACEMENT = -6.5f * mmPerInch;
+    final static float WEBCAM_FORWARD_DISPLACEMENT = 0; // 4.0f * mmPerInch;
+    final static float WEBCAM_VERTICAL_DISPLACEMENT = 0; //4.625f * mmPerInch;
+    final static float WEBCAM_LEFT_DISPLACEMENT = 0; //-6.5f * mmPerInch;
 
     public FieldTracker(HardwareMap m, Telemetry t, boolean usingWebcam, boolean usingGraphics) {
         USING_WEBCAM = usingWebcam;
         USING_GRAPHICS = usingGraphics;
+        PHONE_IS_PORTRAIT = false; //was equal to usingWebcam
 
         hardwareMap = m;
         telemetry = t;
@@ -228,7 +229,9 @@ public class FieldTracker {
         // The two examples below assume that the camera is facing forward out the front of the robot.
 
         // We need to rotate the camera around it's long axis to bring the correct camera forward.
-        if (CAMERA_CHOICE == BACK) {
+        /*if (USING_WEBCAM) {
+            phoneYRotate = 0;
+        } else*/ if (CAMERA_CHOICE == BACK) {
             phoneYRotate = -90;
         } else {
             phoneYRotate = 90;
@@ -281,8 +284,7 @@ public class FieldTracker {
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
 
                 return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch/*,
-                        trackable.getName()*/);
+                        translation.get(0) / 10.0, translation.get(1) / 10.0, translation.get(2) / 10.0);
             }
         }
         return null;
@@ -292,11 +294,9 @@ public class FieldTracker {
 class TargetInfo {
     double xRotation, yRotation, zRotation;
     double xPosition, yPosition, zPosition;
-    //String name;
 
     public TargetInfo(double xRot, double yRot, double zRot,
-                      double xPos, double yPos, double zPos/*,
-                      String name*/) {
+                      double xPos, double yPos, double zPos) {
 
         xRotation = xRot;
         yRotation = yRot;
@@ -305,13 +305,23 @@ class TargetInfo {
         xPosition = xPos;
         yPosition = yPos;
         zPosition = zPos;
-
-        //this.name = name;
     }
 
     public String toString() {
         return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
-                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition /*+
-                "\nName: " + name*/;
+                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition;
+    }
+}
+
+class Position2D {
+    double x, y;
+
+    public Position2D(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double getDistance(Position2D other) {
+        return Math.sqrt((other.x - x) * (other.x - x) + (other.y - y) + (other.y - y));
     }
 }

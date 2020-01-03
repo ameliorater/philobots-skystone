@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
-@Autonomous(name="FieldTrackingTestv2", group ="Auto")
+@Autonomous(name="FieldTrackingTest", group ="Auto")
 public class FieldTrackingTester extends LinearOpMode {
 
     static FieldTracker tracker;
@@ -25,12 +25,14 @@ public class FieldTrackingTester extends LinearOpMode {
 
     public void runOpMode() {
         //CHANGE PARAMETERS FOR WEBCAM/GRAPHICS USAGE
-        tracker = new FieldTracker(hardwareMap, telemetry, false, true);
+        tracker = new FieldTracker(hardwareMap, telemetry, true, true);
         setupIMU();
 
         double imuAngle, trackerAngle;
 
         waitForStart();
+
+        long previousTime = System.currentTimeMillis(), currentTime;
 
         while (opModeIsActive()) {
 
@@ -46,6 +48,11 @@ public class FieldTrackingTester extends LinearOpMode {
             }
 
             telemetry.addData("\n\nTracker Info", tracker.getTargetInfo());
+
+            currentTime = System.currentTimeMillis();
+            telemetry.addData("Update speed", currentTime - previousTime + " milliseconds");
+            previousTime = currentTime;
+
             telemetry.update();
         }
     }

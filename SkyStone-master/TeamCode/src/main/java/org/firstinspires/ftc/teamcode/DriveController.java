@@ -53,6 +53,12 @@ public class DriveController {
     public double ROTATE_ROBOT_TIMEOUT = 3000;
     public double DRIVE_TIMEOUT = 4000;
 
+    //Vuforia field tracking tools:
+    //This is the allowed distance to a target
+    public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
+    //This is the object to get the position on field
+    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
+
     public DriveController(Robot robot) {
         this.robot = robot;
         moduleLeft = new DriveModule(robot, ModuleSide.LEFT);
@@ -230,7 +236,49 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
+    //Methods for moving with position tracking (Vuforia targets); UNTESTED
+    public Position2D getCurrentPositionOnField() {
+        TargetInfo info = vuforiaTracker.getTargetInfo();
+        return info == null ? null : new Position2D(info.xPosition, info.yPosition);
+    }
 
+    public Vector2d getVectorToTarget(Position2D desiredPosition) {
+        Position2D currentPosition = getCurrentPositionOnField();
+        return currentPosition == null ? null : new Vector2d(desiredPosition.x - currentPosition.x, desiredPosition.y - currentPosition.y);
+    }
+
+    //The following two methods are used to go to a specific position; currently untested
+    public void driveToPosition(double startx, double starty, double x, double y, double speed, long timeout, LinearOpMode linearOpMode) {
+        driveToPosition(startx, starty, new Position2D(x, y), speed, timeout, linearOpMode);
+    }
+
+    public void driveToPosition(double startx, double starty, Position2D position, double speed, long timeout, LinearOpMode linearOpMode) {
+        long startTime = System.currentTimeMillis();
+
+        Vector2d temp = getVectorToTarget(position);
+        Vector2d vectorToTarget = temp == null ? new Vector2d(position.x - startx, position.y - starty) : temp;
+        double distanceToTarget = vectorToTarget.getMagnitude();
+        while (distanceToTarget < ALLOWED_DISTANCE_TO_TARGET && System.currentTimeMillis() - startTime < timeout) {
+            if (distanceToTarget < START_DRIVE_SLOWDOWN_AT_CM) {
+                speed = RobotUtil.scaleVal(distanceToTarget, 0, START_DRIVE_SLOWDOWN_AT_CM, MIN_DRIVE_POWER, speed);
+                linearOpMode.telemetry.addData("speed: ", speed);
+            }
+            updateTracking(); //WAS MOVED ABOVE
+            update(vectorToTarget.normalize(Math.abs(speed)), 0); //added ABS for DEBUGGING
+
+            linearOpMode.telemetry.addData("Driving robot", "");
+            linearOpMode.telemetry.update();
+            updatePositionTracking(robot.telemetry); //update position tracking
+
+            temp = getVectorToTarget(position);
+            if (temp != null) {
+                vectorToTarget = temp;
+                distanceToTarget = vectorToTarget.getMagnitude();
+            }
+        }
+        update(Vector2d.ZERO, 0);
+        setRotateModuleMode(ROTATE_MODULES); //reset mode
+    }
 
     public void rotateRobot(Angle targetAngle, double power, LinearOpMode linearOpMode) {
         double startTime = System.currentTimeMillis();
