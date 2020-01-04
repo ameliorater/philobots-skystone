@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -16,9 +15,7 @@ public class DriveController {
     DriveModule moduleLeft;
     DriveModule moduleRight;
 
-    double robotAbsXPos;
-    double robotAbsYPos;
-    double robotAbsHeading = 0; //0 to 360 heading-style (clockwise is positive, 0 is straight ahead)
+    Position robotPosition;
 
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
@@ -26,7 +23,7 @@ public class DriveController {
     double moduleLeftLastDistance;
     double moduleRightLastDistance;
 
-    final double ROBOT_WIDTH = 18*2.54;
+    final double WHEEL_TO_WHEEL_CM = 32.5; //in cm (was 18*2.54)
 
     //tolerance for module rotation (in degrees)
     public final double ALLOWED_MODULE_ROT_ERROR = 5;
@@ -47,12 +44,25 @@ public class DriveController {
     //will multiply the input from the rotation joystick (max value of 1) by this factor
     public final double ROBOT_ROTATION_SCALE_FACTOR = 0.7;
     public final double ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR = 0.2;
+    public final double ROBOT_ROTATION_SCALE_FACTOR_ABS = 1;
+    public final double ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR_ABS = 1;
+
 
     //default timeouts
     public double DEFAULT_TIMEOUT_ROT_MODULES = 750; //was 500
     public double ROTATE_ROBOT_TIMEOUT = 3000;
     public double DRIVE_TIMEOUT = 4000;
 
+<<<<<<< HEAD
+    //drive to position constants
+    //todo: tune these constants
+    double MAX_AUTO_DRIVE_FACTOR = 1;
+    double MIN_AUTO_DRIVE_FACTOR = 0.1;
+    double MAX_AUTO_ROTATE_FACTOR = 0.5;
+    double MIN_AUTO_ROTATE_FACTOR = 0.1;
+
+    public DriveController(Robot robot, boolean debuggingMode) {
+=======
     //Vuforia field tracking tools:
     //This is the allowed distance to a target
     public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
@@ -60,27 +70,34 @@ public class DriveController {
     public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
     public DriveController(Robot robot) {
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
         this.robot = robot;
-        moduleLeft = new DriveModule(robot, ModuleSide.LEFT);
-        moduleRight = new DriveModule(robot, ModuleSide.RIGHT);
+        moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
+        moduleRight = new DriveModule(robot, ModuleSide.RIGHT, debuggingMode);
 
         moduleLeftLastDistance = moduleLeft.getDistanceTraveled();
         moduleRightLastDistance = moduleRight.getDistanceTraveled();
 
         //todo: change to parameter
-        robotAbsXPos = 0;
-        robotAbsYPos = 0;
-        robotAbsHeading = 0;
+        robotPosition = new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING));
+    }
+
+    //defaults to debugging mode off
+    public DriveController(Robot robot) {
+        this(robot, false);
     }
 
     //converts joystick vectors to parameters for update() method
     //called every loop cycle in TeleOp
-    public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2) {
-//        if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
-//        else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
-        //note: if statement is redundant because rotation power is not currently being scaled 
-        if (joystick1.getMagnitude() == 0) updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR);
-        else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+    public void updateUsingJoysticks(Vector2d joystick1, Vector2d joystick2, boolean absHeadingMode) {
+        if (absHeadingMode) {
+            if (joystick1.getMagnitude() == 0)
+                updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_SCALE_FACTOR_ABS);
+            else updateAbsRotation(joystick1, joystick2, ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR_ABS);
+        } else {
+            if (joystick1.getMagnitude() == 0) update(joystick1, -joystick2.getX() * ROBOT_ROTATION_SCALE_FACTOR);
+            else update(joystick1, -joystick2.getX() * ROBOT_ROTATION_WHILE_TRANS_SCALE_FACTOR);
+        }
     }
 
     //should be called every loop cycle when driving (auto or TeleOp)
@@ -91,8 +108,8 @@ public class DriveController {
         moduleRight.updateTarget(translationVector, rotationMagnitude);
     }
     public void updateAbsRotation(Vector2d translationVector, Vector2d joystick2, double scaleFactor) {
-        Angle targetAngle = joystick2.getRealAngle().convertAngle(Angle.AngleType.NEG_180_TO_180_HEADING);
-        if (joystick2.getMagnitude() > 0.1 && joystick2.getRealAngle().getDifference(robot.getRobotHeading()) > 3) {
+        Angle targetAngle = joystick2.getAngle(); //was + .convertAngle(Angle.AngleType.NEG_180_TO_180_HEADING)
+        if (joystick2.getMagnitude() > 0.1 && targetAngle.getDifference(robot.getRobotHeading()) > 3) {
             moduleLeft.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
             moduleRight.updateTargetAbsRotation(translationVector, targetAngle, scaleFactor);
         } else {
@@ -236,6 +253,42 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
+<<<<<<< HEAD
+    public void driveToPosition(Position currentPosition, Position targetPosition) {
+        double totalXDistance = currentPosition.getXDifference(targetPosition);
+        double totalYDistance = currentPosition.getYDifference(targetPosition);
+        double totalHeadingDifference = currentPosition.getHeadingDifference(targetPosition);
+
+        Vector2d translationDirection = currentPosition.getDirectionTo(targetPosition);
+        Angle.Direction rotationDirection = currentPosition.getRotationDirectionTo(targetPosition);
+
+        while (!targetPosition.withinRange(currentPosition, 5, 5, 5)){
+            //scale speeds based on remaining distance from target, bounded by 0 and original distance
+            //at the very beginning, x & y trans and rot will be max speed (different for each)
+            //at the end, all three speeds will be min speed (different for each)
+            //in between, the speeds will scale linearly depending on distance from target position
+
+            double xPower = RobotUtil.scaleVal(currentPosition.getXDifference(targetPosition),
+                    0, totalXDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
+
+            double yPower = RobotUtil.scaleVal(currentPosition.getYDifference(targetPosition),
+                    0, totalYDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
+
+            double rotationPower = RobotUtil.scaleVal(currentPosition.getHeadingDifference(targetPosition),
+                    0, totalHeadingDifference, MIN_AUTO_ROTATE_FACTOR, MAX_AUTO_ROTATE_FACTOR);
+
+            //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
+            Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
+            if (rotationDirection == Angle.Direction.COUNTER_CLOCKWISE) {
+                //todo: check CCW vs CW
+                rotationPower *= -1;
+            }
+
+            update(translationVector, rotationPower);
+        }
+    }
+
+=======
     /*
     //Methods for moving with position tracking (Vuforia targets); UNTESTED
     public Position2D getCurrentPositionOnField() {
@@ -270,6 +323,7 @@ public class DriveController {
             linearOpMode.telemetry.addData("Driving robot", "");
             linearOpMode.telemetry.update();
             updatePositionTracking(robot.telemetry); //update position tracking
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 
             temp = getVectorToTarget(position);
             if (temp != null) {
@@ -320,8 +374,8 @@ public class DriveController {
         double moduleLeftDifference, moduleRightDifference;
         double startTime = System.currentTimeMillis();
         do {
-            moduleLeftDifference = moduleLeft.getCurrentOrientation().getDifference(direction.getRealAngle()); //was getRealAngle() (don't ask)
-            moduleRightDifference = moduleRight.getCurrentOrientation().getDifference(direction.getRealAngle());
+            moduleLeftDifference = moduleLeft.getCurrentOrientation().getDifference(direction.getAngle()); //was getRealAngle() (don't ask)
+            moduleRightDifference = moduleRight.getCurrentOrientation().getDifference(direction.getAngle());
             moduleLeft.rotateModule(direction, fieldCentric);
             moduleLeft.rotateModule(direction, fieldCentric);
             moduleRight.rotateModule(direction, fieldCentric);
@@ -336,7 +390,6 @@ public class DriveController {
     }
 
 
-
     //TRACKING METHODS
     //methods for path length tracking in autonomous (only useful for driving in straight lines)
 
@@ -345,23 +398,27 @@ public class DriveController {
         Vector2d rightDisp = moduleRight.updatePositionTracking(telemetry);
         Vector2d leftDisp = moduleLeft.updatePositionTracking(telemetry);
 
-        rightDisp.setX(rightDisp.getX() + ROBOT_WIDTH/2);
-        leftDisp.setX(leftDisp.getX() - ROBOT_WIDTH/2);
+        rightDisp.setX(rightDisp.getX() + WHEEL_TO_WHEEL_CM /2);
+        leftDisp.setX(leftDisp.getX() - WHEEL_TO_WHEEL_CM /2);
 
         Vector2d robotCenterDisp = new Vector2d((rightDisp.getX() + leftDisp.getX())/2, (rightDisp.getY() + leftDisp.getY())/2);
-        robotCenterDisp.rotate(robotAbsHeading); //make field centric using previous heading
-        robotAbsXPos += robotCenterDisp.getX();
-        robotAbsYPos += robotCenterDisp.getY();
+        robotCenterDisp = robotCenterDisp.rotateTo(robotPosition.heading); //make field centric using previous heading
+        robotPosition.incrementX(robotCenterDisp.getX());
+        robotPosition.incrementY(robotCenterDisp.getY());
+
 
         Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
-        //todo: check that get angle methods return correct things
-        double robotAngleChange = wheelToWheel.getAngle();
-        robotAbsHeading -= robotAngleChange; //minus because clockwise vs. counterclockwise (which one is positive changes)
-        robotAbsHeading = robotAbsHeading % 360; //todo: check if we want this or the Python mod function
+        //todo: check this angle math
+        //double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN);  //todo: CW (should be) positive
+        //todo: check if heading change should be negative (it was before)
+        double robotAngleChange = wheelToWheel.getMagnitude() * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM; //in degrees
+        robotPosition.incrementHeading(robotAngleChange); //minus because clockwise vs. counterclockwise (which one is positive changes)
 
-        telemetry.addData("Robot X Position: ", robotAbsXPos);
-        telemetry.addData("Robot Y Position: ", robotAbsYPos);
-        telemetry.addData("Robot Abs Heading: ", robotAbsHeading);
+        telemetry.addData("Robot X Position: ", robotPosition.x);
+        telemetry.addData("Robot Y Position: ", robotPosition.y);
+        telemetry.addData("Wheel to wheel angle", wheelToWheel.getAngle());
+        telemetry.addData("Robot angle change: ", robotAngleChange);
+        telemetry.addData("Robot Abs Heading: ", robotPosition.heading);
     }
 
     public void resetDistanceTraveled() {

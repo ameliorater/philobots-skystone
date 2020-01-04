@@ -10,6 +10,11 @@ public class TeleOp extends OpMode {
     public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
+    boolean absHeadingMode = false;
+
+    double loopStartTime = 0;
+    double loopEndTime = 0;
+
     //hungry hippo (1 servo, 2 positions)
     //foundation grabber - latch (2 servos, 2 positions)
     //lift (2 motors, continuous)
@@ -24,7 +29,7 @@ public class TeleOp extends OpMode {
 
 
     public void init() {
-        robot = new Robot(this, false);
+        robot = new Robot(this, false, true);
     }
 
     public void init_loop() {
@@ -38,17 +43,20 @@ public class TeleOp extends OpMode {
     }
 
     public void loop() {
+        loopStartTime = System.currentTimeMillis();
+        telemetry.addData("OS loop time: ", loopEndTime - loopStartTime);
+
         robot.updateBulkData(); //read data once per loop, access it through robot class variable
         robot.driveController.updatePositionTracking(telemetry);
 
         Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
         Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
 
-        telemetry.addData("Robot Heading: ", robot.getRobotHeading().getAngle());
-        telemetry.addData("Joystick 2 Cartesian Angle: ", joystick2.getRealAngle().getAngle());
-        telemetry.addData("Heading to joystick difference: ", joystick2.getRealAngle().getDifference(robot.getRobotHeading()));
+        telemetry.addData("Robot Heading: ", robot.getRobotHeading());
+        telemetry.addData("Joystick 2 Angle (180 heading mode): ", joystick2.getAngleDouble(Angle.AngleType.NEG_180_TO_180_HEADING));
+        telemetry.addData("Heading to joystick difference: ", joystick2.getAngle().getDifference(robot.getRobotHeading()));
 
-
+        //slow mode/range stuffs
         if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
             joystick2 = joystick2.scale(0.3);
@@ -64,7 +72,15 @@ public class TeleOp extends OpMode {
             }
         }
 
-        robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)));
+        //toggle abs heading
+        if (gamepad1.y) {
+            absHeadingMode = true;
+        }
+        if (gamepad1.b) {
+            absHeadingMode = false;
+        }
+
+        robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
 
         if (gamepad2.dpad_up) {
             robot.hungryHippoExtend();
@@ -119,21 +135,21 @@ public class TeleOp extends OpMode {
         robot.moveLift(-gamepad2.left_stick_y);
 
 
-        //remove after done tuning
-        if (gamepad1.b) {
-            robot.driveController.moduleRight.ROT_ADVANTAGE += 0.01;
-            robot.driveController.moduleLeft.ROT_ADVANTAGE += 0.01;
-        }
-        if (gamepad1.x) {
-            robot.driveController.moduleRight.ROT_ADVANTAGE -= 0.01;
-            robot.driveController.moduleLeft.ROT_ADVANTAGE -= 0.01;
-        }
-
-        if (gamepad2.dpad_right) {
-            robot.LIFT_TICKS_PER_MS += 0.05;
-        } else if (gamepad2.dpad_left) {
-            robot.LIFT_TICKS_PER_MS -= 0.05;
-        }
+        //todo: remove after done tuning
+//        if (gamepad1.b) {
+//            robot.driveController.moduleRight.ROT_ADVANTAGE += 0.01;
+//            robot.driveController.moduleLeft.ROT_ADVANTAGE += 0.01;
+//        }
+//        if (gamepad1.x) {
+//            robot.driveController.moduleRight.ROT_ADVANTAGE -= 0.01;
+//            robot.driveController.moduleLeft.ROT_ADVANTAGE -= 0.01;
+//        }
+//
+//        if (gamepad2.dpad_right) {
+//            robot.LIFT_TICKS_PER_MS += 0.05;
+//        } else if (gamepad2.dpad_left) {
+//            robot.LIFT_TICKS_PER_MS -= 0.05;
+//        }
 //
 //        if (gamepad1.right_bumper) {
 //            robot.driveController.moduleRight.ROBOT_ROTATION_MAX_MAG += 0.01;
@@ -150,6 +166,10 @@ public class TeleOp extends OpMode {
 
         telemetry.addData("joystick 1", joystick1);
         telemetry.addData("joystick 2", joystick2);
+
+        loopEndTime = System.currentTimeMillis();
+        telemetry.addData("Our loop time: ", loopEndTime - loopStartTime);
+
         telemetry.update();
     }
 

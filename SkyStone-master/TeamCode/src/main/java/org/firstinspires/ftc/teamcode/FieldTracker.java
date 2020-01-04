@@ -226,6 +226,12 @@ public class FieldTracker {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
+<<<<<<< HEAD
+        final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
+        final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
+        final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+=======
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 
         OpenGLMatrix robotFromCamera = ( USING_WEBCAM ?
                 OpenGLMatrix.translation(WEBCAM_FORWARD_DISPLACEMENT, WEBCAM_LEFT_DISPLACEMENT, WEBCAM_VERTICAL_DISPLACEMENT) :
@@ -241,13 +247,24 @@ public class FieldTracker {
 
     }
 
-    public TargetInfo getTargetInfo() {
+    public void logInfo() {
+        // check all the trackable targets to see which one (if any) is visible.
+        targetVisible = false;
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                telemetry.addData("Visible Target", trackable.getName());
+                targetVisible = true;
 
+                // getUpdatedRobotLocation() will return null if no new information is available since
+                // the last time that call was made, or if the trackable is not currently visible.
+                /*
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                 if (robotLocationTransform != null) {
                     lastLocation = robotLocationTransform;
+<<<<<<< HEAD
+                }*/
+                //break;
+=======
                 }
 
                 VectorF translation = lastLocation.getTranslation();
@@ -258,12 +275,34 @@ public class FieldTracker {
                         convert(translation.get(1), MM_UNIT, CM_UNIT),
                         convert(translation.get(2), MM_UNIT, CM_UNIT)
                 );
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
             }
         }
-        return null;
-    }
-}
+        /*
+        // Provide feedback as to where the robot is located (if we know).
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = lastLocation.getTranslation();
+            telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
 
+            // express the rotation of the robot in degrees.
+            Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+            telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+        }
+        else {
+            telemetry.addData("Visible Target", "none");
+        }
+        telemetry.update();*/
+    }
+
+<<<<<<< HEAD
+    public void closeTracker() {
+        // Disable Tracking when we are done;
+        targetsSkyStone.deactivate();
+    }
+
+=======
 class TargetInfo {
     double xRotation, yRotation, zRotation;
     double xPosition, yPosition, zPosition;
@@ -284,6 +323,7 @@ class TargetInfo {
         return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
                 "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition;
     }
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 }
 
 class Position2D {

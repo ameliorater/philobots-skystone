@@ -10,6 +10,8 @@ public class DriveModule {
     public final ModuleSide moduleSide;
     boolean debuggingMode;
 
+    DataLogger dataLogger;
+
     //module specific drive motors
     ExpansionHubMotor motor1; //top motor
     ExpansionHubMotor motor2; //bottom motor
@@ -48,7 +50,8 @@ public class DriveModule {
     public final double ALLOWED_MODULE_ORIENTATION_ERROR = 5;
 
     //TODO: tune this variable (see commented out section in TeleOp)
-    public double ROT_ADVANTAGE = 1.7; //max rotation power divided by max translation power (scaling factor)
+    //was 1.7
+    public double ROT_ADVANTAGE = 1.0; //max rotation power divided by max translation power (scaling factor)
 
     //this variable is set to 0.7 because when in RUN_USING_ENCODERS mode, powers about ~0.7 are the same
     //setting to 1 may increase robot top speed, but may decrease accuracy
@@ -94,6 +97,23 @@ public class DriveModule {
         //lastM2Encoder = robot.bulkData2.getMotorCurrentPosition(motor2);
         lastM1Encoder = 0;
         lastM2Encoder = 0;
+
+        dataLogger = new DataLogger(moduleSide + "ModuleLog");
+        dataLogger.addField("Trans Vector FC X");
+        dataLogger.addField("Trans Vector FC Y");
+        dataLogger.addField("Rot Vector X");
+        dataLogger.addField("Rot Vector Y");
+        dataLogger.addField("Target Vector X");
+        dataLogger.addField("Target Vector Y");
+        dataLogger.addField("Module Orientation");
+        dataLogger.addField("Reversed");
+        dataLogger.addField("Power Vector X (TRANS)");
+        dataLogger.addField("Power Vector Y (ROT)");
+        dataLogger.addField("Motor 1 Power");
+        dataLogger.addField("Motor 2 Power");
+        dataLogger.addField("Motor 1 Encoder");
+        dataLogger.addField("Motor 2 Encoder");
+        dataLogger.newLine();
     }
 
     //defaults to false for debugging mode (optional parameter)
@@ -105,25 +125,37 @@ public class DriveModule {
     public void updateTarget (Vector2d transVec, double rotMag) { //translation vector and rotation magnitude
         //converts robot heading to the angle type used by Vector2d class
 
-        transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
+        //transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
 
         //converts the translation vector from a robot centric to a field centric one
-        Vector2d transVecFC = transVec.rotate(robot.getRobotHeading().getAngle()); //was converted robot heading
+        //todo: check this
+        Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
 
         //vector needed to rotate robot at the desired magnitude
         //based on positionVector of module (see definition for more info)
-        Vector2d rotVec = positionVector.normalize(rotMag);//.rotate(90); //theoretically this should be rotated 90, not sure sure it doesn't need to be
+        //todo: find out if this should be rotated 90
+        Vector2d rotVec = positionVector.normalize(rotMag).rotateBy(90, Angle.Direction.COUNTER_CLOCKWISE); //theoretically this should be rotated 90, not sure sure it doesn't need to be
 
         //combine desired robot translation and robot rotation to get goal vector for the module
         Vector2d targetVector = transVecFC.add(rotVec);
 
         //allows modules to reverse power instead of rotating 180 degrees
         //example: useful when going from driving forwards to driving backwards
-        int directionMultiplier = 1;
+        int directionMultiplier = -1; //was positive 1
+        //todo: put this back in
         if (reversed) { //reverse direction of translation because module is reversed
             targetVector = targetVector.reflect();
-            directionMultiplier = -1;
+            directionMultiplier = 1;
         }
+
+        dataLogger.addField(transVecFC.getX());
+        dataLogger.addField(transVecFC.getY());
+        dataLogger.addField(rotVec.getX());
+        dataLogger.addField(rotVec.getY());
+        dataLogger.addField(targetVector.getX());
+        dataLogger.addField(targetVector.getY());
+        dataLogger.addField(getCurrentOrientation().getAngle());
+        dataLogger.addField(reversed);
 
         //calls method that will apply motor powers necessary to reach target vector in the best way possible, based on current position
         goToTarget(targetVector, directionMultiplier);
@@ -138,7 +170,7 @@ public class DriveModule {
     //used in place of updateTarget() when the "absolute heading mode" is being used in TeleOp
     //"absolute heading mode" means the angle of the rotation joystick is used to determine the desired angle of the robot
     public void updateTargetAbsRotation (Vector2d transVec, Angle targetHeading, double scaleFactor) { //translation vector and rotation magnitude
-        Angle robotHeading = robot.getRobotHeading();
+        Angle robotHeading = robot.getRobotHeading(); //todo: this changed
         double rotMag = getRotMag(targetHeading, robotHeading) * scaleFactor;
         updateTarget(transVec, rotMag);
     }
@@ -146,7 +178,10 @@ public class DriveModule {
     public double getRotMag (Angle targetHeading, Angle robotHeading)
     {
         robot.telemetry.addData("Difference between joystick and robot", targetHeading.getDifference(robotHeading));
+        robot.telemetry.addData("Direction from robot to joystick", robotHeading.directionTo(targetHeading));
+
         double unsignedDifference = RobotUtil.scaleVal(targetHeading.getDifference(robotHeading),15, 60, .3, 1);
+        //todo: check if below line is causing problem
         if (robotHeading.directionTo(targetHeading) == Angle.Direction.CLOCKWISE) {
             return unsignedDifference * -1;
         } else {
@@ -170,25 +205,34 @@ public class DriveModule {
 
         //vector in an (invented) coordinate system that represents desired (relative) module translation and module rotation
         Vector2d powerVector = new Vector2d(moveComponent, pivotComponent); //order very important here
+
+        dataLogger.addField(powerVector.getX());
+        dataLogger.addField(powerVector.getY());
+
         setMotorPowers(powerVector);
 
         if (debuggingMode) {
-            robot.telemetry.addData(moduleSide + " Target Vector Angle: ", targetVector.getAngle());
+            robot.telemetry.addData(moduleSide + " Target Vector Angle: ", targetVector.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING));
             robot.telemetry.addData(moduleSide + " Power Vector: ", powerVector);
             robot.telemetry.addData(moduleSide + " Current orientation: ", getCurrentOrientation().getAngle());
         }
+
+        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor1));
+        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor2));
+        dataLogger.newLine();
     }
 
 
     //returns a scalar corresponding to how much power the module needs to apply to rotating
     //this is necessary because of the differential nature of a diff swerve drive
     public double getPivotComponent (Vector2d targetVector, Angle currentAngle) {
-        Angle targetAngle = targetVector.getAngleAngle();
+        Angle targetAngle = targetVector.getAngle();
         double angleDiff = targetAngle.getDifference(currentAngle); //number from 0 to 180 (always positive)
 
+        //todo: put this back in
         //allows module to rotate to the opposite position of (180 degrees away from) its target
         //if this is the fastest path, we need to indicate that the direction of translation should be reversed
-        if (Math.abs(angleDiff) > 90) {
+        if (Math.abs(angleDiff) > 110) { //todo: was 90
             if (!takingShortestPath) {
                 reversed = !reversed; //reverse translation direction bc module is newly reversed
             }
@@ -237,10 +281,10 @@ public class DriveModule {
         double motor2power = motorPowersScaled[1].getMagnitude();
 
         //this is to add sign to magnitude, which returns an absolute value
-        if (motorPowersScaled[0].getAngle() != MOTOR_1_VECTOR.getAngle()) {
+        if (motorPowersScaled[0].getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN) != MOTOR_1_VECTOR.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN)) {
             motor1power *= -1;
         }
-        if (motorPowersScaled[1].getAngle() != MOTOR_2_VECTOR.getAngle()) {
+        if (motorPowersScaled[1].getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN) != MOTOR_2_VECTOR.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN)) {
             motor2power *= -1;
         }
 
@@ -250,6 +294,9 @@ public class DriveModule {
         }
         motor1.setPower(motor1power);
         motor2.setPower(motor2power);
+
+        dataLogger.addField(motor1power);
+        dataLogger.addField(motor2power);
     }
 
 
@@ -259,9 +306,11 @@ public class DriveModule {
         Angle convertedRobotHeading = robot.getRobotHeading().convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
 
         //pass 0 as moveComponent
-        Vector2d directionFC = direction.rotate(robot.getRobotHeading().getAngle()); //was converted robot heading
+        //todo: check if fixes broke this
+        Vector2d directionFC = direction.rotateTo(robot.getRobotHeading()); //was converted robot heading
 
         //ADDED
+        //todo: add this back in
         if (reversed) { //reverse direction of translation because module is reversed
             directionFC = directionFC.reflect();
             direction = direction.reflect();
@@ -307,13 +356,16 @@ public class DriveModule {
         double newM2Encoder = robot.bulkData2.getMotorCurrentPosition(motor2);
 
         //angles are in radians
-        double startingAngle = Math.toRadians((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK);
-        double finalAngle = Math.toRadians((newM1Encoder + newM2Encoder)/2.0 * DEGREES_PER_TICK);
-        double angleChange = (finalAngle - startingAngle);
-        double averageAngle = (startingAngle + finalAngle)/2.0;
+        Angle startingAngleObj = new Angle((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
+        Angle finalAngleObj = new Angle((newM1Encoder + newM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
+//        double startingAngle = Math.toRadians(startingAngleObj.getAngle());
+//        double finalAngle = Math.toRadians(finalAngleObj.getAngle());
+        //double angleChange = (finalAngle - startingAngle);
+        double angleChange = Math.toRadians(startingAngleObj.getDifference(finalAngleObj));
+        double averageAngle = Math.toRadians(Angle.getAverageAngle(startingAngleObj, finalAngleObj).getAngle(Angle.AngleType.NEG_180_TO_180_HEADING));
 
-        telemetry.addData("Starting angle: ", startingAngle);
-        telemetry.addData("Final angle: ", finalAngle);
+        telemetry.addData("Starting angle: ", startingAngleObj);
+        telemetry.addData("Final angle: ", finalAngleObj);
         telemetry.addData("Angle change: ", angleChange);
 
 //        //positions in cm
@@ -355,7 +407,7 @@ public class DriveModule {
             telemetry.addData("Nothing is moving ", "");
             displacementVec = new Vector2d(0, 0);
         } else {
-            displacementVec = new Vector2d(new Angle(startingAngle, Angle.AngleType.ZERO_TO_360_HEADING));
+            displacementVec = new Vector2d(startingAngleObj);
             displacementVec.normalize(positionChange);
             telemetry.addData("Doing the straight line way ","");
         }

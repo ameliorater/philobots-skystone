@@ -21,12 +21,14 @@ public class Vector2d {
     public Vector2d(double x, double y) {
         this.x = x;
         this.y = y;
+        this.fixFloatingPointErrors();
     }
 
     //makes a unit vector with a certain angle
     public Vector2d(Angle angle) {
         this.x = Math.cos(Math.toRadians(angle.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle()));
         this.y = Math.sin(Math.toRadians(angle.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle()));
+        this.fixFloatingPointErrors();
     }
 
     public double getX() {
@@ -45,33 +47,53 @@ public class Vector2d {
         return Math.sqrt(x * x + y * y);
     }
 
+    public void fixFloatingPointErrors() {
+        if (Math.abs(this.x) < 1e-5) {
+            this.x = 0;
+        }
+        if (Math.abs(this.y) < 1e-5) {
+            this.y = 0;
+        }
+    }
+
 //    public Angle getAngle () {
 //        return new Angle(Math.toDegrees(Math.atan2(y, x)), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
 //    }
 
-    //returns in degrees, in NEG_180_TO_180_CARTESIAN type
-    public double getAngle() {
-        //don't know why all this is needed, but it works
-        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
-        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
-        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle();
+//    //returns in degrees, in NEG_180_TO_180_CARTESIAN type
+//    public double getAngle() {
+//        //don't know why all this is needed, but it works
+//        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
+//        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
+//        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN).getAngle();
+//
+//        //the thing that should work in theory but doesn't:
+//        //return Math.toDegrees(Math.atan2(y, x));
+//    }
 
-        //the thing that should work in theory but doesn't:
-        //return Math.toDegrees(Math.atan2(y, x));
-    }
-
-    //forgive this bad naming - returns Angle type instead of double of NEG_180_TO_180_CARTESIAN type
-    public Angle getAngleAngle () {
-        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
-        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
-        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
-    }
-
-    //terrible naming - means the way it should be, with atan2(y, x)
-    public Angle getRealAngle () {
+    //returns Angle object
+    public Angle getAngle() {
         double angRad = Math.atan2(y, x);
         return new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
     }
+
+    //returns value for angle in specified type
+    public double getAngleDouble(Angle.AngleType type) {
+        return getAngle().convertAngle(type).getAngle();
+    }
+
+//    //forgive this bad naming - returns Angle type instead of double of NEG_180_TO_180_CARTESIAN type
+//    public Angle getAngleAngle () {
+//        double angRad = Math.atan2(y, -x); //returns from -180 to 180 //-y for TESTING ONLY
+//        Angle angHeading = new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_HEADING);
+//        return angHeading.convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
+//    }
+
+//    //terrible naming - means the way it should be, with atan2(y, x)
+//    public Angle getRealAngle () {
+//        double angRad = Math.atan2(y, x);
+//        return new Angle(Math.toDegrees(angRad), Angle.AngleType.NEG_180_TO_180_CARTESIAN);
+//    }
 
 
     public Vector2d add(Vector2d other) {
@@ -92,9 +114,19 @@ public class Vector2d {
     }
 
     //returns Vector2d rotated by ang degrees
-    public Vector2d rotate(double ang) {
-        double angRads = Math.toRadians(ang);
+    public Vector2d rotateBy(double ang, Angle.Direction direction) {
+        double angRads;
+        if (direction == Angle.Direction.COUNTER_CLOCKWISE) {
+            angRads = Math.toRadians(ang); //default vector rotation direction is CCW
+        } else {
+            angRads = -1 * Math.toRadians(ang);
+        }
         return new Vector2d(x * Math.cos(angRads) - y * Math.sin(angRads), x * Math.sin(angRads) + y * Math.cos(angRads));
+    }
+
+    //returns Vector2d with the same magnitude as this but at the same angle as an Angle object
+    public Vector2d rotateTo (Angle ang) {
+        return new Vector2d(ang).scale(this.getMagnitude());
     }
 
     //dot product

@@ -1,19 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+<<<<<<< HEAD
+@Autonomous(name="FieldTrackingTestv2", group ="Auto")
+=======
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @Autonomous(name="FieldTrackingTest", group ="Auto")
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 public class FieldTrackingTester extends LinearOpMode {
 
     static FieldTracker tracker;
-    BNO055IMU imu;
 
+<<<<<<< HEAD
+    public void runOpMode() {
+        tracker = new FieldTracker(hardwareMap, telemetry);
+=======
     public void setupIMU() {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -22,12 +28,18 @@ public class FieldTrackingTester extends LinearOpMode {
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         imu.initialize(parameters);
     }
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 
     public void runOpMode() {
         //CHANGE PARAMETERS FOR WEBCAM/GRAPHICS USAGE
         tracker = new FieldTracker(hardwareMap, telemetry, true, true);
         setupIMU();
 
+<<<<<<< HEAD
+        while (opModeIsActive() && !isStopRequested()) {
+            tracker.logInfo();
+
+=======
         double imuAngle, trackerAngle;
 
         waitForStart();
@@ -54,6 +66,7 @@ public class FieldTrackingTester extends LinearOpMode {
             previousTime = currentTime;
 
             telemetry.update();
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
         }
     }
 
