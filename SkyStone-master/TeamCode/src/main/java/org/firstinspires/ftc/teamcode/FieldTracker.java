@@ -25,6 +25,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
+import static org.firstinspires.ftc.teamcode.Measurement.*;
+
 public class FieldTracker {
 
     // IMPORTANT:  For Phone Camera, set 1) the camera source and 2) the orientation, based on how your phone is mounted:
@@ -33,8 +35,12 @@ public class FieldTracker {
     //
     // NOTE: If you are running on a CONTROL HUB, with only one USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     //
+
+    public final boolean USING_WEBCAM;
+    public final boolean USING_GRAPHICS;
+
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
-    private static final boolean PHONE_IS_PORTRAIT = false;
+    private /*static*/ final boolean PHONE_IS_PORTRAIT;
 
     private static final String VUFORIA_KEY = "ARpGp0L/////AAABmY6ADA+dukfMs/X24JXU8YRheKdGFV7szbwDkeI7jTplRDGmGnMA+BeTijOEFY0pIFGENtdE8mpCFNSoDzG/nOdm93IHmNj/ZDz2FW91f8iv8loCXPGkQ7WncbiSLvPI4xgqFUDPqGhnoPfbCzdaD4anZ3lN62ViI6ltBRZpGoesIx1f3d06R0wDQtEZ6xuPl8Io9nWfElWlhTOY3yWnK2nXjnVw7ClPTduID/ODgFUyUMQ6G+xDhpDM5mLbq8r2macx7sRJzT500eoStVs55R4+Jm/VsifUCqW0LHpPm4g8u+2c5NRN+d3vJzOy0I8DWgpCfACFv59qriM9xDyHn4UemqcPWgLVyr3DU2p5dGN5";
 
@@ -71,7 +77,20 @@ public class FieldTracker {
     List<VuforiaTrackable> allTrackables;
     VuforiaTrackables targetsSkyStone;
 
-    public FieldTracker(HardwareMap m, Telemetry t) {
+    //Distances from camera/webcam to center of robot
+    final static float CAMERA_FORWARD_DISPLACEMENT = 0;
+    final static float CAMERA_VERTICAL_DISPLACEMENT = 0;
+    final static float CAMERA_LEFT_DISPLACEMENT = 0;
+    //TODO CHANGE THESE VALUES TO MATCH THE WEBCAM PLACEMENT
+    final static float WEBCAM_FORWARD_DISPLACEMENT = 0; // 4.0f * mmPerInch;
+    final static float WEBCAM_VERTICAL_DISPLACEMENT = 0; //4.625f * mmPerInch;
+    final static float WEBCAM_LEFT_DISPLACEMENT = 0; //-6.5f * mmPerInch;
+
+    public FieldTracker(HardwareMap m, Telemetry t, boolean usingWebcam, boolean usingGraphics) {
+        USING_WEBCAM = usingWebcam;
+        USING_GRAPHICS = usingGraphics;
+        PHONE_IS_PORTRAIT = false; //was equal to usingWebcam
+
         hardwareMap = m;
         telemetry = t;
 
@@ -79,18 +98,31 @@ public class FieldTracker {
     }
 
     public void setupTracker() {
+
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
          * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        VuforiaLocalizer.Parameters parameters = (USING_GRAPHICS ?
+                new VuforiaLocalizer.Parameters(
+                        hardwareMap.appContext.getResources().getIdentifier(
+                                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName()
+                        )
+                ) :
+                new VuforiaLocalizer.Parameters()
+        );
 
         //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
+
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = CAMERA_CHOICE;
+        if (USING_WEBCAM) {
+            parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        } else {
+            parameters.cameraDirection = CAMERA_CHOICE;
+        }
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
@@ -199,7 +231,9 @@ public class FieldTracker {
         // The two examples below assume that the camera is facing forward out the front of the robot.
 
         // We need to rotate the camera around it's long axis to bring the correct camera forward.
-        if (CAMERA_CHOICE == BACK) {
+        /*if (USING_WEBCAM) {
+            phoneYRotate = 0;
+        } else*/ if (CAMERA_CHOICE == BACK) {
             phoneYRotate = -90;
         } else {
             phoneYRotate = 90;
@@ -212,12 +246,16 @@ public class FieldTracker {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
+<<<<<<< HEAD
         final float CAMERA_FORWARD_DISPLACEMENT = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
         final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
         final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+=======
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
 
-        OpenGLMatrix robotFromCamera = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+        OpenGLMatrix robotFromCamera = ( USING_WEBCAM ?
+                OpenGLMatrix.translation(WEBCAM_FORWARD_DISPLACEMENT, WEBCAM_LEFT_DISPLACEMENT, WEBCAM_VERTICAL_DISPLACEMENT) :
+                OpenGLMatrix.translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT) )
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 
         /**  Let all the trackable listeners know where the phone is.  */
@@ -255,8 +293,21 @@ public class FieldTracker {
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                 if (robotLocationTransform != null) {
                     lastLocation = robotLocationTransform;
+<<<<<<< HEAD
                 }*/
                 //break;
+=======
+                }
+
+                VectorF translation = lastLocation.getTranslation();
+                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+
+                return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
+                        convert(translation.get(0), MM_UNIT, CM_UNIT),
+                        convert(translation.get(1), MM_UNIT, CM_UNIT),
+                        convert(translation.get(2), MM_UNIT, CM_UNIT)
+                );
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
             }
         }
         /*
@@ -277,9 +328,45 @@ public class FieldTracker {
         telemetry.update();*/
     }
 
+<<<<<<< HEAD
     public void closeTracker() {
         // Disable Tracking when we are done;
         targetsSkyStone.deactivate();
     }
 
+=======
+class TargetInfo {
+    double xRotation, yRotation, zRotation;
+    double xPosition, yPosition, zPosition;
+
+    public TargetInfo(double xRot, double yRot, double zRot,
+                      double xPos, double yPos, double zPos) {
+
+        xRotation = xRot;
+        yRotation = yRot;
+        zRotation = zRot;
+
+        xPosition = xPos;
+        yPosition = yPos;
+        zPosition = zPos;
+    }
+
+    public String toString() {
+        return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
+                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition;
+    }
+>>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
+}
+
+class Position2D {
+    double x, y;
+
+    public Position2D(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double getDistance(Position2D other) {
+        return Math.sqrt((other.x - x) * (other.x - x) + (other.y - y) + (other.y - y));
+    }
 }
