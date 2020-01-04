@@ -349,10 +349,12 @@ public class DriveController {
         robotPosition.incrementX(robotCenterDisp.getX());
         robotPosition.incrementY(robotCenterDisp.getY());
 
+
         Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
         //todo: check this angle math
-        double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN);  //todo: CW (should be) positive
+        //double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN);  //todo: CW (should be) positive
         //todo: check if heading change should be negative (it was before)
+        double robotAngleChange = wheelToWheel.getMagnitude() * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM; //in degrees
         robotPosition.incrementHeading(robotAngleChange); //minus because clockwise vs. counterclockwise (which one is positive changes)
 
         telemetry.addData("Robot X Position: ", robotPosition.x);
