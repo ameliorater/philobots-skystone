@@ -66,7 +66,7 @@ public class FieldTracker {
     // Class Members
     private OpenGLMatrix lastLocation = null;
     private VuforiaLocalizer vuforia = null;
-    private boolean targetVisible = false;
+    //private boolean targetVisible = false;
     private float phoneXRotate    = 0;
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
@@ -113,9 +113,6 @@ public class FieldTracker {
                 ) :
                 new VuforiaLocalizer.Parameters()
         );
-
-        //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         if (USING_WEBCAM) {
@@ -216,24 +213,7 @@ public class FieldTracker {
                 .translation(halfField, -quadField, mmTargetHeight)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
-        //
-        // Create a transformation matrix describing where the phone is on the robot.
-        //
-        // NOTE !!!!  It's very important that you turn OFF your phone's Auto-Screen-Rotation option.
-        // Lock it into Portrait for these numbers to work.
-        //
-        // Info:  The coordinate frame for the robot looks the same as the field.
-        // The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
-        // Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
-        //
-        // The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
-        // pointing to the LEFT side of the Robot.
-        // The two examples below assume that the camera is facing forward out the front of the robot.
-
-        // We need to rotate the camera around it's long axis to bring the correct camera forward.
-        /*if (USING_WEBCAM) {
-            phoneYRotate = 0;
-        } else*/ if (CAMERA_CHOICE == BACK) {
+        if (CAMERA_CHOICE == BACK) {
             phoneYRotate = -90;
         } else {
             phoneYRotate = 90;
@@ -252,22 +232,10 @@ public class FieldTracker {
                 OpenGLMatrix.translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT) )
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 
-        /**  Let all the trackable listeners know where the phone is.  */
+        /*  Let all the trackable listeners know where the phone is.  */
         for (VuforiaTrackable trackable : allTrackables) {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
-
-        // WARNING:
-        // In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-        // This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
-        // CONSEQUENTLY do not put any driving commands in this loop.
-        // To restore the normal opmode structure, just un-comment the following line:
-
-        // waitForStart();
-
-        // Note: To use the remote camera preview:
-        // AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-        // Tap the preview window to receive a fresh image.
 
         targetsSkyStone.activate();
 
@@ -328,5 +296,15 @@ class Position2D {
 
     public double getDistance(Position2D other) {
         return Math.sqrt((other.x - x) * (other.x - x) + (other.y - y) + (other.y - y));
+    }
+}
+
+class Position3D {
+    double x, y, z;
+
+    public Position3D(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 }
