@@ -134,14 +134,14 @@ public class TeleOp extends OpMode {
         } else if (gamepad1.dpad_right) {
             robot.moveSingleIntakeRoller(false);
         } else if (Math.abs(gamepad2.right_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.FAST);
+            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
         } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.FAST);
-        } else if (gamepad2.right_bumper) {
+            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW); //was fast
+        } /*else if (gamepad2.right_bumper) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
         } else if (gamepad2.left_bumper) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
-        } else {
+        }*/ else {
             robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
         }
 
