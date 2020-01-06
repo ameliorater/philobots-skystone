@@ -100,18 +100,27 @@ public class TeleOp extends OpMode {
             robot.closeGrabber();
         }
 
-        /*
-        if (Math.abs(gamepad2.right_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.FAST);
-        } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.FAST);
-        } else if (gamepad2.right_bumper) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
-        } else if (gamepad2.left_bumper) {
-            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
-        } else {
-            robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
-        }*/
+        if (gamepad1.left_trigger > 0.1) {
+            joystick1 = joystick1.scale(0.3);
+            joystick2 = joystick2.scale(0.3);
+        }
+        else if (gamepad1.right_trigger > 0.1) {
+            if (robot.getRange(false) < 30) {
+                joystick1 = joystick1.scale(0.3);
+                joystick2 = joystick2.scale(0.3);
+            }
+        }
+        else if (gamepad1.left_bumper || gamepad1.right_bumper)
+        {
+            if (robot.getRange(false) < 5) {
+                joystick1 = joystick1.normalize(0);
+                joystick2 = joystick2.normalize(0);
+            }
+            else {
+                joystick1 = joystick1.scale(0.3);
+                joystick2 = joystick2.scale(0.3);
+            }
+        }
 
 
         if (gamepad1.dpad_left) {

@@ -246,6 +246,8 @@ public class DriveController {
         driveWithTimeout(direction, cmDistance, speed, timeout, false, true, linearOpMode);
     }
 
+
+    //position tracking drive method
     public void driveToPosition(Position currentPosition, Position targetPosition) {
         double totalXDistance = currentPosition.getXDifference(targetPosition);
         double totalYDistance = currentPosition.getYDifference(targetPosition);
