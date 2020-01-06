@@ -30,6 +30,7 @@ public class Robot {
     Servo hungryHippoServo;
     Servo armServo1, armServo2;
     //Servo servoLink1, servoLink2;
+    Servo intakeServo1, intakeServo2;
 
     //MOTORS
     ExpansionHubMotor lift1, lift2;
@@ -110,6 +111,11 @@ public class Robot {
         setupServo(armServo1);
         armServo2 = hardwareMap.servo.get("armServo2");
         setupServo(armServo2);
+
+        intakeServo1 = hardwareMap.servo.get("intakeServo1");
+        setupServo(intakeServo1);
+        intakeServo2 = hardwareMap.servo.get("intakeServo2");
+        setupServo(intakeServo2);
 
         //new
 //        servoLink1 = hardwareMap.servo.get("servoLink1");
@@ -223,6 +229,15 @@ public class Robot {
     }
     public void hungryHippoRetract(){
         moveServo(hungryHippoServo, HUNGRY_HIPPO_RETRACT_POSITION);
+    }
+
+    public void intakeServoOpen(){
+        moveServo(intakeServo1, INTAKE_SERVO_OUT_POSITION);
+        moveServo(intakeServo2, INTAKE_SERVO_OUT_POSITION);
+    }
+    public void intakeServoClose(){
+        moveServo(intakeServo1, INTAKE_SERVO_IN_POSITION);
+        moveServo(intakeServo2, INTAKE_SERVO_IN_POSITION);
     }
 
 
@@ -542,6 +557,7 @@ class Constants {
     //TODO FINISH THESE CONSTANTS
     final static double LATCHED_POSITION_1 = 0, UNLATCHED_POSITION_1 = 1, LATCHED_POSITION_2 = 1, UNLATCHED_POSITION_2 = 0;
     final static double HUNGRY_HIPPO_RETRACT_POSITION = 1, HUNGRY_HIPPO_EXTEND_POSITION = 0;
+    final static double INTAKE_SERVO_OUT_POSITION = 1, INTAKE_SERVO_IN_POSITION = 0;
     final static double GRABBER_OPEN_POSITION = 1, GRABBER_CLOSE_POSITION = 0;
 
     enum IntakeState { INTAKE, OUTTAKE, STOP }
