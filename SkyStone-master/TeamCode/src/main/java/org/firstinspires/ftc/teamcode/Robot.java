@@ -29,7 +29,7 @@ public class Robot {
     Servo grabberServo;
     Servo hungryHippoServo;
     Servo armServo1, armServo2;
-    Servo servoLink1, servoLink2;
+    //Servo servoLink1, servoLink2;
 
     //MOTORS
     ExpansionHubMotor lift1, lift2;
@@ -112,10 +112,10 @@ public class Robot {
         setupServo(armServo2);
 
         //new
-        servoLink1 = hardwareMap.servo.get("servoLink1");
-        setupServo(servoLink1);
-        servoLink2 = hardwareMap.servo.get("servoLink2");
-        setupServo(servoLink2);
+//        servoLink1 = hardwareMap.servo.get("servoLink1");
+//        setupServo(servoLink1);
+//        servoLink2 = hardwareMap.servo.get("servoLink2");
+//        setupServo(servoLink2);
 
         grabberServo = hardwareMap.servo.get("grabberServo");
         setupServo(grabberServo);
@@ -453,80 +453,80 @@ public class Robot {
     // yin -> y-joystick magnitude
     // state -> false is Type 1 passed state, true is neutral pentagon
 
-    public void moveOuttake(double th, double ph, int xin, int yin, boolean state){ //this method should be called in the main loop
-        double x = getX(th, ph);
-        double y = getY(th, ph);
-        //check right bound
-        if(th < 0.471 && xin > 0)
-            xin = 0;
-        //check current linkage state
-        if((ph > th) == state)
-            flip(th, ph);
-        //check left bound
-        if(Math.atan2(y, x + 60) + Math.acos(Math.hypot(x + 60, y)/240) > 1.099 && xin < 0)
-            xin = 0;
-        //check lower bound
-        if(y <= 0 && yin < 0)
-            yin = 0;
-        //check upper bound
-        if((Math.hypot(x-60,y) >= 115 || Math.hypot(x+60, y) >= 115) && yin > 0)
-            yin = 0;
-        int stateSign = state ? 1 : -1;
-        //compute partial derivatives
-        double dthdx = -(y/(3600 - 120*x + x*x + y*y)) + stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-        double dthdy = (-60 + x)/(3600 - 120*x + x*x + y*y) + stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-        double dphdx = -(y/(3600 - 120*x + x*x + y*y)) - stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-        double dphdy = (-60 + x)/(3600 - 120*x + x*x + y*y) - stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-        //required velocity of each servo
-        double vth = Math.hypot(dthdx * xin, dthdy * yin);
-        double vph = Math.hypot(dphdx * xin, dphdy * yin);
-        //increments servo in accordance with velocity
-        servoLink1.setPosition(th + k * vth);
-        servoLink2.setPosition(ph + k * vph);
-    }
+//    public void moveOuttake(double th, double ph, int xin, int yin, boolean state){ //this method should be called in the main loop
+//        double x = getX(th, ph);
+//        double y = getY(th, ph);
+//        //check right bound
+//        if(th < 0.471 && xin > 0)
+//            xin = 0;
+//        //check current linkage state
+//        if((ph > th) == state)
+//            flip(th, ph);
+//        //check left bound
+//        if(Math.atan2(y, x + 60) + Math.acos(Math.hypot(x + 60, y)/240) > 1.099 && xin < 0)
+//            xin = 0;
+//        //check lower bound
+//        if(y <= 0 && yin < 0)
+//            yin = 0;
+//        //check upper bound
+//        if((Math.hypot(x-60,y) >= 115 || Math.hypot(x+60, y) >= 115) && yin > 0)
+//            yin = 0;
+//        int stateSign = state ? 1 : -1;
+//        //compute partial derivatives
+//        double dthdx = -(y/(3600 - 120*x + x*x + y*y)) + stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
+//        double dthdy = (-60 + x)/(3600 - 120*x + x*x + y*y) + stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
+//        double dphdx = -(y/(3600 - 120*x + x*x + y*y)) - stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
+//        double dphdy = (-60 + x)/(3600 - 120*x + x*x + y*y) - stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
+//        //required velocity of each servo
+//        double vth = Math.hypot(dthdx * xin, dthdy * yin);
+//        double vph = Math.hypot(dphdx * xin, dphdy * yin);
+//        //increments servo in accordance with velocity
+//        servoLink1.setPosition(th + k * vth);
+//        servoLink2.setPosition(ph + k * vph);
+//    }
 
-    //flips Type 1 singularity
-    private void flip(double th, double ph){
-        servoLink1.setPosition(ph);
-        servoLink2.setPosition(th);
-    }
+//    //flips Type 1 singularity
+//    private void flip(double th, double ph){
+//        servoLink1.setPosition(ph);
+//        servoLink2.setPosition(th);
+//    }
 
-    //automatically deploys the outtake
-    public boolean deployOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
-        int targetPos = 200;
-        double x = getX(th, ph);
-        double y = getY(th, ph);
-        if(Math.abs(targetPos - x) <= 10){
-            if(ph > th)
-                flip(th, ph);
-            else return false;
-        }
-        moveOuttake(th, ph, 1023, 0, false);
-        return true;
-    }
+//    //automatically deploys the outtake
+//    public boolean deployOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
+//        int targetPos = 200;
+//        double x = getX(th, ph);
+//        double y = getY(th, ph);
+//        if(Math.abs(targetPos - x) <= 10){
+//            if(ph > th)
+//                flip(th, ph);
+//            else return false;
+//        }
+//        moveOuttake(th, ph, 1023, 0, false);
+//        return true;
+//    }
 
-    //automatically returns the outtake
-    public boolean returnOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
-        int targetPos = -100;
-        double x = getX(th, ph);
-        double y = getY(th, ph);
-        if(th > ph)
-            flip(ph, th);
-        if(Math.abs(targetPos - x) <= 10){
-            return false;
-        }
-        moveOuttake(th, ph, -1023, 0, false);
-        return true;
-    }
-
-    public double getX(double th, double ph){
-        return 60 + 120 * Math.cos(th) + 120 * Math.cos(ph);
-    }
-
-    public double getY(double th, double ph){
-        return 120 * Math.sin(th) + 120 * Math.sin(ph);
-    }
-
+//    //automatically returns the outtake
+//    public boolean returnOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
+//        int targetPos = -100;
+//        double x = getX(th, ph);
+//        double y = getY(th, ph);
+//        if(th > ph)
+//            flip(ph, th);
+//        if(Math.abs(targetPos - x) <= 10){
+//            return false;
+//        }
+//        moveOuttake(th, ph, -1023, 0, false);
+//        return true;
+//    }
+//
+//    public double getX(double th, double ph){
+//        return 60 + 120 * Math.cos(th) + 120 * Math.cos(ph);
+//    }
+//
+//    public double getY(double th, double ph){
+//        return 120 * Math.sin(th) + 120 * Math.sin(ph);
+//    }
+//
 }
 
 class Constants {

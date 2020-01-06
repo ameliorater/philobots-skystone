@@ -39,30 +39,47 @@ public class Position {
     }
 
     public boolean withinRange (Position otherPosition, double xMaxError, double yMaxError, double headingMaxError) {
-        double xError = getXDifference(otherPosition);
-        double yError = getYDifference(otherPosition);
-        double headingError = getHeadingDifference(otherPosition);
+        double xError = getAbsXDifference(otherPosition);
+        double yError = getAbsYDifference(otherPosition);
+        double headingError = getAbsHeadingDifference(otherPosition);
         return xError < xMaxError && yError < yMaxError && headingError < headingMaxError;
     }
 
     //returns abs value
-    public double getXDifference (Position otherPosition) {
+    public double getAbsXDifference (Position otherPosition) {
         return Math.abs(this.x - otherPosition.x);
     }
 
     //returns abs value
-    public double getYDifference (Position otherPosition) {
+    public double getAbsYDifference(Position otherPosition) {
         return Math.abs(this.y - otherPosition.y);
     }
 
     //returns abs value
-    public double getHeadingDifference (Position otherPosition) {
+    public double getAbsHeadingDifference(Position otherPosition) {
         return this.heading.getDifference(otherPosition.heading);
     }
 
+    public double getXDifference (Position otherPosition) {
+        return otherPosition.x - this.x; //changed subtraction order
+    }
+
+    public double getYDifference(Position otherPosition) {
+        return otherPosition.y - this.y;
+    }
+
+    public double getSignedHeadingDifference(Position otherPosition) {
+        double difference = this.heading.getDifference(otherPosition.heading);
+        if (this.heading.directionTo(otherPosition.heading) == Angle.Direction.COUNTER_CLOCKWISE) {
+            return difference * -1; //todo: check sign
+        }
+        return difference;
+    }
+
+
     //returns unit vector FROM this position TO target position
     public Vector2d getDirectionTo (Position targetPosition) {
-        return new Vector2d(getXDifference(targetPosition), getYDifference(targetPosition)).getUnitVector();
+        return new Vector2d(getXDifference(targetPosition), getYDifference(targetPosition)).getUnitVector(); //was abs (wrong)
     }
 
     //returns Direction FROM this position TO target position
