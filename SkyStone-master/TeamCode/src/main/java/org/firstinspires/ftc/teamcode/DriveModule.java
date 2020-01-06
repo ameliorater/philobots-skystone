@@ -70,6 +70,7 @@ public class DriveModule {
     private double lastMotor1Encoder;
     private double lastMotor2Encoder;
 
+    public double positionChange;
 
     public DriveModule(Robot robot, ModuleSide moduleSide, boolean debuggingMode) {
         this.robot = robot;
@@ -98,22 +99,24 @@ public class DriveModule {
         lastM1Encoder = 0;
         lastM2Encoder = 0;
 
-        dataLogger = new DataLogger(moduleSide + "ModuleLog");
-        dataLogger.addField("Trans Vector FC X");
-        dataLogger.addField("Trans Vector FC Y");
-        dataLogger.addField("Rot Vector X");
-        dataLogger.addField("Rot Vector Y");
-        dataLogger.addField("Target Vector X");
-        dataLogger.addField("Target Vector Y");
-        dataLogger.addField("Module Orientation");
-        dataLogger.addField("Reversed");
-        dataLogger.addField("Power Vector X (TRANS)");
-        dataLogger.addField("Power Vector Y (ROT)");
-        dataLogger.addField("Motor 1 Power");
-        dataLogger.addField("Motor 2 Power");
-        dataLogger.addField("Motor 1 Encoder");
-        dataLogger.addField("Motor 2 Encoder");
-        dataLogger.newLine();
+        if (debuggingMode) {
+            dataLogger = new DataLogger(moduleSide + "ModuleLog");
+            dataLogger.addField("Trans Vector FC X");
+            dataLogger.addField("Trans Vector FC Y");
+            dataLogger.addField("Rot Vector X");
+            dataLogger.addField("Rot Vector Y");
+            dataLogger.addField("Target Vector X");
+            dataLogger.addField("Target Vector Y");
+            dataLogger.addField("Module Orientation");
+            dataLogger.addField("Reversed");
+            dataLogger.addField("Power Vector X (TRANS)");
+            dataLogger.addField("Power Vector Y (ROT)");
+            dataLogger.addField("Motor 1 Power");
+            dataLogger.addField("Motor 2 Power");
+            dataLogger.addField("Motor 1 Encoder");
+            dataLogger.addField("Motor 2 Encoder");
+            dataLogger.newLine();
+        }
     }
 
     //defaults to false for debugging mode (optional parameter)
@@ -128,12 +131,10 @@ public class DriveModule {
         //transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
 
         //converts the translation vector from a robot centric to a field centric one
-        //todo: check this
         Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
 
         //vector needed to rotate robot at the desired magnitude
         //based on positionVector of module (see definition for more info)
-        //todo: find out if this should be rotated 90
         Vector2d rotVec = positionVector.normalize(rotMag).rotateBy(90, Angle.Direction.COUNTER_CLOCKWISE); //theoretically this should be rotated 90, not sure sure it doesn't need to be
 
         //combine desired robot translation and robot rotation to get goal vector for the module
@@ -142,20 +143,21 @@ public class DriveModule {
         //allows modules to reverse power instead of rotating 180 degrees
         //example: useful when going from driving forwards to driving backwards
         int directionMultiplier = -1; //was positive 1
-        //todo: put this back in
         if (reversed) { //reverse direction of translation because module is reversed
             targetVector = targetVector.reflect();
             directionMultiplier = 1;
         }
 
-        dataLogger.addField(transVecFC.getX());
-        dataLogger.addField(transVecFC.getY());
-        dataLogger.addField(rotVec.getX());
-        dataLogger.addField(rotVec.getY());
-        dataLogger.addField(targetVector.getX());
-        dataLogger.addField(targetVector.getY());
-        dataLogger.addField(getCurrentOrientation().getAngle());
-        dataLogger.addField(reversed);
+        if (debuggingMode) {
+            dataLogger.addField(transVecFC.getX());
+            dataLogger.addField(transVecFC.getY());
+            dataLogger.addField(rotVec.getX());
+            dataLogger.addField(rotVec.getY());
+            dataLogger.addField(targetVector.getX());
+            dataLogger.addField(targetVector.getY());
+            dataLogger.addField(getCurrentOrientation().getAngle());
+            dataLogger.addField(reversed);
+        }
 
         //calls method that will apply motor powers necessary to reach target vector in the best way possible, based on current position
         goToTarget(targetVector, directionMultiplier);
@@ -206,8 +208,10 @@ public class DriveModule {
         //vector in an (invented) coordinate system that represents desired (relative) module translation and module rotation
         Vector2d powerVector = new Vector2d(moveComponent, pivotComponent); //order very important here
 
-        dataLogger.addField(powerVector.getX());
-        dataLogger.addField(powerVector.getY());
+        if (debuggingMode) {
+            dataLogger.addField(powerVector.getX());
+            dataLogger.addField(powerVector.getY());
+        }
 
         setMotorPowers(powerVector);
 
@@ -217,9 +221,11 @@ public class DriveModule {
             robot.telemetry.addData(moduleSide + " Current orientation: ", getCurrentOrientation().getAngle());
         }
 
-        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor1));
-        dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor2));
-        dataLogger.newLine();
+        if (debuggingMode) {
+            dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor1));
+            dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor2));
+            dataLogger.newLine();
+        }
     }
 
 
@@ -229,7 +235,6 @@ public class DriveModule {
         Angle targetAngle = targetVector.getAngle();
         double angleDiff = targetAngle.getDifference(currentAngle); //number from 0 to 180 (always positive)
 
-        //todo: put this back in
         //allows module to rotate to the opposite position of (180 degrees away from) its target
         //if this is the fastest path, we need to indicate that the direction of translation should be reversed
         if (Math.abs(angleDiff) > 110) { //todo: was 90
@@ -295,8 +300,10 @@ public class DriveModule {
         motor1.setPower(motor1power);
         motor2.setPower(motor2power);
 
-        dataLogger.addField(motor1power);
-        dataLogger.addField(motor2power);
+        if (debuggingMode) {
+            dataLogger.addField(motor1power);
+            dataLogger.addField(motor2power);
+        }
     }
 
 
@@ -310,7 +317,6 @@ public class DriveModule {
         Vector2d directionFC = direction.rotateTo(robot.getRobotHeading()); //was converted robot heading
 
         //ADDED
-        //todo: add this back in
         if (reversed) { //reverse direction of translation because module is reversed
             directionFC = directionFC.reflect();
             direction = direction.reflect();
@@ -348,7 +354,7 @@ public class DriveModule {
 
 
     //TRACKING METHODS
-    //used for straight line distance tracking
+    //used for robot position tracking
 
     //new position tracking
     public Vector2d updatePositionTracking (Telemetry telemetry) {
@@ -358,63 +364,25 @@ public class DriveModule {
         //angles are in radians
         Angle startingAngleObj = new Angle((lastM1Encoder + lastM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
         Angle finalAngleObj = new Angle((newM1Encoder + newM2Encoder)/2.0 * DEGREES_PER_TICK, Angle.AngleType.ZERO_TO_360_HEADING);
-//        double startingAngle = Math.toRadians(startingAngleObj.getAngle());
-//        double finalAngle = Math.toRadians(finalAngleObj.getAngle());
-        //double angleChange = (finalAngle - startingAngle);
-        double angleChange = Math.toRadians(startingAngleObj.getDifference(finalAngleObj));
-        double averageAngle = Math.toRadians(Angle.getAverageAngle(startingAngleObj, finalAngleObj).getAngle(Angle.AngleType.NEG_180_TO_180_HEADING));
+        double averageAngle = Math.toRadians(Angle.getAverageAngle(startingAngleObj, finalAngleObj).getAngle(Angle.AngleType.ZERO_TO_360_CARTESIAN)); //was 180 heading
 
-        telemetry.addData("Starting angle: ", startingAngleObj);
-        telemetry.addData("Final angle: ", finalAngleObj);
-        telemetry.addData("Angle change: ", angleChange);
-
-//        //positions in cm
         double startingPosition = (lastM1Encoder - lastM2Encoder)/2.0  * CM_PER_TICK;
         double finalPosition = (newM1Encoder - newM2Encoder)/2.0 * CM_PER_TICK;
-        double positionChange = finalPosition - startingPosition;
-//        if (reversed) {
-//            positionChange *= -1;
-//        }
-
-//        double motor1Change = newM1Encoder - lastM1Encoder;
-//        double motor2Change = newM2Encoder - lastM2Encoder;
-//        double positionChange;
-//
-//        //if module is reversed, subtract distance traveled instead of adding
-//        //module is driving in the opposite direction that the encoders "think" it is
-//        if (reversed) {
-//            positionChange = -(motor1Change - motor2Change)/2.0 * CM_PER_TICK;
-//        } else {
-//            positionChange = (motor1Change - motor2Change)/2.0 * CM_PER_TICK;
-//        }
-
-//        telemetry.addData("Starting position: ", startingPosition);
-//        telemetry.addData("Final position: ", finalPosition);
-        telemetry.addData("Position change: ", positionChange);
+        positionChange = finalPosition - startingPosition;
+        //if (reversed) positionChange *= -1; //todo: test this change (including how it may affect heading tracking)
 
         Vector2d displacementVec;
-        //derivation documented elsewhere
-        if (angleChange != 0) {
-            //circular arc approximation
-            //double deltaYPos = positionChange/angleChange * (Math.sin(Math.toRadians(startingAngle)) - Math.sin(Math.toRadians(finalAngle)));
-            //double deltaXPos = positionChange/angleChange * (Math.cos(Math.toRadians(finalAngle)) - Math.cos(Math.toRadians(startingAngle)));
-            //straight line approximation
-            double deltaXPos = Math.sin(averageAngle) * positionChange;
-            double deltaYPos = Math.cos(averageAngle) * positionChange;
-            displacementVec = new Vector2d(deltaXPos, deltaYPos);
-            telemetry.addData("Doing the fancy way ", displacementVec.getX());
-        } else if (positionChange == 0) {
-            telemetry.addData("Nothing is moving ", "");
-            displacementVec = new Vector2d(0, 0);
-        } else {
-            displacementVec = new Vector2d(startingAngleObj);
-            displacementVec.normalize(positionChange);
-            telemetry.addData("Doing the straight line way ","");
-        }
+        double deltaYPos = Math.sin(averageAngle) * positionChange; //was x
+        double deltaXPos = Math.cos(averageAngle) * positionChange; //was y
+        displacementVec = new Vector2d(deltaXPos, deltaYPos);
 
-        telemetry.addData("Delta X Pos: ", displacementVec.getX());
-        telemetry.addData("Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
-        //telemetry.addData("Position change/angle change: ",positionChange/angleChange);
+        if (debuggingMode) {
+            telemetry.addData("Position change: ", positionChange);
+            telemetry.addData("Average angle: ", averageAngle);
+            telemetry.addData(moduleSide + " Displacement vector: ", displacementVec.getX());
+            telemetry.addData(moduleSide + " Delta X Pos: ", displacementVec.getX());
+            telemetry.addData(moduleSide + " Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
+        }
 
         lastM1Encoder = newM1Encoder;
         lastM2Encoder = newM2Encoder;
@@ -422,6 +390,7 @@ public class DriveModule {
         return displacementVec;
     }
 
+    //NOTE: this is the old method (straight line tracking only)
     public void updateTracking () {
         //edit - not anymore : important to set these to a variable so getCurrentPosition() is not called multiple times in single cycle
         double currentMotor1Encoder = robot.bulkData2.getMotorCurrentPosition(motor1);

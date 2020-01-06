@@ -66,14 +66,10 @@ public class DriveController {
 //    //This is the object to get the position on field
 //    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
-
     public DriveController(Robot robot, boolean debuggingMode) {
         this.robot = robot;
         moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
         moduleRight = new DriveModule(robot, ModuleSide.RIGHT, debuggingMode);
-
-        moduleLeftLastDistance = moduleLeft.getDistanceTraveled();
-        moduleRightLastDistance = moduleRight.getDistanceTraveled();
 
         //todo: change to parameter
         robotPosition = new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING));
@@ -393,12 +389,19 @@ public class DriveController {
         Vector2d rightDisp = moduleRight.updatePositionTracking(telemetry);
         Vector2d leftDisp = moduleLeft.updatePositionTracking(telemetry);
 
-//        double rightMag = rightDisp.getMagnitude() * Math.signum(rightDisp.getY());
-//        double leftMag = leftDisp.getMagnitude() * Math.signum(leftDisp.getY());
-//        double arcLength = rightMag - leftMag;
-//        double angleChange = arcLength * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM;
-//        robotPosition.incrementHeading(angleChange); //minus because clockwise vs. counterclockwise (which one is positive changes)
-//
+        //todo: incorporate Vuforia data & combination logic here
+
+        //reset heading tracking with IMU if robot is not moving
+        if (rightDisp.getMagnitude() < 0.01 && leftDisp.getMagnitude() < 0.01) {
+            //use IMU for heading instead of encoders
+            robotPosition.heading = robot.getRobotHeading();
+        } else {
+            //orientation tracking with encoders
+            double arcLength = moduleRight.positionChange - moduleLeft.positionChange;
+            double angleChange = arcLength * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM;
+            robotPosition.incrementHeading(angleChange);
+        }
+
         rightDisp.setX(rightDisp.getX() + WHEEL_TO_WHEEL_CM /2);
         leftDisp.setX(leftDisp.getX() - WHEEL_TO_WHEEL_CM /2);
 
@@ -407,22 +410,8 @@ public class DriveController {
         robotPosition.incrementX(robotCenterDisp.getX());
         robotPosition.incrementY(robotCenterDisp.getY());
 
-//        Vector2d wheelToWheel = new Vector2d(rightDisp.getX() - leftDisp.getX(), rightDisp.getY() - leftDisp.getY()); //left to right
-//        //todo: check this angle math
-//        //double robotAngleChange = wheelToWheel.getAngleDouble(Angle.AngleType.NEG_180_TO_180_CARTESIAN);  //todo: CW (should be) positive
-//        //todo: check if heading change should be negative (it was before)
-//        double robotAngleChange = wheelToWheel.getMagnitude() * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM; //in degrees
-
-        robotPosition.heading = robot.getRobotHeading(); //minus because clockwise vs. counterclockwise (which one is positive changes)
-
         telemetry.addData("Robot X Position: ", robotPosition.x);
         telemetry.addData("Robot Y Position: ", robotPosition.y);
-//        telemetry.addData("Wheel to wheel angle", wheelToWheel.getAngle());
-//        telemetry.addData("Robot angle change: ", robotAngleChange);
-//        telemetry.addData("Right mag: ", rightMag);
-//        telemetry.addData("Left mag: ", leftMag);
-//        telemetry.addData("Arc length: ", arcLength);
-//        telemetry.addData("Angle change: ", angleChange);
         telemetry.addData("Robot Abs Heading: ", robotPosition.heading);
     }
 
@@ -437,6 +426,7 @@ public class DriveController {
         moduleRightLastDistance = moduleRight.getDistanceTraveled();
     }
 
+    //NOTE: this is the old method (straight line tracking only)
     public void updateTracking() {
         moduleRight.updateTracking();
         moduleLeft.updateTracking();
@@ -454,12 +444,10 @@ public class DriveController {
         return Math.abs(robotDistanceTraveled);
     }
 
-
     public void setRotateModuleMode(DriveModule.RotateModuleMode rotateModuleMode) {
         moduleLeft.rotateModuleMode = rotateModuleMode;
         moduleRight.rotateModuleMode = rotateModuleMode;
     }
-
 
     public void resetEncoders() {
         moduleRight.resetEncoders();
