@@ -60,7 +60,7 @@ public class DriveController {
     //todo: tune these constants
     double MAX_AUTO_DRIVE_FACTOR = .7; //was 1
     double MIN_AUTO_DRIVE_FACTOR = 0.1;
-    double MAX_AUTO_ROTATE_FACTOR = 0.5;
+    double MAX_AUTO_ROTATE_FACTOR = 0.3; //was 0.5
     double MIN_AUTO_ROTATE_FACTOR = 0.1;
 
 //    //Vuforia field tracking tools:
@@ -288,7 +288,7 @@ public class DriveController {
                     0, 60, 0, MAX_AUTO_DRIVE_FACTOR);
 
             double rotationPower = RobotUtil.scaleVal(robotPosition.getSignedHeadingDifference(targetPosition),
-                    0, 90, 0, MAX_AUTO_ROTATE_FACTOR);
+                    0, totalHeadingDifference, 0, MAX_AUTO_ROTATE_FACTOR);
 
             //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
             Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
