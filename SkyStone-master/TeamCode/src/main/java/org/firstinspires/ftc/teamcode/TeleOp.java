@@ -57,36 +57,19 @@ public class TeleOp extends OpMode {
         telemetry.addData("Heading to joystick difference: ", joystick2.getAngle().getDifference(robot.getRobotHeading()));
 
         //slow mode/range stuffs
-        if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) {
-            joystick1 = joystick1.scale(0.3);
-            joystick2 = joystick2.scale(0.3);
-        }
-        else if (gamepad1.left_bumper || gamepad1.right_bumper) {
-            if (robot.getRange(false) < 5) {
-                joystick1 = joystick1.normalize(0);
-                joystick2 = joystick2.normalize(0);
-            }
-            else {
-                joystick1 = joystick1.scale(0.3);
-                joystick2 = joystick2.scale(0.3);
-            }
-        }
-
-        //toggle abs heading
-        if (gamepad1.y) {
-            absHeadingMode = true;
-        }
-        if (gamepad1.b) {
-            absHeadingMode = false;
-        }
-
-        robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
-
         if (gamepad2.dpad_up) {
             robot.hungryHippoExtend();
         } else if (gamepad2.dpad_down) {
             robot.hungryHippoRetract();
         }
+
+
+        if (gamepad2.dpad_right) {
+            robot.intakeServoOpen();
+        } else if (gamepad2.dpad_left) {
+            robot.intakeServoClose();
+        }
+
 
         if (gamepad2.y) {
             robot.unlatch();
@@ -99,6 +82,7 @@ public class TeleOp extends OpMode {
         } else if (gamepad2.b) {
             robot.closeGrabber();
         }
+
 
         if (gamepad1.left_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
@@ -121,6 +105,18 @@ public class TeleOp extends OpMode {
                 joystick2 = joystick2.scale(0.3);
             }
         }
+
+        //toggle abs heading
+        if (gamepad1.y) {
+            absHeadingMode = true;
+        }
+        if (gamepad1.b) {
+            absHeadingMode = false;
+        }
+
+        robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
+
+
 
 
         if (gamepad1.dpad_left) {
