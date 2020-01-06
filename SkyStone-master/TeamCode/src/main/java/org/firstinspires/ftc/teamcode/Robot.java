@@ -79,11 +79,11 @@ public class Robot {
     final double ticksPerEntireRotation = 28*13.7*302.0/14;
     final double twoPi = 2 * Math.PI;
 
-    public Robot (OpMode opMode, boolean isAuto, boolean debuggingMode) {
+    public Robot (OpMode opMode, Position startingPosition, boolean isAuto, boolean debuggingMode) {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
         this.opMode = opMode;
-        driveController = new DriveController(this, debuggingMode);
+        driveController = new DriveController(this, startingPosition, debuggingMode);
         imu = opMode.hardwareMap.get(BNO055IMU.class, "imu 1");
 
         IS_AUTO = isAuto;
@@ -139,9 +139,14 @@ public class Robot {
         dataLogger = new DataLogger("SkystoneRobot");
     }
 
-    //defaults to debugging mode off
+    //defaults to debugging mode off, starting position of 0, 0
     public Robot (OpMode opMode, boolean isAuto) {
-        this(opMode, isAuto, false);
+        this(opMode, new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING)), isAuto,false);
+    }
+
+    //defaults to starting position of 0, 0
+    public Robot (OpMode opMode, boolean isAuto, boolean debuggingMode) {
+        this(opMode, new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING)), isAuto, debuggingMode);
     }
 
     public void updateBulkData () {

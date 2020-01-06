@@ -20,7 +20,7 @@ public class DriveToPositionTester extends LinearOpMode {
 
         //Autonomous actions
         robot.driveController.driveToPosition(
-                new Position(0, 120, new Angle(90, Angle.AngleType.ZERO_TO_360_HEADING)), this);
+                new Position(0, 0, new Angle(90, Angle.AngleType.ZERO_TO_360_HEADING)),false, this);
 
         while (opModeIsActive()) {}
     }

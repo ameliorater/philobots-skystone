@@ -110,6 +110,7 @@ public class Vector2d {
 
     //returns a Vector2d in the same direction with magnitude of "target"
     public Vector2d normalize(double target) {
+        if (getMagnitude() == 0) return ZERO; //avoid dividing by zero
         return scale(target / getMagnitude());
     }
 

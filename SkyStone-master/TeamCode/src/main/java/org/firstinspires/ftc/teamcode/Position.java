@@ -11,6 +11,11 @@ public class Position {
         this.heading = heading; //todo: may want to force type
     }
 
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+
     public void set (double x, double y, Angle heading) {
         this.x = x;
         this.y = y;
