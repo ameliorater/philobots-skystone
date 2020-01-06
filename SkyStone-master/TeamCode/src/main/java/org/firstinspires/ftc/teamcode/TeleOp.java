@@ -95,13 +95,18 @@ public class TeleOp extends OpMode {
             robot.hungryHippoRetract();
         }
 
-        /* Changed button map - see below
+        if (gamepad2.dpad_right) {
+            robot.intakeServoOpen();
+        } else if (gamepad2.dpad_left) {
+            robot.intakeServoClose();
+        }
+
+        // Changed button map - see below
         if (gamepad2.y) {
             robot.unlatch();
         } else if (gamepad2.a) {
             robot.latch();
         }
-        */
 
         if (gamepad1.dpad_up) {
             robot.unlatch();
