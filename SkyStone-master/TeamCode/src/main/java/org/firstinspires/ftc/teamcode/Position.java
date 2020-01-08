@@ -81,10 +81,14 @@ public class Position {
         return difference;
     }
 
+    //returns vector FROM this position TO target position
+    public Vector2d getVectorTo (Position targetPosition) {
+        return new Vector2d(getXDifference(targetPosition), getYDifference(targetPosition));
+    }
 
     //returns unit vector FROM this position TO target position
     public Vector2d getDirectionTo (Position targetPosition) {
-        return new Vector2d(getXDifference(targetPosition), getYDifference(targetPosition)).getUnitVector(); //was abs (wrong)
+        return getVectorTo(targetPosition).getUnitVector();
     }
 
     //returns Direction FROM this position TO target position

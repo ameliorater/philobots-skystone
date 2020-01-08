@@ -271,8 +271,7 @@ public class DriveController {
 
     //position tracking drive method
     public void driveToPosition(Position targetPosition, boolean isBlue, LinearOpMode linearOpMode) {
-        double totalXDistance = robotPosition.getAbsXDifference(targetPosition);
-        double totalYDistance = robotPosition.getAbsYDifference(targetPosition);
+        double totalTravelDistance = robotPosition.getVectorTo(targetPosition).getMagnitude();
         double totalHeadingDifference = robotPosition.getAbsHeadingDifference(targetPosition);
 
         do {
@@ -286,12 +285,6 @@ public class DriveController {
             Vector2d translationDirection = robotPosition.getDirectionTo(targetPosition);
             Angle.Direction rotationDirection = robotPosition.getRotationDirectionTo(targetPosition);
 
-            double xPower = RobotUtil.scaleVal(robotPosition.getAbsXDifference(targetPosition),
-                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR); //changed min to zero //was 30
-
-            double yPower = RobotUtil.scaleVal(robotPosition.getAbsYDifference(targetPosition),
-                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR);
-
             double rotationPower = RobotUtil.scaleVal(robotPosition.getAbsHeadingDifference(targetPosition),
                     0, totalHeadingDifference, 0, MAX_AUTO_ROTATE_FACTOR);
 
@@ -300,7 +293,9 @@ public class DriveController {
             }
 
             //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
-            Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
+            double distanceRemaining = robotPosition.getVectorTo(targetPosition).getMagnitude();
+            double translationScaleFactor = RobotUtil.scaleVal(distanceRemaining, 0, totalTravelDistance, 0, 1);
+            Vector2d translationVector = translationDirection.scale(translationScaleFactor);
             if (isBlue) translationVector = translationVector.reflect();
 
             update(translationVector, rotationPower);
@@ -308,8 +303,6 @@ public class DriveController {
             if (debuggingMode) {
                 dataLogger.addField(robotPosition.x);
                 dataLogger.addField(robotPosition.y);
-                dataLogger.addField(xPower);
-                dataLogger.addField(yPower);
                 dataLogger.addField(rotationPower);
                 dataLogger.addField(translationDirection.getX());
                 dataLogger.addField(translationDirection.getY());
@@ -318,8 +311,7 @@ public class DriveController {
                 dataLogger.addField(translationVector.getY());
                 dataLogger.newLine();
 
-                linearOpMode.telemetry.addData("X power", xPower);
-                linearOpMode.telemetry.addData("X difference", robotPosition.getAbsXDifference(targetPosition));
+                linearOpMode.telemetry.addData("Distance remaining", distanceRemaining);
                 linearOpMode.telemetry.addData("Translation direction", translationDirection);
                 linearOpMode.telemetry.addData("Translation vector", translationVector);
                 linearOpMode.telemetry.update();
