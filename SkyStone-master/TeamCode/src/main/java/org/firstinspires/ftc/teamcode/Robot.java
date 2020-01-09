@@ -237,12 +237,12 @@ public class Robot {
     }
 
     public void intakeServoOpen(){
-        moveServo(intakeServo1, INTAKE_SERVO_OUT_POSITION);
-        moveServo(intakeServo2, INTAKE_SERVO_OUT_POSITION);
+        moveServo(intakeServo1, 0);
+        moveServo(intakeServo2, 1);
     }
     public void intakeServoClose(){
-        moveServo(intakeServo1, INTAKE_SERVO_IN_POSITION);
-        moveServo(intakeServo2, INTAKE_SERVO_IN_POSITION);
+        moveServo(intakeServo1, 1);
+        moveServo(intakeServo2, 0);
     }
 
 

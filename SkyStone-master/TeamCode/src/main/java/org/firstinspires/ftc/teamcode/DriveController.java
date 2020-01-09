@@ -67,7 +67,7 @@ public class DriveController {
     //This is the allowed distance to a target
     public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
     //This is the object to get the position on field
-    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
+    public FieldTracker vuforiaTracker;
 
     public DriveController(Robot robot, Position startingPosition, boolean debuggingMode) {
         this.robot = robot;
@@ -77,6 +77,8 @@ public class DriveController {
 
         //todo: change to parameter
         robotPosition = startingPosition;
+
+        vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
         dataLogger = new DataLogger("Drive Controller");
         dataLogger.addField("X Position");
@@ -321,6 +323,66 @@ public class DriveController {
         update(Vector2d.ZERO, 0);
     }
 
+//    //position tracking drive method
+//    public void driveToPosition(Position targetPosition, boolean isBlue, LinearOpMode linearOpMode) {
+//        double totalXDistance = robotPosition.getAbsXDifference(targetPosition);
+//        double totalYDistance = robotPosition.getAbsYDifference(targetPosition);
+//        double totalHeadingDifference = robotPosition.getAbsHeadingDifference(targetPosition);
+//
+//        do {
+//            //scale speeds based on remaining distance from target, bounded by 0 and original distance
+//            //at the very beginning, x & y trans and rot will be max speed (different for each)
+//            //at the end, all three speeds will be min speed (different for each)
+//            //in between, the speeds will scale linearly depending on distance from target position
+//            robot.updateBulkData();
+//            updatePositionTracking(linearOpMode.telemetry);
+//
+//            Vector2d translationDirection = robotPosition.getDirectionTo(targetPosition);
+//            Angle.Direction rotationDirection = robotPosition.getRotationDirectionTo(targetPosition);
+//
+//            double xPower = RobotUtil.scaleVal(robotPosition.getAbsXDifference(targetPosition),
+//                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR); //changed min to zero //was 30
+//
+//            double yPower = RobotUtil.scaleVal(robotPosition.getAbsYDifference(targetPosition),
+//                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR);
+//
+//            double rotationPower = RobotUtil.scaleVal(robotPosition.getAbsHeadingDifference(targetPosition),
+//                    0, totalHeadingDifference, 0, MAX_AUTO_ROTATE_FACTOR);
+//
+//            if (robotPosition.getRotationDirectionTo(targetPosition) == Angle.Direction.CLOCKWISE) {
+//                rotationPower *= -1; //todo: check sign
+//            }
+//
+//            //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
+//            Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
+//            //if (isBlue) translationVector = translationVector.reflect();
+//
+//            update(translationVector, rotationPower);
+//
+//            if (debuggingMode) {
+//                dataLogger.addField(robotPosition.x);
+//                dataLogger.addField(robotPosition.y);
+//                dataLogger.addField(xPower);
+//                dataLogger.addField(yPower);
+//                dataLogger.addField(rotationPower);
+//                dataLogger.addField(translationDirection.getX());
+//                dataLogger.addField(translationDirection.getY());
+//                dataLogger.addField(rotationDirection.toString());
+//                dataLogger.addField(translationVector.getX());
+//                dataLogger.addField(translationVector.getY());
+//                dataLogger.newLine();
+//
+//                linearOpMode.telemetry.addData("X power", xPower);
+//                linearOpMode.telemetry.addData("X difference", robotPosition.getAbsXDifference(targetPosition));
+//                linearOpMode.telemetry.addData("Translation direction", translationDirection);
+//                linearOpMode.telemetry.addData("Translation vector", translationVector);
+//                linearOpMode.telemetry.update();
+//            }
+//        } while (!targetPosition.withinRange(robotPosition, 5, 5, 5) && linearOpMode.opModeIsActive());
+//
+//        update(Vector2d.ZERO, 0);
+//    }
+
     //attempt to update robot position using vuforia
     public void updatePositionVuforia () {
         //if a target is in view
@@ -436,6 +498,10 @@ public class DriveController {
 
     //new tracking method
     public void updatePositionTracking (Telemetry telemetry) {
+//        if (getVuforiaPosition() != null) {
+//            updatePositionVuforia();
+//            return;
+//        }
         Vector2d rightDisp = moduleRight.updatePositionTracking(telemetry);
         Vector2d leftDisp = moduleLeft.updatePositionTracking(telemetry);
 

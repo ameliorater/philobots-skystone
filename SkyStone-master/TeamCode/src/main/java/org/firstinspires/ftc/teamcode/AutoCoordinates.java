@@ -9,14 +9,14 @@ import org.opencv.core.Point;
 @Autonomous(name = "AutoCoordinates")
 public class AutoCoordinates extends LinearOpMode {
     //Robot class declaration
-    double Tile = 24 * 2.54;
+    double TILE_CM = 24 * 2.54;
     double ROBOT = 45;
 
     Robot robot;
     SkystoneCV cv;
     public void runOpMode() {
         //Robot class initialization
-        robot = new Robot(this, true);
+        robot = new Robot(this, new Position(-83.46, 160.32, Angle.FORWARD), true, true);
         robot.initIMU();
         cv = new SkystoneCV("Webcam 1", new Point(15, 130), new Point(85, 130), new Point(155, 130), this);
 
@@ -29,31 +29,54 @@ public class AutoCoordinates extends LinearOpMode {
         //vision done
         cv.camera.stopStreaming();
         cv.camera.closeCameraDevice();
+
+        robot.intakeServo1.setPosition(1.0);
+        robot.intakeServo2.setPosition(0.0);
+        robot.openGrabber();
+
         if(skyStonePosition == SkystoneCV.StonePosition.LEFT)
-            robot.driveController.driveToPosition(new Position(-Tile - (.5 * ROBOT), isBlue ? (3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT)) : -((3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT))), Angle.FORWARD), this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT), isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue, this);
         else if (skyStonePosition == SkystoneCV.StonePosition.CENTER)
-            robot.driveController.driveToPosition(new Position(-Tile - (.5 * ROBOT) - 8/*next stone val*/, isBlue ? (3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT)) : -((3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT))), Angle.FORWARD), this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 8/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue, this);
         else if (skyStonePosition == SkystoneCV.StonePosition.RIGHT)
-            robot.driveController.driveToPosition(new Position(-Tile - (.5 * ROBOT) - 16/*next stone val*/, isBlue ? (3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT)) : -((3 * Tile) - (.5 * ROBOT) - (Tile + (Tile - ROBOT))), Angle.FORWARD), this);
-        intakeSequence();
-        robot.driveController.driveToPosition(new Position(-Tile, isBlue ? (2 * Tile) - ((Tile * ROBOT) / 2) : -((2 * Tile) - ((Tile * ROBOT) / 2)), Angle.RIGHT), this);
-        robot.driveController.driveToPosition(new Position((2 * Tile), isBlue ? (2 * Tile) - ((Tile * ROBOT) / 2) : -((2 * Tile) - ((Tile * ROBOT) / 2)), Angle.RIGHT), this);
-        robot.driveController.rotateRobot(Angle.BACKWARD, this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 16/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue,this);
+
+        //intake sequence
+        robot.armServo1.setPosition(.4);
+        robot.armServo2.setPosition(.6);
+        robot.hungryHippoRetract();
+        robot.moveIntake(Constants.IntakeState.INTAKE,Constants.IntakeSpeed.SLOW);
+        robot.wait(1500, this);
+        //moveTo(stonePosition, 62.5, 180, 0.35, 5);
+        //simplePathFollow.stop(robot);
+        robot.armServo1.setPosition(.7);
+        robot.armServo2.setPosition(.3);
+        robot.wait(1000,this);
+        robot.hungryHippoExtend();
+        robot.moveIntake(Constants.IntakeState.STOP);
+        robot.armServo1.setPosition(.5);
+        robot.armServo2.setPosition(.5);
+
+        robot.wait(1000, this);
+
+
+        robot.driveController.driveToPosition(new Position (robot.driveController.robotPosition.x, robot.driveController.robotPosition.y, isBlue ? Angle.RIGHT : Angle.LEFT), isBlue, this);
+        robot.driveController.driveToPosition(new Position(-TILE_CM, isBlue ? (2 * TILE_CM) - ((TILE_CM * ROBOT) / 2) : -((2 * TILE_CM) - ((TILE_CM * ROBOT) / 2)), Angle.RIGHT), isBlue,this);
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM), isBlue ? (2 * TILE_CM) - ((TILE_CM * ROBOT) / 2) : -((2 * TILE_CM) - ((TILE_CM * ROBOT) / 2)), Angle.RIGHT), isBlue,this);
+        robot.driveController.driveToPosition(new Position (robot.driveController.robotPosition.x, robot.driveController.robotPosition.y, Angle.BACKWARD), isBlue, this);
         //todo: outtake block (intake reverse)
         //todo: vuforia read
-        robot.driveController.driveToPosition(new Position((2 * Tile), isBlue ? (Tile) - ((ROBOT) / 2) : -((Tile) - ((ROBOT) / 2)), Angle.BACKWARD), this);
+        robot.driveController.driveToPosition(new Position (robot.driveController.robotPosition.x, robot.driveController.robotPosition.y, Angle.BACKWARD), isBlue, this);
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM), isBlue ? (TILE_CM) - ((ROBOT) / 2) : -((TILE_CM) - ((ROBOT) / 2)), Angle.BACKWARD), isBlue,this);
         //todo hooks down
-        robot.driveController.driveToPosition(new Position((2 * Tile), isBlue ? (Tile * 2) : -((Tile * 2)), Angle.RIGHT), this);
-        robot.driveController.driveToPosition(new Position((2 * Tile) + (Tile - ROBOT), isBlue ? (Tile * 2) : -((Tile * 2)), Angle.RIGHT), this);
-        robot.driveController.driveToPosition(new Position((2 * Tile) + (Tile - ROBOT), isBlue ? (Tile * 3) - (ROBOT / 2) : -((Tile * 3) - (ROBOT / 2)), Angle.RIGHT), this); // this is a wall slam
+        robot.driveController.driveToPosition(new Position (robot.driveController.robotPosition.x, robot.driveController.robotPosition.y, isBlue ? Angle.RIGHT : Angle.LEFT), isBlue, this);
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM), isBlue ? (TILE_CM * 2) : -((TILE_CM * 2)), Angle.RIGHT), isBlue,this);
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM) + (TILE_CM - ROBOT), isBlue ? (TILE_CM * 2) : -((TILE_CM * 2)), Angle.RIGHT), isBlue,this);
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM) + (TILE_CM - ROBOT), isBlue ? (TILE_CM * 3) - (ROBOT / 2) : -((TILE_CM * 3) - (ROBOT / 2)), Angle.RIGHT), isBlue,this); // this is a wall slam
         //todo arm delivers block
         //todo hooks up
-        robot.driveController.driveToPosition(new Position((2 * Tile) + (Tile - ROBOT), isBlue ? (Tile * 2) - ((Tile - ROBOT) / 2) : -((Tile * 2) - ((Tile - ROBOT) / 2)), Angle.RIGHT), this); // this is a wall slam
-        robot.driveController.driveToPosition(new Position(0, isBlue ? (Tile * 2) - ((Tile - ROBOT) / 2) : -((Tile * 2) - ((Tile - ROBOT) / 2)), Angle.RIGHT), this); // this is a wall slam
-
-
-
-
+        robot.driveController.driveToPosition(new Position((2 * TILE_CM) + (TILE_CM - ROBOT), isBlue ? (TILE_CM * 2) - ((TILE_CM - ROBOT) / 2) : -((TILE_CM * 2) - ((TILE_CM - ROBOT) / 2)), Angle.RIGHT), isBlue,this); // this is a wall slam
+        robot.driveController.driveToPosition(new Position(0, isBlue ? (TILE_CM * 2) - ((TILE_CM - ROBOT) / 2) : -((TILE_CM * 2) - ((TILE_CM - ROBOT) / 2)), Angle.RIGHT), isBlue,this); // this is a wall slam
 
     }
     public void intakeSequence(){
