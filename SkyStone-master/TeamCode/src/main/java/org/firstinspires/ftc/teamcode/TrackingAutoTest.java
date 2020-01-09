@@ -4,18 +4,23 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.opencv.core.Point;
+
 @Autonomous(name="Tracking Test", group="Linear Opmode")
 public class TrackingAutoTest extends LinearOpMode {
 
     Robot robot;
     SimpleTracking simpleTracking;
     SimplePathFollow simplePathFollow;
+    SkystoneCV cv;
 
     public void runOpMode() {
-
         boolean isBlue = true;
 
-        robot = new Robot(this, new Position(-90, 157.5, Angle.FORWARD), true, true);
+        robot = new Robot(this, new Position(-90, 157.5, Angle.BACKWARD), true, true);
+        cv = new SkystoneCV("Webcam 1", new Point(65, 130), new Point(145, 130), new Point(225, 130), this);
+        cv.init(SkystoneCV.CameraType.WEBCAM);
+
         simpleTracking = new SimpleTracking();
         simplePathFollow = new SimplePathFollow();
 
@@ -39,6 +44,8 @@ public class TrackingAutoTest extends LinearOpMode {
             telemetry.addData("Ready to Run", "");
             telemetry.update();
         }
+        SkystoneCV.StonePosition skyStonePosition = cv.getSkystonePosition();
+
         // blue starting position
         simpleTracking.setPosition(-90, 157.5);
         simpleTracking.setOrientationDegrees(180);
@@ -46,16 +53,24 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.intakeServo2.setPosition(1.0);
         robot.openGrabber();
 
-        double stonePosition = -98;// depends on stone
+        double stonePosition;
+        if (skyStonePosition == SkystoneCV.StonePosition.RIGHT) {
+            stonePosition = -98 - 20;
+        } else if (skyStonePosition == SkystoneCV.StonePosition.CENTER) {
+            stonePosition = -98;
+        } else { // (skyStonePosition == SkystoneCV.StonePosition.LEFT) {
+            stonePosition = -98 + 20;
+        }
+
         // go to the center stone
-        robot.driveController.driveToPosition(new Position(stonePosition, 85, Angle.FORWARD), isBlue, this);
+        robot.driveController.driveToPosition(new Position(stonePosition, 85, Angle.BACKWARD), isBlue, this);
         simplePathFollow.stop(robot);
         robot.armServo1.setPosition(.4);
         robot.armServo2.setPosition(.6);
         robot.hungryHippoRetract();
         robot.moveIntake(Constants.IntakeState.INTAKE,Constants.IntakeSpeed.SLOW);
         robot.wait(1500, this);
-        robot.driveController.driveToPosition(new Position(stonePosition, 62.5, Angle.FORWARD), true, this);
+        robot.driveController.driveToPosition(new Position(stonePosition, 62.5, Angle.BACKWARD), true, this);
         simplePathFollow.stop(robot);
         robot.armServo1.setPosition(.7);
         robot.armServo2.setPosition(.3);
@@ -66,7 +81,7 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.armServo2.setPosition(.5);
 
         robot.wait(1000, this);
-        robot.driveController.driveToPosition(new Position(stonePosition, 95, Angle.FORWARD), true, this);
+        robot.driveController.driveToPosition(new Position(stonePosition, 95, Angle.BACKWARD), true, this);
         robot.driveController.driveToPosition(new Position(stonePosition, 95, Angle.RIGHT), isBlue, this);
         simplePathFollow.stop(robot);
         robot.wait(1000, this);
@@ -76,9 +91,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
         // move to platform
         robot.driveController.driveToPosition(new Position(120, 95, Angle.RIGHT), isBlue, this);
-        robot.driveController.driveToPosition(new Position(120, 90, Angle.BACKWARD), isBlue, this);
+        robot.driveController.driveToPosition(new Position(120, 90, Angle.FORWARD), isBlue, this);
         simplePathFollow.stop(robot);
-        robot.driveController.driveToPosition(new Position(120, 55, Angle.BACKWARD), isBlue, this);
+        robot.driveController.driveToPosition(new Position(120, 55, Angle.FORWARD), isBlue, this);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(0.0);
         robot.latchServo2.setPosition(1.0);
@@ -99,7 +114,7 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.wait(1000, this);
         robot.armServo1.setPosition(.5);
         robot.armServo2.setPosition(.5);
-        robot.driveController.driveToPosition(new Position(120, 115, Angle.BACKWARD), isBlue, this);
+        robot.driveController.driveToPosition(new Position(120, 115, Angle.FORWARD), isBlue, this);
         simplePathFollow.stop(robot);
         robot.driveController.driveToPosition(new Position(80, 115, new Angle(65, Angle.AngleType.ZERO_TO_360_HEADING)), isBlue, this); //pivot platform todo: fix 245
         robot.driveController.driveToPosition(new Position(110, 115, new Angle(90, Angle.AngleType.ZERO_TO_360_HEADING)), isBlue, this);

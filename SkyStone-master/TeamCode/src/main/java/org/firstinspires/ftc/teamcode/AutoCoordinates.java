@@ -16,7 +16,7 @@ public class AutoCoordinates extends LinearOpMode {
     SkystoneCV cv;
     public void runOpMode() {
         //Robot class initialization
-        robot = new Robot(this, new Position(-83.46, 160.32, Angle.FORWARD), true, true);
+        robot = new Robot(this, new Position(-83.46, 160.32, Angle.BACKWARD), true, true);
         robot.initIMU();
         cv = new SkystoneCV("Webcam 1", new Point(15, 130), new Point(85, 130), new Point(155, 130), this);
 
@@ -35,11 +35,11 @@ public class AutoCoordinates extends LinearOpMode {
         robot.openGrabber();
 
         if(skyStonePosition == SkystoneCV.StonePosition.LEFT)
-            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT), isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue, this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT), isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.BACKWARD), isBlue, this);
         else if (skyStonePosition == SkystoneCV.StonePosition.CENTER)
-            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 8/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue, this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 8/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.BACKWARD), isBlue, this);
         else if (skyStonePosition == SkystoneCV.StonePosition.RIGHT)
-            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 16/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.FORWARD), isBlue,this);
+            robot.driveController.driveToPosition(new Position(-TILE_CM - (.5 * ROBOT) - 16/*next stone val*/, isBlue ? (3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT)) : -((3 * TILE_CM) - (.5 * ROBOT) - (TILE_CM + (TILE_CM - ROBOT))), Angle.BACKWARD), isBlue,this);
 
         //intake sequence
         robot.armServo1.setPosition(.4);
