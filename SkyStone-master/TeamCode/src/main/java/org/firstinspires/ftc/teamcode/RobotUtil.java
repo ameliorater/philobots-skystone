@@ -7,7 +7,7 @@ public class RobotUtil {
         if (input < minInputVal) input = minInputVal;
         double inputRange = Math.abs(maxInputVal - minInputVal); //abs value should be redundant (max > min)
         double outputRange = Math.abs(maxOutputVal - minOutputVal);
-        if (inputRange == 0 || outputRange == 0) return input; //added
+        if (inputRange == 0) return input; //added
         return (outputRange/inputRange) * (input - minInputVal) + minOutputVal;
     }
 

@@ -60,7 +60,7 @@ public class DriveController {
     //todo: tune these constants
     double MAX_AUTO_DRIVE_FACTOR = .7; //was 1
     double MIN_AUTO_DRIVE_FACTOR = 0.1;
-    double MAX_AUTO_ROTATE_FACTOR = 0.5;
+    double MAX_AUTO_ROTATE_FACTOR = 0.3; //was 0.5
     double MIN_AUTO_ROTATE_FACTOR = 0.1;
 
 //    //Vuforia field tracking tools:
@@ -69,14 +69,14 @@ public class DriveController {
 //    //This is the object to get the position on field
 //    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
-    public DriveController(Robot robot, boolean debuggingMode) {
+    public DriveController(Robot robot, Position startingPosition, boolean debuggingMode) {
         this.robot = robot;
         this.debuggingMode = debuggingMode;
         moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
         moduleRight = new DriveModule(robot, ModuleSide.RIGHT, debuggingMode);
 
         //todo: change to parameter
-        robotPosition = new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING));
+        robotPosition = startingPosition;
 
         dataLogger = new DataLogger("Drive Controller");
         dataLogger.addField("X Position");
@@ -92,9 +92,14 @@ public class DriveController {
         dataLogger.newLine();
     }
 
-    //defaults to debugging mode off
+    //defaults to debugging mode off, starting position of 0, 0
     public DriveController(Robot robot) {
-        this(robot, false);
+        this(robot, new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING)), false);
+    }
+
+    //defaults to debugging mode off
+    public DriveController(Robot robot, Position startingPosition) {
+        this(robot, startingPosition, false);
     }
 
     //converts joystick vectors to parameters for update() method
@@ -265,7 +270,7 @@ public class DriveController {
 
 
     //position tracking drive method
-    public void driveToPosition(Position targetPosition, LinearOpMode linearOpMode) {
+    public void driveToPosition(Position targetPosition, boolean isBlue, LinearOpMode linearOpMode) {
         double totalXDistance = robotPosition.getAbsXDifference(targetPosition);
         double totalYDistance = robotPosition.getAbsYDifference(targetPosition);
         double totalHeadingDifference = robotPosition.getAbsHeadingDifference(targetPosition);
@@ -287,11 +292,18 @@ public class DriveController {
             double yPower = RobotUtil.scaleVal(robotPosition.getAbsYDifference(targetPosition),
                     0, 60, 0, MAX_AUTO_DRIVE_FACTOR);
 
-            double rotationPower = RobotUtil.scaleVal(robotPosition.getSignedHeadingDifference(targetPosition),
-                    0, 90, 0, MAX_AUTO_ROTATE_FACTOR);
+            double rotationPower = RobotUtil.scaleVal(robotPosition.getAbsHeadingDifference(targetPosition),
+                    0, totalHeadingDifference, 0, MAX_AUTO_ROTATE_FACTOR);
+
+            if (robotPosition.getRotationDirectionTo(targetPosition) == Angle.Direction.CLOCKWISE) {
+                rotationPower *= -1; //todo: check sign
+            }
 
             //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
             Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
+            if (isBlue) translationVector = translationVector.reflect();
+
+            update(translationVector, rotationPower);
 
             if (debuggingMode) {
                 dataLogger.addField(robotPosition.x);
@@ -306,7 +318,6 @@ public class DriveController {
                 dataLogger.addField(translationVector.getY());
                 dataLogger.newLine();
 
-                update(translationVector, rotationPower);
                 linearOpMode.telemetry.addData("X power", xPower);
                 linearOpMode.telemetry.addData("X difference", robotPosition.getAbsXDifference(targetPosition));
                 linearOpMode.telemetry.addData("Translation direction", translationDirection);
@@ -430,15 +441,15 @@ public class DriveController {
         //todo: incorporate Vuforia data & combination logic here
 
         //reset heading tracking with IMU if robot is not moving
-        if (rightDisp.getMagnitude() < 0.01 && leftDisp.getMagnitude() < 0.01) {
-            //use IMU for heading instead of encoders
-            robotPosition.heading = robot.getRobotHeading();
-        } else {
+//        if (rightDisp.getMagnitude() < 0.01 && leftDisp.getMagnitude() < 0.01) {
+//            //use IMU for heading instead of encoders
+//            robotPosition.heading = robot.getRobotHeading();
+//        } else {
             //orientation tracking with encoders
             double arcLength = moduleRight.positionChange - moduleLeft.positionChange;
             double angleChange = arcLength * 360 / 2.0 / Math.PI / WHEEL_TO_WHEEL_CM;
             robotPosition.incrementHeading(angleChange);
-        }
+        //}
 
         rightDisp.setX(rightDisp.getX() + WHEEL_TO_WHEEL_CM /2);
         leftDisp.setX(leftDisp.getX() - WHEEL_TO_WHEEL_CM /2);
