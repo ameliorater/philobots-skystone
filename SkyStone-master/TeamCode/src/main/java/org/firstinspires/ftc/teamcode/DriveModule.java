@@ -374,12 +374,12 @@ public class DriveModule {
         Vector2d displacementVec;
         double deltaYPos = Math.sin(averageAngle) * positionChange; //was x
         double deltaXPos = Math.cos(averageAngle) * positionChange; //was y
-        displacementVec = new Vector2d(deltaXPos, deltaYPos);
+        displacementVec = new Vector2d(-deltaXPos, -deltaYPos); //added negatives based on testing results
 
         if (debuggingMode) {
             telemetry.addData("Position change: ", positionChange);
             telemetry.addData("Average angle: ", averageAngle);
-            telemetry.addData(moduleSide + " Displacement vector: ", displacementVec.getX());
+            telemetry.addData(moduleSide + " Displacement vector: ", displacementVec);
             telemetry.addData(moduleSide + " Delta X Pos: ", displacementVec.getX());
             telemetry.addData(moduleSide + " Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
         }

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 public class TeleOp extends OpMode {
     Robot robot;
     public double DEADBAND_MAG = 0.1;
-    public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
+    //public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
     boolean absHeadingMode = false;
@@ -57,33 +57,6 @@ public class TeleOp extends OpMode {
         telemetry.addData("Heading to joystick difference: ", joystick2.getAngle().getDifference(robot.getRobotHeading()));
 
         //slow mode/range stuffs
-        if (gamepad2.dpad_up) {
-            robot.hungryHippoExtend();
-        } else if (gamepad2.dpad_down) {
-            robot.hungryHippoRetract();
-        }
-
-
-        if (gamepad2.dpad_right) {
-            robot.intakeServoOpen();
-        } else if (gamepad2.dpad_left) {
-            robot.intakeServoClose();
-        }
-
-
-        if (gamepad2.y) {
-            robot.unlatch();
-        } else if (gamepad2.a) {
-            robot.latch();
-        }
-
-        if (gamepad2.x) {
-            robot.openGrabber();
-        } else if (gamepad2.b) {
-            robot.closeGrabber();
-        }
-
-
         if (gamepad1.left_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
             joystick2 = joystick2.scale(0.3);
@@ -116,14 +89,39 @@ public class TeleOp extends OpMode {
 
         robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
 
+        if (gamepad2.dpad_up) {
+            robot.hungryHippoExtend();
+        } else if (gamepad2.dpad_down) {
+            robot.hungryHippoRetract();
+        }
 
+        if (gamepad2.dpad_right) {
+            robot.intakeServoOpen();
+        } else if (gamepad2.dpad_left) {
+            robot.intakeServoClose();
+        }
 
+        // Changed button map - see below
+        if (gamepad2.y) {
+            robot.unlatch();
+        } else if (gamepad2.a) {
+            robot.latch();
+        }
 
-        if (gamepad1.dpad_left) {
-            robot.moveSingleIntakeRoller(true);
-        } else if (gamepad1.dpad_right) {
-            robot.moveSingleIntakeRoller(false);
-        } else if (Math.abs(gamepad2.right_trigger) > 0.1) {
+        if (gamepad1.dpad_up) {
+            robot.unlatch();
+        } else if (gamepad1.dpad_down) {
+            robot.latch();
+        }
+
+        if (gamepad2.x) {
+            robot.openGrabber();
+        } else if (gamepad2.b) {
+            robot.closeGrabber();
+        }
+
+        /*
+        if (Math.abs(gamepad2.right_trigger) > 0.1) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.FAST);
         } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.FAST);
@@ -132,6 +130,23 @@ public class TeleOp extends OpMode {
         } else if (gamepad2.left_bumper) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
         } else {
+            robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
+        }*/
+
+
+        if (gamepad1.dpad_left) {
+            robot.moveSingleIntakeRoller(true);
+        } else if (gamepad1.dpad_right) {
+            robot.moveSingleIntakeRoller(false);
+        } else if (Math.abs(gamepad2.right_trigger) > 0.1) {
+            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
+        } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
+            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW); //was fast
+        } /*else if (gamepad2.right_bumper) {
+            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
+        } else if (gamepad2.left_bumper) {
+            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
+        }*/ else {
             robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
         }
 
@@ -178,10 +193,17 @@ public class TeleOp extends OpMode {
         telemetry.update();
     }
 
+
+    /*//This implementation caused a bug - vectors that go in any cardinal direction would get reduced to a point vector, for example
     public Vector2d checkDeadband(Vector2d joystick) {
         if (Math.abs(joystick.getX()) > DEADBAND_VEC.getX() || Math.abs(joystick.getY()) > DEADBAND_VEC.getY()) {
             return joystick;
         }
         return new Vector2d(0, 0);
+    }*/
+
+    //Instead of using the above implementation, this one checks if the length of the vector is more than that of the deadband magnitude
+    public Vector2d checkDeadband(Vector2d joystick) {
+        return joystick.getMagnitude() > DEADBAND_MAG ? joystick : new Vector2d(0, 0);
     }
 }

@@ -17,6 +17,9 @@ public class DriveController {
 
     Position robotPosition;
 
+    DataLogger dataLogger;
+    boolean debuggingMode;
+
     //used for straight line distance tracking
     double robotDistanceTraveled = 0;
     double previousRobotDistanceTraveled = 0;
@@ -55,7 +58,7 @@ public class DriveController {
 
     //drive to position constants
     //todo: tune these constants
-    double MAX_AUTO_DRIVE_FACTOR = 1;
+    double MAX_AUTO_DRIVE_FACTOR = .7; //was 1
     double MIN_AUTO_DRIVE_FACTOR = 0.1;
     double MAX_AUTO_ROTATE_FACTOR = 0.5;
     double MIN_AUTO_ROTATE_FACTOR = 0.1;
@@ -68,11 +71,25 @@ public class DriveController {
 
     public DriveController(Robot robot, boolean debuggingMode) {
         this.robot = robot;
+        this.debuggingMode = debuggingMode;
         moduleLeft = new DriveModule(robot, ModuleSide.LEFT, debuggingMode);
         moduleRight = new DriveModule(robot, ModuleSide.RIGHT, debuggingMode);
 
         //todo: change to parameter
         robotPosition = new Position(0, 0, new Angle(0, Angle.AngleType.ZERO_TO_360_HEADING));
+
+        dataLogger = new DataLogger("Drive Controller");
+        dataLogger.addField("X Position");
+        dataLogger.addField("Y Position");
+        dataLogger.addField("X Power");
+        dataLogger.addField("Y Power");
+        dataLogger.addField("Rotation Power");
+        dataLogger.addField("Translation Direction X");
+        dataLogger.addField("Translation Direction Y");
+        dataLogger.addField("Rotation Direction");
+        dataLogger.addField("Translation Vector X");
+        dataLogger.addField("Translation Vector Y");
+        dataLogger.newLine();
     }
 
     //defaults to debugging mode off
@@ -248,38 +265,57 @@ public class DriveController {
 
 
     //position tracking drive method
-    public void driveToPosition(Position currentPosition, Position targetPosition) {
-        double totalXDistance = currentPosition.getXDifference(targetPosition);
-        double totalYDistance = currentPosition.getYDifference(targetPosition);
-        double totalHeadingDifference = currentPosition.getHeadingDifference(targetPosition);
+    public void driveToPosition(Position targetPosition, LinearOpMode linearOpMode) {
+        double totalXDistance = robotPosition.getAbsXDifference(targetPosition);
+        double totalYDistance = robotPosition.getAbsYDifference(targetPosition);
+        double totalHeadingDifference = robotPosition.getAbsHeadingDifference(targetPosition);
 
-        Vector2d translationDirection = currentPosition.getDirectionTo(targetPosition);
-        Angle.Direction rotationDirection = currentPosition.getRotationDirectionTo(targetPosition);
-
-        while (!targetPosition.withinRange(currentPosition, 5, 5, 5)){
+        do {
             //scale speeds based on remaining distance from target, bounded by 0 and original distance
             //at the very beginning, x & y trans and rot will be max speed (different for each)
             //at the end, all three speeds will be min speed (different for each)
             //in between, the speeds will scale linearly depending on distance from target position
+            robot.updateBulkData();
+            updatePositionTracking(linearOpMode.telemetry);
 
-            double xPower = RobotUtil.scaleVal(currentPosition.getXDifference(targetPosition),
-                    0, totalXDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
+            Vector2d translationDirection = robotPosition.getDirectionTo(targetPosition);
+            Angle.Direction rotationDirection = robotPosition.getRotationDirectionTo(targetPosition);
 
-            double yPower = RobotUtil.scaleVal(currentPosition.getYDifference(targetPosition),
-                    0, totalYDistance, MIN_AUTO_DRIVE_FACTOR, MAX_AUTO_DRIVE_FACTOR);
+            double xPower = RobotUtil.scaleVal(robotPosition.getAbsXDifference(targetPosition),
+                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR); //changed min to zero //was 30
 
-            double rotationPower = RobotUtil.scaleVal(currentPosition.getHeadingDifference(targetPosition),
-                    0, totalHeadingDifference, MIN_AUTO_ROTATE_FACTOR, MAX_AUTO_ROTATE_FACTOR);
+            double yPower = RobotUtil.scaleVal(robotPosition.getAbsYDifference(targetPosition),
+                    0, 60, 0, MAX_AUTO_DRIVE_FACTOR);
+
+            double rotationPower = RobotUtil.scaleVal(robotPosition.getSignedHeadingDifference(targetPosition),
+                    0, 90, 0, MAX_AUTO_ROTATE_FACTOR);
 
             //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
             Vector2d translationVector = new Vector2d(xPower * translationDirection.getX(), yPower * translationDirection.getY());
-            if (rotationDirection == Angle.Direction.COUNTER_CLOCKWISE) {
-                //todo: check CCW vs CW
-                rotationPower *= -1;
-            }
 
-            update(translationVector, rotationPower);
-        }
+            if (debuggingMode) {
+                dataLogger.addField(robotPosition.x);
+                dataLogger.addField(robotPosition.y);
+                dataLogger.addField(xPower);
+                dataLogger.addField(yPower);
+                dataLogger.addField(rotationPower);
+                dataLogger.addField(translationDirection.getX());
+                dataLogger.addField(translationDirection.getY());
+                dataLogger.addField(rotationDirection.toString());
+                dataLogger.addField(translationVector.getX());
+                dataLogger.addField(translationVector.getY());
+                dataLogger.newLine();
+
+                update(translationVector, rotationPower);
+                linearOpMode.telemetry.addData("X power", xPower);
+                linearOpMode.telemetry.addData("X difference", robotPosition.getAbsXDifference(targetPosition));
+                linearOpMode.telemetry.addData("Translation direction", translationDirection);
+                linearOpMode.telemetry.addData("Translation vector", translationVector);
+                linearOpMode.telemetry.update();
+            }
+        } while (!targetPosition.withinRange(robotPosition, 5, 5, 5) && linearOpMode.opModeIsActive());
+
+        update(Vector2d.ZERO, 0);
     }
 
     /*
@@ -408,7 +444,7 @@ public class DriveController {
         leftDisp.setX(leftDisp.getX() - WHEEL_TO_WHEEL_CM /2);
 
         Vector2d robotCenterDisp = new Vector2d((rightDisp.getX() + leftDisp.getX())/2, (rightDisp.getY() + leftDisp.getY())/2);
-        robotCenterDisp = robotCenterDisp.rotateTo(robotPosition.heading); //make field centric using previous heading
+        robotCenterDisp = robotCenterDisp.rotateBy(robotPosition.heading.getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.CLOCKWISE); //make field centric using previous heading
         robotPosition.incrementX(robotCenterDisp.getX());
         robotPosition.incrementY(robotCenterDisp.getY());
 

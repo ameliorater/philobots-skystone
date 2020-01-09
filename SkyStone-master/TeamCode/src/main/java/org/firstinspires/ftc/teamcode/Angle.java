@@ -60,8 +60,13 @@ public class Angle {
     public double getAngle () { return angle; }
     public AngleType getType () { return type; }
 
+//    public double getAngle (AngleType type) {
+//        return new Angle(getAngle(), getType()).getAngle();
+//    }
+
+    //NOTE: was wrong before
     public double getAngle (AngleType type) {
-        return new Angle(getAngle(), getType()).getAngle();
+        return this.convertAngle(type).getAngle();
     }
 
     @Override
