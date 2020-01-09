@@ -64,10 +64,10 @@ public class DriveController {
     double MIN_AUTO_ROTATE_FACTOR = 0.1;
 
 //    //Vuforia field tracking tools:
-//    //This is the allowed distance to a target
-//    public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
-//    //This is the object to get the position on field
-//    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
+    //This is the allowed distance to a target
+    public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
+    //This is the object to get the position on field
+    public FieldTracker vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
     public DriveController(Robot robot, Position startingPosition, boolean debuggingMode) {
         this.robot = robot;
@@ -294,7 +294,7 @@ public class DriveController {
 
             //todo: may need to batch normalize all three somehow (x and y should be automatically normalized)
             double distanceRemaining = robotPosition.getVectorTo(targetPosition).getMagnitude();
-            double translationScaleFactor = RobotUtil.scaleVal(distanceRemaining, 0, totalTravelDistance, 0, 1);
+            double translationScaleFactor = RobotUtil.scaleVal(distanceRemaining, 0, totalTravelDistance, 0.1, 1);
             Vector2d translationVector = translationDirection.scale(translationScaleFactor);
             if (isBlue) translationVector = translationVector.reflect();
 
@@ -321,52 +321,61 @@ public class DriveController {
         update(Vector2d.ZERO, 0);
     }
 
-    /*
+    //attempt to update robot position using vuforia
+    public void updatePositionVuforia () {
+        //if a target is in view
+        Position2D vuforiaPosition = getVuforiaPosition();
+        if (vuforiaPosition != null) {
+            robotPosition.x = vuforiaPosition.x;
+            robotPosition.y = vuforiaPosition.y;
+        }
+    }
+
+
     //Methods for moving with position tracking (Vuforia targets); UNTESTED
-    public Position2D getCurrentPositionOnField() {
+    public Position2D getVuforiaPosition() {
         TargetInfo info = vuforiaTracker.getTargetInfo();
         return info == null ? null : new Position2D(info.xPosition, info.yPosition);
     }
 
-    public Vector2d getVectorToTarget(Position2D desiredPosition) {
-        Position2D currentPosition = getCurrentPositionOnField();
-        return currentPosition == null ? null : new Vector2d(desiredPosition.x - currentPosition.x, desiredPosition.y - currentPosition.y);
-    }
+//    public Vector2d getVectorToTarget(Position2D desiredPosition) {
+//        Position2D currentPosition = getCurrentPositionOnField();
+//        return currentPosition == null ? null : new Vector2d(desiredPosition.x - currentPosition.x, desiredPosition.y - currentPosition.y);
+//    }
 
-    //The following two methods are used to go to a specific position; currently untested
-    public void driveToPosition(double startx, double starty, double x, double y, double speed, long timeout, LinearOpMode linearOpMode) {
-        driveToPosition(startx, starty, new Position2D(x, y), speed, timeout, linearOpMode);
-    }
+//    //The following two methods are used to go to a specific position; currently untested
+//    public void driveToPosition(double startx, double starty, double x, double y, double speed, long timeout, LinearOpMode linearOpMode) {
+//        driveToPosition(startx, starty, new Position2D(x, y), speed, timeout, linearOpMode);
+//    }
 
-    public void driveToPosition(double startx, double starty, Position2D position, double speed, long timeout, LinearOpMode linearOpMode) {
-        long startTime = System.currentTimeMillis();
+//    public void driveToPosition(double startx, double starty, Position2D position, double speed, long timeout, LinearOpMode linearOpMode) {
+//        long startTime = System.currentTimeMillis();
+//
+//        Vector2d temp = getVectorToTarget(position);
+//        Vector2d vectorToTarget = temp == null ? new Vector2d(position.x - startx, position.y - starty) : temp;
+//        double distanceToTarget = vectorToTarget.getMagnitude();
+//        while (distanceToTarget < ALLOWED_DISTANCE_TO_TARGET && System.currentTimeMillis() - startTime < timeout) {
+//            if (distanceToTarget < START_DRIVE_SLOWDOWN_AT_CM) {
+//                speed = RobotUtil.scaleVal(distanceToTarget, 0, START_DRIVE_SLOWDOWN_AT_CM, MIN_DRIVE_POWER, speed);
+//                linearOpMode.telemetry.addData("speed: ", speed);
+//            }
+//            updateTracking(); //WAS MOVED ABOVE
+//            update(vectorToTarget.normalize(Math.abs(speed)), 0); //added ABS for DEBUGGING
+//
+//            linearOpMode.telemetry.addData("Driving robot", "");
+//            linearOpMode.telemetry.update();
+//            updatePositionTracking(robot.telemetry); //update position tracking
+//
+//            temp = getVectorToTarget(position);
+//            if (temp != null) {
+//                vectorToTarget = temp;
+//                distanceToTarget = vectorToTarget.getMagnitude();
+//            }
+//        }
+//        update(Vector2d.ZERO, 0);
+//        setRotateModuleMode(ROTATE_MODULES); //reset mode
+//    }
 
-        Vector2d temp = getVectorToTarget(position);
-        Vector2d vectorToTarget = temp == null ? new Vector2d(position.x - startx, position.y - starty) : temp;
-        double distanceToTarget = vectorToTarget.getMagnitude();
-        while (distanceToTarget < ALLOWED_DISTANCE_TO_TARGET && System.currentTimeMillis() - startTime < timeout) {
-            if (distanceToTarget < START_DRIVE_SLOWDOWN_AT_CM) {
-                speed = RobotUtil.scaleVal(distanceToTarget, 0, START_DRIVE_SLOWDOWN_AT_CM, MIN_DRIVE_POWER, speed);
-                linearOpMode.telemetry.addData("speed: ", speed);
-            }
-            updateTracking(); //WAS MOVED ABOVE
-            update(vectorToTarget.normalize(Math.abs(speed)), 0); //added ABS for DEBUGGING
-
-            linearOpMode.telemetry.addData("Driving robot", "");
-            linearOpMode.telemetry.update();
-            updatePositionTracking(robot.telemetry); //update position tracking
->>>>>>> 8a70bf03325c5210c08d5c0c270ac79ea921df32
-
-            temp = getVectorToTarget(position);
-            if (temp != null) {
-                vectorToTarget = temp;
-                distanceToTarget = vectorToTarget.getMagnitude();
-            }
-        }
-        update(Vector2d.ZERO, 0);
-        setRotateModuleMode(ROTATE_MODULES); //reset mode
-    }
-    */
 
     public void rotateRobot(Angle targetAngle, double power, LinearOpMode linearOpMode) {
         double startTime = System.currentTimeMillis();
