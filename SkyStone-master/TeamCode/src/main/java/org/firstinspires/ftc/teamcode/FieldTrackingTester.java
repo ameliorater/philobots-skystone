@@ -25,7 +25,7 @@ public class FieldTrackingTester extends LinearOpMode {
 
     public void runOpMode() {
         //CHANGE PARAMETERS FOR WEBCAM/GRAPHICS USAGE
-        tracker = new FieldTracker(hardwareMap, telemetry, true, true);
+        tracker = new FieldTracker(hardwareMap, telemetry, false, true);
         setupIMU();
 
         double imuAngle, trackerAngle;

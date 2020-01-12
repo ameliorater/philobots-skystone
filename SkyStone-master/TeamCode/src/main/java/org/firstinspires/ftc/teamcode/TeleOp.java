@@ -193,6 +193,12 @@ public class TeleOp extends OpMode {
         telemetry.update();
     }
 
+    public void stop() {
+        robot.driveController.updateUsingJoysticks(new Vector2d(0, 0), new Vector2d(0, 0), false);
+        super.stop();
+    }
+
+
 
     /*//This implementation caused a bug - vectors that go in any cardinal direction would get reduced to a point vector, for example
     public Vector2d checkDeadband(Vector2d joystick) {

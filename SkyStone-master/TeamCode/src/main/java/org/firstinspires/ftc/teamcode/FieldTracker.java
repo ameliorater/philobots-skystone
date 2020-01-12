@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.*;
+//import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
@@ -256,7 +256,8 @@ public class FieldTracker {
                 return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
                         convert(translation.get(0), MM_UNIT, CM_UNIT),
                         convert(translation.get(1), MM_UNIT, CM_UNIT),
-                        convert(translation.get(2), MM_UNIT, CM_UNIT)
+                        convert(translation.get(2), MM_UNIT, CM_UNIT),
+                        trackable.getName()
                 );
             }
         }
@@ -267,9 +268,11 @@ public class FieldTracker {
 class TargetInfo {
     double xRotation, yRotation, zRotation;
     double xPosition, yPosition, zPosition;
+    String name;
 
     public TargetInfo(double xRot, double yRot, double zRot,
-                      double xPos, double yPos, double zPos) {
+                      double xPos, double yPos, double zPos,
+                      String name) {
 
         xRotation = xRot;
         yRotation = yRot;
@@ -278,11 +281,14 @@ class TargetInfo {
         xPosition = xPos;
         yPosition = yPos;
         zPosition = zPos;
+
+        this.name = name;
     }
 
     public String toString() {
-        return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
-                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition;
+        return  "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition +
+                "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
+                "\nName: " + name;
     }
 }
 

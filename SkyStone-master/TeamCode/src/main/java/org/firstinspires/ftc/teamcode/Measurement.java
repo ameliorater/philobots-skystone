@@ -13,7 +13,7 @@ public class Measurement {
     };
 
     public static double convert(double initialValue, int fromUnit, int toUnit) {
-        return initialValue * conversionFactors[fromUnit][toUnit];
+        return initialValue * conversionFactors[toUnit][fromUnit];
     }
 
 }
