@@ -181,8 +181,6 @@ public class TeleOp extends OpMode {
 //            robot.driveController.moduleLeft.ROBOT_ROTATION_MAX_MAG -= 0.01;
 //        }
 
-        telemetry.addData("ROT_ADVANTAGE: ", robot.driveController.moduleLeft.ROT_ADVANTAGE);
-
 
         telemetry.addData("joystick 1", joystick1);
         telemetry.addData("joystick 2", joystick2);
