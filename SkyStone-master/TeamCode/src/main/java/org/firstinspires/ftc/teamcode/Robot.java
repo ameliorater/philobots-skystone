@@ -35,6 +35,7 @@ public class Robot {
     //MOTORS
     ExpansionHubMotor lift1, lift2;
     ExpansionHubMotor intake1, intake2;
+    ExpansionHubMotor rightDriveMotor1, rightDriveMotor2, leftDriveMotor1, leftDriveMotor2;
 
     DriveController driveController;
     BNO055IMU imu;
@@ -132,6 +133,12 @@ public class Robot {
         setupMotor(intake1, DcMotorSimple.Direction.FORWARD, DcMotor.RunMode.RUN_USING_ENCODER);
         intake2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intakeMotor2");
         setupMotor(intake2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //drive motors
+        rightDriveMotor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightTopMotor");
+        rightDriveMotor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightBottomMotor");
+        leftDriveMotor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftTopMotor");
+        leftDriveMotor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftBottomMotor");
 
         frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");

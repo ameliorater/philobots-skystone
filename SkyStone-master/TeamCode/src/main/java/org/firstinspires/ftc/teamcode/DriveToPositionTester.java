@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "Drive To Position Tester", group = "Auto")
+@Autonomous(name = "Drive To Position Tester -A", group = "Auto")
 public class DriveToPositionTester extends LinearOpMode {
     //Robot class declaration
     Robot robot;

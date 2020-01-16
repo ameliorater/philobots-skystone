@@ -7,9 +7,7 @@ import org.openftc.revextensions2.ExpansionHubMotor;
 
 public class DriveModule {
     Robot robot;
-    public final ModuleSide moduleSide;
     boolean debuggingMode;
-
     DataLogger dataLogger;
 
     //module specific drive motors
@@ -18,8 +16,6 @@ public class DriveModule {
 
     double lastM1Encoder;
     double lastM2Encoder;
-
-    public final Vector2d positionVector; //position of module relative to robot COM (center of mass)
 
     //used for logic that allows robot to rotate modules as little as possible
     public boolean takingShortestPath = false;
@@ -50,19 +46,11 @@ public class DriveModule {
 
     public double positionChange; //used for position tracking
 
-    public DriveModule(Robot robot, ModuleSide moduleSide, boolean debuggingMode) {
+    public DriveModule(Robot robot, DcMotor motor1, DcMotor motor2, boolean debuggingMode) {
         this.robot = robot;
-        this.moduleSide = moduleSide;
         this.debuggingMode = debuggingMode;
-        if (moduleSide == ModuleSide.RIGHT) {
-            motor1 = (ExpansionHubMotor) robot.hardwareMap.dcMotor.get("rightTopMotor");
-            motor2 = (ExpansionHubMotor) robot.hardwareMap.dcMotor.get("rightBottomMotor");
-            positionVector = new Vector2d((double)18/2, 0); //points from robot center to right module
-        } else {
-            motor1 = (ExpansionHubMotor) robot.hardwareMap.dcMotor.get("leftTopMotor");
-            motor2 = (ExpansionHubMotor) robot.hardwareMap.dcMotor.get("leftBottomMotor");
-            positionVector = new Vector2d((double)-18/2, 0); //points from robot center to left module
-        }
+        this.motor1 = (ExpansionHubMotor) motor1;
+        this.motor2 = (ExpansionHubMotor) motor2;
 
         //set run mode to NOT use encoders for velocity PID regulation
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -72,13 +60,11 @@ public class DriveModule {
         motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //lastM1Encoder = robot.bulkData2.getMotorCurrentPosition(motor1);
-        //lastM2Encoder = robot.bulkData2.getMotorCurrentPosition(motor2);
         lastM1Encoder = 0;
         lastM2Encoder = 0;
 
         if (debuggingMode) {
-            dataLogger = new DataLogger(moduleSide + "ModuleLog");
+            dataLogger = new DataLogger("ModuleLog");
             dataLogger.addField("Trans Vector FC X");
             dataLogger.addField("Trans Vector FC Y");
             dataLogger.addField("Rot Vector X");
@@ -97,80 +83,10 @@ public class DriveModule {
         }
     }
 
-    //defaults to false for debugging mode (optional parameter)
-    public DriveModule(Robot robot, ModuleSide moduleSide) {
-        this(robot, moduleSide, false);
-    }
-
-    //this method updates the target vector for the module based on input from auto/teleop program
-    public void updateTarget (Vector2d transVec, double rotMag) { //translation vector and rotation magnitude
-        //transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
-
-        //converts the translation vector from a robot centric to a field centric one
-        Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
-
-        //vector needed to rotate robot at the desired magnitude
-        //based on positionVector of module (see definition for more info)
-        Vector2d rotVec = positionVector.normalize(rotMag).rotateBy(90, Angle.Direction.COUNTER_CLOCKWISE); //theoretically this should be rotated 90, not sure sure it doesn't need to be
-
-        //combine desired robot translation and robot rotation to get goal vector for the module
-        Vector2d targetVector = transVecFC.add(rotVec);
-
-        //allows modules to reverse power instead of rotating 180 degrees
-        //example: useful when going from driving forwards to driving backwards
-//        int directionMultiplier = -1; //was positive 1
-        if (reversed) { //reverse direction of translation because module is reversed
-            targetVector = targetVector.reflect();
-//            directionMultiplier = 1;
-        }
-
-        if (debuggingMode) {
-            dataLogger.addField(transVecFC.getX());
-            dataLogger.addField(transVecFC.getY());
-            dataLogger.addField(rotVec.getX());
-            dataLogger.addField(rotVec.getY());
-            dataLogger.addField(targetVector.getX());
-            dataLogger.addField(targetVector.getY());
-            dataLogger.addField(getCurrentOrientation().getAngle());
-            dataLogger.addField(reversed);
-        }
-
-        //calls method that will apply motor powers necessary to reach target vector in the best way possible, based on current position
-        //goToTarget(targetVector, directionMultiplier);
-        goToTarget(targetVector);
-
-        if (debuggingMode) {
-            robot.telemetry.addData(moduleSide + " REVERSED: ", reversed);
-            robot.telemetry.addData(moduleSide + " Trans Vec FC: ", transVecFC);
-            robot.telemetry.addData(moduleSide + " Rot Vec: ", rotVec);
-        }
-    }
-
-    //used in place of updateTarget() when the "absolute heading mode" is being used in TeleOp
-    //"absolute heading mode" means the angle of the rotation joystick is used to determine the desired angle of the robot
-    public void updateTargetAbsRotation (Vector2d transVec, Angle targetHeading, double scaleFactor) { //translation vector and rotation magnitude
-        Angle robotHeading = robot.getRobotHeading(); //todo: this changed
-        double rotMag = getRotMag(targetHeading, robotHeading) * scaleFactor;
-        updateTarget(transVec, rotMag);
-    }
-
-    //used ONLY for abs heading mode (alternative teleop control style)
-    public double getRotMag (Angle targetHeading, Angle robotHeading)
-    {
-        robot.telemetry.addData("Difference between joystick and robot", targetHeading.getDifference(robotHeading));
-        robot.telemetry.addData("Direction from robot to joystick", robotHeading.directionTo(targetHeading));
-
-        double unsignedDifference = RobotUtil.scaleVal(targetHeading.getDifference(robotHeading),15, 60, .3, 1);
-        //todo: check if below line is causing problem
-        if (robotHeading.directionTo(targetHeading) == Angle.Direction.CLOCKWISE) {
-            return unsignedDifference * -1;
-        } else {
-            return unsignedDifference;
-        }
-    }
-
     //sets motor powers for robot to best approach given target vector
     public void goToTarget (Vector2d targetVector) {
+        if (reversed) targetVector = targetVector.reflect();
+
         double powerScale = targetVector.getMagnitude();
         double angleDifference = targetVector.getAngle().getDifference(getCurrentOrientation());
         if (angleDifference > 110) { //todo: change this constant
@@ -199,8 +115,8 @@ public class DriveModule {
 
 
         if (debuggingMode) {
-            robot.telemetry.addData(moduleSide + " Target Vector Angle: ", targetVector.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING));
-            robot.telemetry.addData(moduleSide + " Current orientation: ", getCurrentOrientation().getAngle());
+            robot.telemetry.addData(" Target Vector Angle: ", targetVector.getAngleDouble(Angle.AngleType.ZERO_TO_360_HEADING));
+            robot.telemetry.addData(" Current orientation: ", getCurrentOrientation().getAngle());
             dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor1));
             dataLogger.addField(robot.bulkData2.getMotorCurrentPosition(motor2));
             dataLogger.newLine();
@@ -208,13 +124,13 @@ public class DriveModule {
     }
 
 
+    //todo: implement a new version of this method
 //    //for pure module rotation (usually used for precise driving in auto)
 //    public void rotateModule (Vector2d direction, boolean fieldCentric) {
 //        //converts robot heading to the angle type used by Vector2d class
 //        Angle convertedRobotHeading = robot.getRobotHeading().convertAngle(Angle.AngleType.NEG_180_TO_180_CARTESIAN);
 //
 //        //pass 0 as moveComponent
-//        //todo: check if fixes broke this
 //        Vector2d directionFC = direction.rotateTo(robot.getRobotHeading()); //was converted robot heading
 //
 //        //ADDED
@@ -247,8 +163,8 @@ public class DriveModule {
 
     //returns module orientation relative to ROBOT (not field) in degrees and NEG_180_TO_180_HEADING type
     public Angle getCurrentOrientation() {
-        robot.telemetry.addData(moduleSide + "Motor 1 Encoder", robot.bulkData2.getMotorCurrentPosition(motor1));
-        robot.telemetry.addData(moduleSide + "Motor 2 Encoder", robot.bulkData2.getMotorCurrentPosition(motor2));
+        robot.telemetry.addData("Motor 1 Encoder", robot.bulkData2.getMotorCurrentPosition(motor1));
+        robot.telemetry.addData("Motor 2 Encoder", robot.bulkData2.getMotorCurrentPosition(motor2));
         double rawAngle = (double)(robot.bulkData2.getMotorCurrentPosition(motor2) + robot.bulkData2.getMotorCurrentPosition(motor1))/2.0 * DEGREES_PER_TICK; //motor2-motor1 makes ccw positive (?)
         return new Angle(rawAngle, Angle.AngleType.ZERO_TO_360_HEADING);
     }
@@ -280,9 +196,9 @@ public class DriveModule {
         if (debuggingMode) {
             telemetry.addData("Position change: ", positionChange);
             telemetry.addData("Average angle: ", averageAngle);
-            telemetry.addData(moduleSide + " Displacement vector: ", displacementVec);
-            telemetry.addData(moduleSide + " Delta X Pos: ", displacementVec.getX());
-            telemetry.addData(moduleSide + " Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
+            telemetry.addData(" Displacement vector: ", displacementVec);
+            telemetry.addData(" Delta X Pos: ", displacementVec.getX());
+            telemetry.addData(" Delta Y Pos: ", displacementVec.getY()); //was printing the final position instead...
         }
 
         lastM1Encoder = newM1Encoder;

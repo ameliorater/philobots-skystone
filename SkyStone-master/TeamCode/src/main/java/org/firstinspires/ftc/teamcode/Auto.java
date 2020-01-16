@@ -120,7 +120,7 @@ public class Auto extends LinearOpMode {
 
         //intake block
         robot.moveIntake(Constants.IntakeState.INTAKE, INTAKE_SPEED);
-        robot.driveController.drive(Vector2d.FORWARD, 20, SLOW_SPEED, this);
+        //robot.driveController.drive(Vector2d.FORWARD, 20, SLOW_SPEED, this);
         //robot.wait(2000, this);
         robot.moveIntake(Constants.IntakeState.STOP);
 
