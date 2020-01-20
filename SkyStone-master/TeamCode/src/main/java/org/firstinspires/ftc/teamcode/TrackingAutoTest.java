@@ -25,6 +25,8 @@ public class TrackingAutoTest extends LinearOpMode {
     FieldTracker fieldTracker;
     SkystoneCV cv;
     boolean isBlue;
+    double DEFAULT_POWER = 0.9; //was 0.6 for most
+    double SLOW_POWER = 0.35; //was 0.35
 
     public void runOpMode() {
 
@@ -92,27 +94,27 @@ public class TrackingAutoTest extends LinearOpMode {
         cv.camera.closeCameraDevice();
         //fieldTracker = new FieldTracker(hardwareMap, telemetry, true, false);
 
-        // go to the center stone
-        moveTo(stonePosition, (isBlue ? 85 : -85), isBlue ? 180 : 0, 0.5, 5);
+        // go to the stone
+        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5); //WAS 85
         simplePathFollow.stop(robot);
         robot.armServo1.setPosition(.4);
         robot.armServo2.setPosition(.6);
         robot.hungryHippoRetract();
         robot.moveIntake(Constants.IntakeState.INTAKE,Constants.IntakeSpeed.SLOW);
-        robot.wait(1000, this, simpleTracking);
-        moveTo(stonePosition, isBlue ? 50 : -50, isBlue ? 180 : 0, 0.35, 5);
+        //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
+        moveTo(stonePosition, isBlue ? 50 : -50, isBlue ? 180 : 0, SLOW_POWER, 5);
         simplePathFollow.stop(robot);
         robot.armServo1.setPosition(.7);
         robot.armServo2.setPosition(.3);
-        robot.wait(1200,this, simpleTracking);
+        //robot.wait(1200,this, simpleTracking); //REMOVED 1-20
         robot.hungryHippoExtend();
         robot.moveIntake(Constants.IntakeState.STOP);
         robot.armServo1.setPosition(.5);
         robot.armServo2.setPosition(.5);
 
-        robot.wait(1000, this, simpleTracking);
-        moveTo(stonePosition, isBlue ? 115 : -115, isBlue ? 180: 0, 0.6, 2); //WAS 95
-        moveTo(stonePosition, isBlue ? 95: -95, 270, 0.6, 1);
+        //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
+        moveTo(stonePosition, isBlue ? 105 : -105, isBlue ? 180: 0, DEFAULT_POWER, 2); //WAS 95
+        moveTo(stonePosition, isBlue ? 105: -105, 270, DEFAULT_POWER, 1); //WAS ALSO 95
         simplePathFollow.stop(robot);
         //robot.wait(250, this); //removed 1-20
 
@@ -121,60 +123,44 @@ public class TrackingAutoTest extends LinearOpMode {
         // move to platform
         moveWithIMU(120, isBlue ? 95 : -95, 270, 0.6, 5);
 
-        moveTo(120, isBlue ? 90: -90, isBlue ? 0:180, 0.6, 5);
+        moveTo(120, isBlue ? 90: -90, isBlue ? 0:180, DEFAULT_POWER, 5);
         simplePathFollow.stop(robot);
         moveWithRangeSensorTo(120, isBlue ? 35: -35, isBlue ? 0 : 180, 0.4, 5, 3000);
 //        moveTo(isBlue ? 120 : -213, 60, 0, 0.4, 5);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(0.0);
         robot.latchServo2.setPosition(1.0);
-        robot.wait(200, this, simpleTracking);
-        robot.closeGrabber();
-        robot.wait(200, this, simpleTracking);
-        robot.openGrabber();
-        robot.wait(200, this, simpleTracking);
-        robot.closeGrabber();
-        robot.wait(500, this, simpleTracking);
-        robot.armServo1.setPosition(.3);
-        robot.armServo2.setPosition(.7);
-        robot.wait(1200, this, simpleTracking);
-        robot.openGrabber();
-        robot.armServo1.setPosition(.7);
-        robot.armServo2.setPosition(.3);
+//        robot.wait(200, this, simpleTracking);   //REMOVED 1-20
+//        robot.closeGrabber();
+//        robot.wait(200, this, simpleTracking);
+//        robot.openGrabber();
+//        robot.wait(200, this, simpleTracking);
+//        robot.closeGrabber();
+//        robot.wait(500, this, simpleTracking);
+//        robot.armServo1.setPosition(.3);
+//        robot.armServo2.setPosition(.7);
+//        robot.wait(1200, this, simpleTracking);
+//        robot.openGrabber();
+//        robot.armServo1.setPosition(.7);
+//        robot.armServo2.setPosition(.3);
 
-        robot.wait(1000, this, simpleTracking);
-        robot.armServo1.setPosition(.5);
-        robot.armServo2.setPosition(.5);
+//        robot.wait(1000, this, simpleTracking);  //REMOVED 1-20
+//        robot.armServo1.setPosition(.5);
+//        robot.armServo2.setPosition(.5);
         moveTo(120, isBlue ? 125:-125, isBlue ?0:180, 0.6, 5, 5000);
         simplePathFollow.stop(robot);
         moveTo(50, isBlue ?125 : -125, isBlue ? 245 : 295, 1.0, 2); //pivot platform  //WAS 80
-        moveTo(110, isBlue ? 125 : -125, 270, 0.6, 5, 2000);
+        moveTo(110, isBlue ? 125 : -125, 270, DEFAULT_POWER, 5, 2000);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(1.0);
         robot.latchServo2.setPosition(0.0);
 
         //waitForButton();
 
-        moveTo(60, isBlue  ? 80 : -80, 270, 0.6, 5);
-        moveTo(0, isBlue ? 80 : -80, 270, 0.6, 5);
+        moveTo(0, isBlue  ? 100 : -100, 270, 0.6, 5); //was 80 : -80 in the y  //was 60 in the x
+        //moveTo(0, isBlue ? 80 : -80, 270, 0.6, 5);
         simplePathFollow.stop(robot);
 
-        // test translate
-//        moveTo(0, 180, 0, 0.6, 10);
-//        moveTo(-240, 180, 0, 0.6, 10);
-//        moveTo(-240, 0, 0, 0.6, 10);
-//        moveTo(0, 0, 0, 0.6, 10);
-        // test rotate
-//        moveTo(0, 0, 180, 0.5, 5);
-
-//        while (opModeIsActive()) {
-//            logTelemetry();
-//        }
-
-        // test rotate and translate
-//        moveTo(0, 100, 90, 0.4, 5);
-        // stop all motors
-        simplePathFollow.stop(robot);
 
     }
 
