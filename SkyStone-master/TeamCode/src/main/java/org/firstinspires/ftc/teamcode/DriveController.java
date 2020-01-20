@@ -63,11 +63,11 @@ public class DriveController {
     double MAX_AUTO_ROTATE_FACTOR = 0.3; //was 0.5
     double MIN_AUTO_ROTATE_FACTOR = 0.1;
 
-//    //Vuforia field tracking tools:
-    //This is the allowed distance to a target
-    public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
-    //This is the object to get the position on field
-    public FieldTracker vuforiaTracker;
+////    //Vuforia field tracking tools:
+//    //This is the allowed distance to a target
+//    public final double ALLOWED_DISTANCE_TO_TARGET = 5; //todo change this value
+//    //This is the object to get the position on field
+//    public FieldTracker vuforiaTracker;
 
     public DriveController(Robot robot, Position startingPosition, boolean debuggingMode) {
         this.robot = robot;
@@ -78,20 +78,22 @@ public class DriveController {
         //todo: change to parameter
         robotPosition = startingPosition;
 
-        vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
+        //vuforiaTracker = new FieldTracker(robot.hardwareMap, robot.telemetry, true, false);
 
-        dataLogger = new DataLogger("Drive Controller");
-        dataLogger.addField("X Position");
-        dataLogger.addField("Y Position");
-        dataLogger.addField("X Power");
-        dataLogger.addField("Y Power");
-        dataLogger.addField("Rotation Power");
-        dataLogger.addField("Translation Direction X");
-        dataLogger.addField("Translation Direction Y");
-        dataLogger.addField("Rotation Direction");
-        dataLogger.addField("Translation Vector X");
-        dataLogger.addField("Translation Vector Y");
-        dataLogger.newLine();
+        if (debuggingMode) {
+            dataLogger = new DataLogger("Drive Controller");
+            dataLogger.addField("X Position");
+            dataLogger.addField("Y Position");
+            dataLogger.addField("X Power");
+            dataLogger.addField("Y Power");
+            dataLogger.addField("Rotation Power");
+            dataLogger.addField("Translation Direction X");
+            dataLogger.addField("Translation Direction Y");
+            dataLogger.addField("Rotation Direction");
+            dataLogger.addField("Translation Vector X");
+            dataLogger.addField("Translation Vector Y");
+            dataLogger.newLine();
+        }
     }
 
     //defaults to debugging mode off, starting position of 0, 0
@@ -382,22 +384,22 @@ public class DriveController {
 //        update(Vector2d.ZERO, 0);
 //    }
 
-    //attempt to update robot position using vuforia
-    public void updatePositionVuforia () {
-        //if a target is in view
-        Position2D vuforiaPosition = getVuforiaPosition();
-        if (vuforiaPosition != null) {
-            robotPosition.x = vuforiaPosition.x;
-            robotPosition.y = vuforiaPosition.y;
-        }
-    }
+//    //attempt to update robot position using vuforia
+//    public void updatePositionVuforia () {
+//        //if a target is in view
+//        Position2D vuforiaPosition = getVuforiaPosition();
+//        if (vuforiaPosition != null) {
+//            robotPosition.x = vuforiaPosition.x;
+//            robotPosition.y = vuforiaPosition.y;
+//        }
+//    }
 
 
-    //Methods for moving with position tracking (Vuforia targets); UNTESTED
-    public Position2D getVuforiaPosition() {
-        TargetInfo info = vuforiaTracker.getTargetInfo();
-        return info == null ? null : new Position2D(info.xPosition, info.yPosition);
-    }
+//    //Methods for moving with position tracking (Vuforia targets); UNTESTED
+//    public Position2D getVuforiaPosition() {
+//        TargetInfo info = vuforiaTracker.getTargetInfo();
+//        return info == null ? null : new Position2D(info.xPosition, info.yPosition);
+//    }
 
 //    public Vector2d getVectorToTarget(Position2D desiredPosition) {
 //        Position2D currentPosition = getCurrentPositionOnField();

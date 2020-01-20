@@ -29,7 +29,7 @@ public class TeleOp extends OpMode {
 
 
     public void init() {
-        robot = new Robot(this, false, true);
+        robot = new Robot(this, false, false);
     }
 
     public void init_loop() {
@@ -58,13 +58,13 @@ public class TeleOp extends OpMode {
 
         //slow mode/range stuffs
         if (gamepad1.left_trigger > 0.1) {
-            joystick1 = joystick1.scale(0.3);
-            joystick2 = joystick2.scale(0.3);
+            joystick1 = joystick1.scale(0.45);
+            joystick2 = joystick2.scale(0.45);
         }
         else if (gamepad1.right_trigger > 0.1) {
             if (robot.getRange(false) < 30) {
-                joystick1 = joystick1.scale(0.3);
-                joystick2 = joystick2.scale(0.3);
+                joystick1 = joystick1.scale(0.45);
+                joystick2 = joystick2.scale(0.45);
             }
         }
         else if (gamepad1.left_bumper || gamepad1.right_bumper)
@@ -192,12 +192,6 @@ public class TeleOp extends OpMode {
 
         telemetry.update();
     }
-
-    public void stop() {
-        robot.driveController.updateUsingJoysticks(new Vector2d(0, 0), new Vector2d(0, 0), false);
-        super.stop();
-    }
-
 
 
     /*//This implementation caused a bug - vectors that go in any cardinal direction would get reduced to a point vector, for example

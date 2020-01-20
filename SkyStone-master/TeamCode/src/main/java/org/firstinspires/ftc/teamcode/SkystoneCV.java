@@ -39,6 +39,7 @@ public class SkystoneCV {
         detector = new SkystoneWindowDetector(opMode);
         CAMERA_NAME = cameraName;
         this.opMode = opMode;
+        detector.setWindows(new Rect((int) leftRectCorner.x, (int) leftRectCorner.y, (int)width, (int)width),new Rect((int) centerRectCorner.x, (int) centerRectCorner.y, (int)width, (int )width), new Rect((int) rightRectCorner.x, (int) rightRectCorner.y, (int)width, (int)width));
 
         this.leftRectCorner = leftRectCorner;
         this.centerRectCorner = centerRectCorner;

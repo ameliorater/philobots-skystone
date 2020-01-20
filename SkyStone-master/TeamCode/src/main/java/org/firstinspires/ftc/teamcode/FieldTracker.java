@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.*;
-//import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
@@ -60,8 +60,12 @@ public class FieldTracker {
     private static final float bridgeRotZ = 180;
 
     // Constants for perimeter targets
-    private static final float halfField = 72 * mmPerInch;
-    private static final float quadField  = 36 * mmPerInch;
+//    private static final float halfField = 72 * mmPerInch;
+//    private static final float quadField  = 36 * mmPerInch;
+
+    // adjust based on pictures being 36" from the side walls and wall to wall distance is 11' 9"
+    private static final float halfField = 70.5f * mmPerInch;
+    private static final float quadField  = 34.5f * mmPerInch;
 
     // Class Members
     private OpenGLMatrix lastLocation = null;
@@ -69,7 +73,7 @@ public class FieldTracker {
     //private boolean targetVisible = false;
     private float phoneXRotate    = 0;
     private float phoneYRotate    = 0;
-    private float phoneZRotate    = 0;
+    private float phoneZRotate    = 90;
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -82,8 +86,8 @@ public class FieldTracker {
     final static float CAMERA_VERTICAL_DISPLACEMENT = 0;
     final static float CAMERA_LEFT_DISPLACEMENT = 0;
     //TODO CHANGE THESE VALUES TO MATCH THE WEBCAM PLACEMENT
-    final static float WEBCAM_FORWARD_DISPLACEMENT = 0; // 4.0f * mmPerInch;
-    final static float WEBCAM_VERTICAL_DISPLACEMENT = 0; //4.625f * mmPerInch;
+    final static float WEBCAM_FORWARD_DISPLACEMENT = 175; // 4.0f * mmPerInch;
+    final static float WEBCAM_VERTICAL_DISPLACEMENT = 285; //4.625f * mmPerInch;
     final static float WEBCAM_LEFT_DISPLACEMENT = 0; //-6.5f * mmPerInch;
 
     public FieldTracker(HardwareMap m, Telemetry t, boolean usingWebcam, boolean usingGraphics) {
@@ -244,16 +248,15 @@ public class FieldTracker {
     public TargetInfo getTargetInfo() {
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-
                 OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
                 if (robotLocationTransform != null) {
                     lastLocation = robotLocationTransform;
                 }
 
                 VectorF translation = lastLocation.getTranslation();
-                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, YZX, DEGREES);
 
-                return new TargetInfo(rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle,
+                return new TargetInfo(rotation.thirdAngle, rotation.firstAngle, rotation.secondAngle,
                         convert(translation.get(0), MM_UNIT, CM_UNIT),
                         convert(translation.get(1), MM_UNIT, CM_UNIT),
                         convert(translation.get(2), MM_UNIT, CM_UNIT),
@@ -286,8 +289,8 @@ class TargetInfo {
     }
 
     public String toString() {
-        return  "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition +
-                "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
+        return  "\nRotation\nx: " + xRotation + "\ny: " + yRotation + "\nz: " + zRotation +
+                "\nTranslation\nx: " + xPosition + "\ny: " + yPosition + "\nz: " + zPosition +
                 "\nName: " + name;
     }
 }

@@ -237,12 +237,12 @@ public class Robot {
     }
 
     public void intakeServoOpen(){
-        moveServo(intakeServo1, 0);
-        moveServo(intakeServo2, 1);
+        moveServo(intakeServo1, 0.0);
+        moveServo(intakeServo2, 1.0);
     }
     public void intakeServoClose(){
-        moveServo(intakeServo1, 1);
-        moveServo(intakeServo2, 0);
+        moveServo(intakeServo1, 1.0);
+        moveServo(intakeServo2, 0.0);
     }
 
 
@@ -443,10 +443,19 @@ public class Robot {
         return (p / 2.0) + .5;
     }
 
+    public void wait (int millis, LinearOpMode linearOpMode, SimpleTracking simpleTracking) {
+        long startTime = System.currentTimeMillis();
+        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) {
+            simpleTracking.updatePosition(this); //added 1-20
+        }
+    }
+
+    //no tracking update
     public void wait (int millis, LinearOpMode linearOpMode) {
         long startTime = System.currentTimeMillis();
-        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) {}
+        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) { }
     }
+
 
     public double getRange (boolean frontSensor) {
         if (frontSensor) return frontRangeSensor.getDistance(DistanceUnit.CM);

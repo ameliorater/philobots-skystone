@@ -4,6 +4,12 @@ package org.firstinspires.ftc.teamcode;
  * Basic tracking of robot position and orientation
  */
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.lang.reflect.Field;
+
 public class SimpleTracking {
 
     /*
@@ -99,7 +105,8 @@ public class SimpleTracking {
 
     }
 
-    public void updatePosition(Robot robot) {
+    public void updatePosition(Robot robot, boolean useIMU, boolean isBlue) {
+
         // collect the current motor encoder values
         leftTopMotorPosition = robot.bulkData2.getMotorCurrentPosition(robot.driveController.moduleLeft.motor1);
         leftBottomMotorPosition = robot.bulkData2.getMotorCurrentPosition(robot.driveController.moduleLeft.motor2);
@@ -138,6 +145,13 @@ public class SimpleTracking {
          */
         double rotationDirection = ((robotOrientationChange.getAngleDegrees() > 90) && (robotOrientationChange.getAngleDegrees() <= 270)) ? -1 : 1;
         double robotOrientation = lastRobotOrientation + rotationDirection * 360 * (robotOrientationChange.getMagnitude() / (WHEEL_BASE * Math.PI));
+
+        //added 1-20
+        if (useIMU) {
+            if (isBlue) robotOrientation = robot.getRobotHeading().rotateBy(180).getAngle(Angle.AngleType.ZERO_TO_360_HEADING);
+            else robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING);
+        }
+
         double averageOrientation = getAverageOrientation(lastRobotOrientation, robotOrientation);
         double positionChangeAngle = robotPositionChange.getAngleDegrees();
         double positionChangeMagnitude = robotPositionChange.getMagnitude();
@@ -157,7 +171,12 @@ public class SimpleTracking {
         lastRobotOrientation = remapDegrees(robotOrientation);
     }
 
-    private double remapDegrees(double degrees) {
+    public void updatePosition(Robot robot) {
+        updatePosition(robot, false, false); //isblue is irrelavant without useIMU
+    }
+
+
+        private double remapDegrees(double degrees) {
         if (degrees < 0) degrees += 360;
         if (degrees >= 360) degrees -= 360;
         return degrees;
