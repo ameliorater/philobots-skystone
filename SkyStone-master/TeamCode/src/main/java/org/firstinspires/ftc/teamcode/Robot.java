@@ -28,9 +28,11 @@ public class Robot {
     Servo latchServo1, latchServo2;
     Servo grabberServo;
     Servo hungryHippoServo;
-    Servo armServo1, armServo2;
-    //Servo servoLink1, servoLink2;
-    Servo intakeServo1, intakeServo2;
+
+    Servo outtake1, outtake2, outtakeRot;
+    Servo backStop;
+
+    //Servo intakeServo1, intakeServo2;
 
     //MOTORS
     ExpansionHubMotor lift1, lift2;
@@ -55,6 +57,9 @@ public class Robot {
     //data logger
     DataLogger dataLogger;
 
+    SCARAController controller;
+    SCARAController.ClawPosition currentClawPosition;
+
     final DcMotor.RunMode DEFAULT_RUN_MODE;
     final boolean IS_AUTO;
     int targetPosLift;
@@ -78,6 +83,14 @@ public class Robot {
     final double startAngle = Math.asin(liftStartHeight / barLength);
     final double ticksPerEntireRotation = 28*13.7*302.0/14;
     final double twoPi = 2 * Math.PI;
+
+    //keeps track of outtake location
+    private double outtakeX;
+    private double outtakeY;
+    private double outtakeDelay;
+    private boolean gripperVertical;
+    public double outatkeRotatePosition;
+
 
     public Robot (OpMode opMode, Position startingPosition, boolean isAuto, boolean debuggingMode) {
         this.hardwareMap = opMode.hardwareMap;
@@ -105,23 +118,33 @@ public class Robot {
         hungryHippoServo = hardwareMap.servo.get("hungryHippoServo");
         setupServo(hungryHippoServo);
 
-        //the kevin things
         //deprecated
-        armServo1 = hardwareMap.servo.get("armServo1");
-        setupServo(armServo1);
-        armServo2 = hardwareMap.servo.get("armServo2");
-        setupServo(armServo2);
+        //armServo1 = hardwareMap.servo.get("armServo1");
+        //armServo2 = hardwareMap.servo.get("armServo2");
 
-        intakeServo1 = hardwareMap.servo.get("intakeServo1");
-        setupServo(intakeServo1);
-        intakeServo2 = hardwareMap.servo.get("intakeServo2");
-        setupServo(intakeServo2);
+        //the cooper things
+        backStop = hardwareMap.servo.get("backStop");
+        setupServo(backStop);
 
-        //new
-//        servoLink1 = hardwareMap.servo.get("servoLink1");
-//        setupServo(servoLink1);
-//        servoLink2 = hardwareMap.servo.get("servoLink2");
-//        setupServo(servoLink2);
+        //deprecated
+        //intakeServo1 = hardwareMap.servo.get("intakeServo1");
+        //setupServo(intakeServo1);
+        //intakeServo2 = hardwareMap.servo.get("intakeServo2");
+        //setupServo(intakeServo2);
+
+        outtake1 = hardwareMap.servo.get("servoLink1");
+//        outtake1.setPosition(0.429);
+        outtake2 = hardwareMap.servo.get("servoLink2");
+//        outtake2.setPosition(0.819);
+        outtakeRot = hardwareMap.servo.get("gripperRotation");
+
+        outatkeRotatePosition = 0.397;
+        outtakeRot.setPosition(outatkeRotatePosition);
+        gripperVertical = true;
+
+        controller = new SCARAController(120, 120, telemetry);
+        currentClawPosition = controller.new ClawPosition(controller.clawUnderBridge);
+
 
         grabberServo = hardwareMap.servo.get("grabberServo");
         setupServo(grabberServo);
@@ -236,37 +259,38 @@ public class Robot {
         moveServo(hungryHippoServo, HUNGRY_HIPPO_RETRACT_POSITION);
     }
 
+    /*
     public void intakeServoOpen(){
-        moveServo(intakeServo1, 0.0);
-        moveServo(intakeServo2, 1.0);
+        moveServo(intakeServo1, 0);
+        moveServo(intakeServo2, 1);
     }
     public void intakeServoClose(){
-        moveServo(intakeServo1, 1.0);
-        moveServo(intakeServo2, 0.0);
+        moveServo(intakeServo1, 1);
+        moveServo(intakeServo2, 0);
     }
-
+    */
 
     //MOTORS
     public void moveMotor(DcMotor motor, double power) { motor.setPower(power); }
-
-    public void setArmPower(double power){
-        if (power > 0.1) {
-            armServo1.setPosition(1);
-            armServo2.setPosition(0);
-        } else if (power < -0.1) {
-            armServo1.setPosition(0);
-            armServo2.setPosition(1);
-        } else {
-            armServo1.setPosition(0.5);
-            armServo2.setPosition(0.5);
+    /*
+        public void setArmPower(double power){
+            if (power > 0.1) {
+                armServo1.setPosition(1);
+                armServo2.setPosition(0);
+            } else if (power < -0.1) {
+                armServo1.setPosition(0);
+                armServo2.setPosition(1);
+            } else {
+                armServo1.setPosition(0.5);
+                armServo2.setPosition(0.5);
+            }
+    //        moveServo(armServo1, servoPowerCalc(power));
+    //        moveServo(armServo2, servoPowerCalc(-power));
+    //        telemetry.addData( "outtake 1: ", servoPowerCalc(power));
+    //        telemetry.addData("outtake 2: ", servoPowerCalc(-power));
+    //        telemetry.update();
         }
-//        moveServo(armServo1, servoPowerCalc(power));
-//        moveServo(armServo2, servoPowerCalc(-power));
-//        telemetry.addData( "outtake 1: ", servoPowerCalc(power));
-//        telemetry.addData("outtake 2: ", servoPowerCalc(-power));
-//        telemetry.update();
-    }
-
+    */
     public double determineBlockPlacementTicks(int block) {
         return ((Math.asin((liftStartHeight + (blockHeight / 2) * block) / barLength) - startAngle) / (twoPi)) * ticksPerEntireRotation;
     }
@@ -435,6 +459,89 @@ public class Robot {
         }
     }
 
+    //manage all outtake movements in a single method, simplifying commands and not requiring a separate thread
+    public void moveOuttake(double x_input, double y_input, boolean toDeploy, boolean toRetract){
+        Outtake outtake = new Outtake();
+
+        double[] servoPos;
+
+
+        //manual command
+        if(x_input != 0 || y_input != 0) {
+            servoPos = outtake.processMovement(outtakeX, outtakeY, x_input, y_input);
+            outtake1.setPosition(servoPos[0]);
+            outtake2.setPosition(servoPos[1]);
+        }
+        else if(toDeploy) {
+            if (System.currentTimeMillis() > outtakeDelay) {
+                //check if gripper is oriented the wrong way
+                if (!gripperVertical) {
+                    orientGripper();
+                    outtakeDelay = System.currentTimeMillis() + 500;
+                }
+                //if deploy sequence has not finished
+                else if (outtakeY < outtake.getDEFAULT_EXTENSION()) {
+                    servoPos = outtake.getDeployServoPos(outtakeY);
+                    outtake1.setPosition(servoPos[0]);
+                    outtake2.setPosition(servoPos[1]);
+                    outtakeDelay = System.currentTimeMillis() +
+                            (outtakeY - outtake.getPICKUP_OFFSET()) % outtake.getSTEP_INTERVAL();
+                }
+                //get in place for flip
+                else if (outtakeX != -20 || outtakeY != 215) {
+                    servoPos = outtake.getReverseKinematics(-20, 215, true);
+                    outtake1.setPosition(servoPos[0]);
+                    outtake2.setPosition(servoPos[1]);
+                    outtakeDelay = System.currentTimeMillis() + Math.hypot(outtakeX - 20, outtakeY - 215) * 10;
+                }
+                //flipping states
+                else if (outtake1.getPosition() > outtake2.getPosition()) {
+                    double temp = outtake1.getPosition();
+                    outtake1.setPosition(outtake2.getPosition());
+                    outtake2.setPosition(temp);
+                }
+            }
+        }
+        else if(toRetract) {
+            if (System.currentTimeMillis() > outtakeDelay) {
+                //check if gripper is oriented the wrong way
+                if (!gripperVertical) {
+                    orientGripper();
+                    outtakeDelay = System.currentTimeMillis() + 500;
+                }
+                //flip states if required
+                if (outtake1.getPosition() < outtake2.getPosition()) {
+                    //makes sure the outtake is in flippable location
+                    if (outtakeX != -20 || outtakeY != 215) {
+                        servoPos = outtake.getReverseKinematics(-20, 215, true);
+                        outtake1.setPosition(servoPos[0]);
+                        outtake2.setPosition(servoPos[1]);
+                        outtakeDelay = System.currentTimeMillis() + Math.hypot(outtakeX - 20, outtakeY - 215) * 10;
+                    }
+                    double temp = outtake1.getPosition();
+                    outtake1.setPosition(outtake2.getPosition());
+                    outtake2.setPosition(temp);
+                }
+                //finish up retracting sequence
+                else if (outtakeY > outtake.getPICKUP_OFFSET()) {
+                    servoPos = outtake.getRetractServoPos(outtakeY);
+                    outtake1.setPosition(servoPos[0]);
+                    outtake2.setPosition(servoPos[1]);
+                    outtakeDelay = System.currentTimeMillis() +
+                            (outtakeY - outtake.getPICKUP_OFFSET()) % outtake.getSTEP_INTERVAL();
+                }
+            }
+        }
+    }
+
+    public void orientGripper(){
+        if(gripperVertical)
+            outtakeRot.setPosition(1);
+        else outtakeRot.setPosition(0);
+    }
+
+
+
     public void moveSingleIntakeRoller(boolean roller1) {
         (roller1 ? intake1 : intake2).setPower(INTAKE_POWER_SLOW);
     }
@@ -443,19 +550,10 @@ public class Robot {
         return (p / 2.0) + .5;
     }
 
-    public void wait (int millis, LinearOpMode linearOpMode, SimpleTracking simpleTracking) {
-        long startTime = System.currentTimeMillis();
-        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) {
-            simpleTracking.updatePosition(this); //added 1-20
-        }
-    }
-
-    //no tracking update
     public void wait (int millis, LinearOpMode linearOpMode) {
         long startTime = System.currentTimeMillis();
-        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) { }
+        while (millis > System.currentTimeMillis() - startTime && linearOpMode.opModeIsActive()) {}
     }
-
 
     public double getRange (boolean frontSensor) {
         if (frontSensor) return frontRangeSensor.getDistance(DistanceUnit.CM);
@@ -469,93 +567,6 @@ public class Robot {
         lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
-
-    //GRABBER LINKAGE
-
-    //adjust depending on the refresh rate
-    private final double k = 1;
-
-    // th -> link one servo angle
-    // ph -> link two servo angle
-    // xin -> x-joystick magnitude
-    // yin -> y-joystick magnitude
-    // state -> false is Type 1 passed state, true is neutral pentagon
-
-//    public void moveOuttake(double th, double ph, int xin, int yin, boolean state){ //this method should be called in the main loop
-//        double x = getX(th, ph);
-//        double y = getY(th, ph);
-//        //check right bound
-//        if(th < 0.471 && xin > 0)
-//            xin = 0;
-//        //check current linkage state
-//        if((ph > th) == state)
-//            flip(th, ph);
-//        //check left bound
-//        if(Math.atan2(y, x + 60) + Math.acos(Math.hypot(x + 60, y)/240) > 1.099 && xin < 0)
-//            xin = 0;
-//        //check lower bound
-//        if(y <= 0 && yin < 0)
-//            yin = 0;
-//        //check upper bound
-//        if((Math.hypot(x-60,y) >= 115 || Math.hypot(x+60, y) >= 115) && yin > 0)
-//            yin = 0;
-//        int stateSign = state ? 1 : -1;
-//        //compute partial derivatives
-//        double dthdx = -(y/(3600 - 120*x + x*x + y*y)) + stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-//        double dthdy = (-60 + x)/(3600 - 120*x + x*x + y*y) + stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-//        double dphdx = -(y/(3600 - 120*x + x*x + y*y)) - stateSign * (-60 + x)/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-//        double dphdy = (-60 + x)/(3600 - 120*x + x*x + y*y) - stateSign * y/Math.sqrt(-((-54000 - 120*x + x*x + y*y)*(3600 - 120*x + x*x + y*y)));
-//        //required velocity of each servo
-//        double vth = Math.hypot(dthdx * xin, dthdy * yin);
-//        double vph = Math.hypot(dphdx * xin, dphdy * yin);
-//        //increments servo in accordance with velocity
-//        servoLink1.setPosition(th + k * vth);
-//        servoLink2.setPosition(ph + k * vph);
-//    }
-
-//    //flips Type 1 singularity
-//    private void flip(double th, double ph){
-//        servoLink1.setPosition(ph);
-//        servoLink2.setPosition(th);
-//    }
-
-//    //automatically deploys the outtake
-//    public boolean deployOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
-//        int targetPos = 200;
-//        double x = getX(th, ph);
-//        double y = getY(th, ph);
-//        if(Math.abs(targetPos - x) <= 10){
-//            if(ph > th)
-//                flip(th, ph);
-//            else return false;
-//        }
-//        moveOuttake(th, ph, 1023, 0, false);
-//        return true;
-//    }
-
-//    //automatically returns the outtake
-//    public boolean returnOuttake(double th, double ph){ //this should also be called repeatedly in the main loop, returns false when complete
-//        int targetPos = -100;
-//        double x = getX(th, ph);
-//        double y = getY(th, ph);
-//        if(th > ph)
-//            flip(ph, th);
-//        if(Math.abs(targetPos - x) <= 10){
-//            return false;
-//        }
-//        moveOuttake(th, ph, -1023, 0, false);
-//        return true;
-//    }
-//
-//    public double getX(double th, double ph){
-//        return 60 + 120 * Math.cos(th) + 120 * Math.cos(ph);
-//    }
-//
-//    public double getY(double th, double ph){
-//        return 120 * Math.sin(th) + 120 * Math.sin(ph);
-//    }
-//
 }
 
 class Constants {
@@ -584,4 +595,6 @@ class Constants {
     enum LatchSide { LEFT, RIGHT }
 
     final static int MIN_ENCODER_DIFFERENCE_INTAKE = 1;
+
+    final static double SLOW_LIFT_POWER_UP = 0.3, SLOW_LIFT_POWER_DOWN = -SLOW_LIFT_POWER_UP;
 }

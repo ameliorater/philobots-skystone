@@ -48,10 +48,6 @@ public class TrackingAutoTest extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
-        // position intake wheels inside the robot
-        robot.intakeServo1.setPosition(1.0);
-        robot.intakeServo2.setPosition(0.0);
-
 
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
@@ -60,8 +56,6 @@ public class TrackingAutoTest extends LinearOpMode {
         // blue starting position
         simpleTracking.setPosition(-90, isBlue ? 157.5 : -157.5);
         simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
-        robot.intakeServo1.setPosition(0.0);
-        robot.intakeServo2.setPosition(1.0);
         robot.openGrabber();
 
         /*
@@ -97,20 +91,20 @@ public class TrackingAutoTest extends LinearOpMode {
         // go to the stone
         moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5); //WAS 85
         simplePathFollow.stop(robot);
-        robot.armServo1.setPosition(.4);
-        robot.armServo2.setPosition(.6);
+//        robot.armServo1.setPosition(.4);
+//        robot.armServo2.setPosition(.6);
         robot.hungryHippoRetract();
         robot.moveIntake(Constants.IntakeState.INTAKE,Constants.IntakeSpeed.SLOW);
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
         moveTo(stonePosition, isBlue ? 50 : -50, isBlue ? 180 : 0, SLOW_POWER, 5);
         simplePathFollow.stop(robot);
-        robot.armServo1.setPosition(.7);
-        robot.armServo2.setPosition(.3);
+//        robot.armServo1.setPosition(.7);
+//        robot.armServo2.setPosition(.3);
         //robot.wait(1200,this, simpleTracking); //REMOVED 1-20
         robot.hungryHippoExtend();
         robot.moveIntake(Constants.IntakeState.STOP);
-        robot.armServo1.setPosition(.5);
-        robot.armServo2.setPosition(.5);
+//        robot.armServo1.setPosition(.5);
+//        robot.armServo2.setPosition(.5);
 
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
         moveTo(stonePosition, isBlue ? 105 : -105, isBlue ? 180: 0, DEFAULT_POWER, 2); //WAS 95
