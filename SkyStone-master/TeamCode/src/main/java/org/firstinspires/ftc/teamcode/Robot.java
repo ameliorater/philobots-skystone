@@ -143,7 +143,7 @@ public class Robot {
         gripperVertical = true;
 
         controller = new SCARAController(120, 120, telemetry);
-        currentClawPosition = controller.new ClawPosition(controller.clawUnderBridge);
+        currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
 
 
         grabberServo = hardwareMap.servo.get("grabberServo");

@@ -151,11 +151,11 @@ public class TeleOp extends OpMode {
 
         double currentTime = getRuntime();
         if (gamepad2.a) {
-            robot.currentClawPosition.moveTo(SCARAController.MIDLINE, SCARAController.DELIVER_Y_DISTANCE, currentTime - lastTime);
+            robot.currentClawPosition.moveSequence(robot.controller.INSIDE_ROBOT_TO_DELIVERY, currentTime - lastTime);
             robot.backStop.setPosition(0);
         }
         if (gamepad2.y) {
-            robot.currentClawPosition.moveTo(SCARAController.MIDLINE, -SCARAController.CALIBRATION_Y_DISTANCE, currentTime - lastTime);
+            robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
             robot.backStop.setPosition(1);
         }
         if (Math.abs(gamepad2.right_stick_x) > 0.1) {

@@ -8,6 +8,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.opencv.core.Point;
 
+import static org.firstinspires.ftc.teamcode.Constants.IntakeState.INTAKE;
+import static org.firstinspires.ftc.teamcode.Constants.IntakeState.STOP;
+
 @Autonomous(name="Tracking Test", group="Linear Opmode")
 public class TrackingAutoTest extends LinearOpMode {
 
@@ -58,6 +61,19 @@ public class TrackingAutoTest extends LinearOpMode {
         }
         double startTime = System.currentTimeMillis();
 
+        robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
+        robot.wait(50, this);
+        robot.moveLift(0);
+        robot.backStop.setPosition(1);
+        double lastTime = getRuntime();
+        double currentTime = getRuntime();
+        while (!robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime)) {
+            lastTime = currentTime;
+            robot.wait(10, this);
+            currentTime = getRuntime();
+        }
+        robot.openGrabber();
+
         // blue starting position
         simpleTracking.setPosition(-90, isBlue ? 157.5 : -157.5);
         simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
@@ -99,7 +115,7 @@ public class TrackingAutoTest extends LinearOpMode {
 //        robot.armServo1.setPosition(.4);
 //        robot.armServo2.setPosition(.6);
         robot.hungryHippoRetract();
-        robot.moveIntake(Constants.IntakeState.INTAKE,Constants.IntakeSpeed.SLOW);
+        robot.moveIntake(INTAKE,Constants.IntakeSpeed.SLOW);
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
         moveTo(stonePosition, isBlue ? 50 : -50, isBlue ? 180 : 0, SLOW_POWER, 5);
         simplePathFollow.stop(robot);
@@ -107,13 +123,20 @@ public class TrackingAutoTest extends LinearOpMode {
 //        robot.armServo2.setPosition(.3);
         //robot.wait(1200,this, simpleTracking); //REMOVED 1-20
         robot.hungryHippoExtend();
-        robot.moveIntake(Constants.IntakeState.STOP);
+
+
+        //intake and grab block
+        robot.wait(1500, this);
+        robot.moveIntake(STOP);
+        robot.closeGrabber();
+
+
 //        robot.armServo1.setPosition(.5);
 //        robot.armServo2.setPosition(.5);
 
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
-        moveTo(stonePosition, isBlue ? 105 : -105, isBlue ? 180: 0, DEFAULT_POWER, 2); //WAS 95
-        moveTo(stonePosition, isBlue ? 105: -105, 270, DEFAULT_POWER, 1); //WAS ALSO 95
+        moveTo(stonePosition, isBlue ? 95 : -95, isBlue ? 180: 0, DEFAULT_POWER, 2); //WAS 95
+        moveTo(stonePosition, isBlue ? 95: -95, 270, DEFAULT_POWER, 1); //WAS ALSO 95
         simplePathFollow.stop(robot);
         //robot.wait(250, this); //removed 1-20
 
@@ -146,9 +169,27 @@ public class TrackingAutoTest extends LinearOpMode {
 //        robot.wait(1000, this, simpleTracking);  //REMOVED 1-20
 //        robot.armServo1.setPosition(.5);
 //        robot.armServo2.setPosition(.5);
+
+
+        //deliver skystone
+        robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
+        robot.wait(60, this);
+        robot.moveLift(0);
+
+        lastTime = getRuntime();
+        currentTime = getRuntime();
+        robot.backStop.setPosition(0);
+        while (!robot.currentClawPosition.moveSequence(robot.controller.INSIDE_ROBOT_TO_DELIVERY, currentTime - lastTime)) {
+            lastTime = currentTime;
+            robot.wait(10, this);
+            currentTime = getRuntime();
+        }
+        robot.openGrabber();
+
+
         moveTo(120, isBlue ? 125:-125, isBlue ?0:180, 0.6, 5, 5000);
         simplePathFollow.stop(robot);
-        moveTo(50, isBlue ? 125 : -125, isBlue ? 245 : 295, 1.0, 2); //pivot platform  //WAS 80
+        moveTo(50, isBlue ? 125 : -125, isBlue ? 245 : 295, 1.0, 2, 4000); //pivot platform  //WAS 80
         moveTo(110, isBlue ? 125 : -125, 270, DEFAULT_POWER, 5, 2000);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(1.0);
@@ -156,28 +197,31 @@ public class TrackingAutoTest extends LinearOpMode {
 
         //waitForButton();
 
-        if (System.currentTimeMillis() - startTime < 25) { //at least 5 seconds left
-            moveTo(-1.5 * TILE, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //position for cross-field drive
-            double additionalDist = 0;
-            if (skystonePosition == SkystoneCV.StonePosition.CENTER) additionalDist = 8 * 2.54;
-            if (skystonePosition == SkystoneCV.StonePosition.LEFT) additionalDist = 8 * 2.54;
-            double position = 2 * TILE + 8 + additionalDist;
-            moveTo(position, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //align next to stone
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
-            moveTo(position, (TILE - 4*2.54) * (isBlue ? -1: 1), 270, 0.6, 5); //get in front of stone
-            moveTo(position + 8*2.54, (TILE - 4*2.54) * (isBlue ? -1: 1), 270, 0.6, 5); //intake stone
-            robot.moveIntake(Constants.IntakeState.STOP);
-
-            //backtrack and score
-            moveTo(position + 8*2.54, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //prepare to drive back
-            moveTo(-1.5 * TILE, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //cross-field drive
-//            moveTo(-1.5 * TILE, 1.5 * TILE + 4, 270, 0.6, 5); //get in front of foundation
-
-            //score block
-
-        } else {
+        //TWO SKYSTONE
+//        if (System.currentTimeMillis() - startTime < 25) { //at least 5 seconds left
+//            moveTo(-1.5 * TILE, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //position for cross-field drive
+//            double additionalDist = 0;
+//            if (skystonePosition == SkystoneCV.StonePosition.CENTER) additionalDist = 8 * 2.54;
+//            if (skystonePosition == SkystoneCV.StonePosition.LEFT) additionalDist = 8 * 2.54;
+//            double position = 2 * TILE + 8 + additionalDist;
+//            moveTo(position, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //align next to stone
+//            robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
+//            moveTo(position, (TILE - 4*2.54) * (isBlue ? -1: 1), 270, 0.6, 5); //get in front of stone
+//            moveTo(position + 8*2.54, (TILE - 4*2.54) * (isBlue ? -1: 1), 270, 0.6, 5); //intake stone
+//            robot.moveIntake(STOP);
+//
+//            //backtrack and score
+//            moveTo(position + 8*2.54, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //prepare to drive back
+//            moveTo(-1.5 * TILE, (1.5 * TILE + 4) * (isBlue ? -1: 1), 270, 0.6, 5); //cross-field drive
+////            moveTo(-1.5 * TILE, 1.5 * TILE + 4, 270, 0.6, 5); //get in front of foundation
+//
+//            //score block
+//
+//        } else {
             //park
-        }
+            moveTo(60, isBlue  ? 80 : -80, 270, 0.6, 5); //was 80 : -80 in the y  //was 60 in the x
+            moveTo(0, isBlue ? 80 : -80, 270, 0.6, 5);
+//        }
 
 //        moveTo(0, isBlue  ? 100 : -100, 270, 0.6, 5); //was 80 : -80 in the y  //was 60 in the x
 //        //moveTo(0, isBlue ? 80 : -80, 270, 0.6, 5);

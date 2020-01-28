@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
+import java.util.ArrayList;
+
 public class SCARAController {
     double arm1Length, arm2Length;
 
@@ -18,8 +20,6 @@ public class SCARAController {
 
     ClawPosition lastPosition;
 
-    Telemetry telemetry;
-
     double servo1TicksPerRadian, servo2TicksPerRadian;
 
     final static double ARM_SPEED = 250; // mm per second
@@ -27,16 +27,36 @@ public class SCARAController {
     final static double SIDE_TO_SIDE_RANGE = 8 * 25.4;
     final static double MIDLINE = -76;
     final static double CALIBRATION_Y_DISTANCE = 200;
-    final static double DELIVER_Y_DISTANCE = 5.25 * 25.4;
+    final static double DELIVER_Y_DISTANCE = 6.5 * 25.4;
 
+    final static double PICK_UP_Y_DISTANCE = -180;
+    //    final static double ARM1_SERVO_POSITION_90_DEGREES = .801;
+//    final static double ARM1_SERVO_POSITION_270_DEGREES = .159;
+//    final static double ARM2_SERVO_POSITION_90_DEGRESS = .392;
+//    final static double ARM2_SERVO_POSITION_180_DEGREES = .764;
+    final static double ARM1_SERVO_POSITION_90_DEGREES = .787;
+    final static double ARM1_SERVO_POSITION_270_DEGREES = .121;
+    final static double ARM2_SERVO_POSITION_90_DEGRESS = .171;
+    final static double ARM2_SERVO_POSITION_180_DEGREES = .535;
 
+    Sequence INSIDE_ROBOT_TO_DELIVERY;
+    Sequence DELIVERY_TO_INSIDE_ROBOT;
+
+    Telemetry telemetry;
     public SCARAController(double arm1Length, double arm2Length, Telemetry telemetry) {
         this.arm1Length = arm1Length;
         this.arm2Length = arm2Length;
         this.telemetry = telemetry;
 
         ArmAngles armAngles = new ArmAngles(0,0);
-        clawInsideRobot = new ClawPosition(MIDLINE, -CALIBRATION_Y_DISTANCE, .119, .883);
+//        clawInsideRobot = new ClawPosition(MIDLINE, -CALIBRATION_Y_DISTANCE, .119, .883);
+        clawInsideRobot = new ClawPosition(MIDLINE, PICK_UP_Y_DISTANCE, .119, .883);
+
+        // need to update angles for inside the robot.  This is the reset position
+        clawInsideRobot.armAngles.setAngles(clawInsideRobot.coordinates, true);
+        clawInsideRobot.servoPositions.updateFromControlAngles(clawInsideRobot.armAngles);
+
+
         clawUnderBridge = new ClawPosition(MIDLINE, 0, .202, .411);
 //        clawOutsideRobot = new ClawPosition(MIDLINE, OUTSIDE_DISTANCE, .801, .346);
         clawOutsideRobot = new ClawPosition(MIDLINE, CALIBRATION_Y_DISTANCE, .690, .375);
@@ -53,6 +73,33 @@ public class SCARAController {
 //        servo2TicksPerRadian = getServo2TicksPerRadian(clawInsideRobot, clawAtDelivery);
 
         lastPosition = clawInsideRobot;
+        INSIDE_ROBOT_TO_DELIVERY = new Sequence(new Coordinates(MIDLINE, PICK_UP_Y_DISTANCE), new Coordinates(MIDLINE, DELIVER_Y_DISTANCE));
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(0).adjust(0, Math.PI * -10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(1).adjust(0, Math.PI * -30.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(2).adjust(0, Math.PI * -40.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(3).adjust(0, Math.PI * -40.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(4).adjust(0, Math.PI * -30.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(0, Math.PI * -20.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(6).adjust(0, Math.PI * -10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(0, Math.PI * 0.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(0, Math.PI * 10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(9).adjust(0, Math.PI * 10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(10).adjust(0, Math.PI * 10.0 / 180);
+
+        DELIVERY_TO_INSIDE_ROBOT = new Sequence(new Coordinates(MIDLINE, DELIVER_Y_DISTANCE), new Coordinates(MIDLINE, PICK_UP_Y_DISTANCE));
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(0).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(1).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(2).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(3).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(4).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(5).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(6).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(7).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(8).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(9).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(10).adjust(0, Math.PI * 0.0 / 180);
+
+
     }
 
 
@@ -154,10 +201,7 @@ public class SCARAController {
             if (!coordinates.moveBy(deltaTime * ARM_SPEED * deltaX, deltaTime * ARM_SPEED * deltaY)) return false;
             armAngles.setAngles(coordinates, true);
 //            servoPositions.update(armAngles);
-            if (coordinates.y < 0)
-                servoPositions.updateFromReference(armAngles, clawInsideRobot, clawUnderBridge);
-            else
-                servoPositions.updateFromReference(armAngles, clawUnderBridge, clawAtDelivery);
+            servoPositions.updateFromControlAngles(armAngles);
 
             return true;
         }
@@ -172,13 +216,77 @@ public class SCARAController {
             if (!coordinates.moveBy(deltaX, deltaY)) return false;
             armAngles.setAngles(coordinates, true);
 //            servoPositions.update(armAngles);
-            if (coordinates.y < 0)
-                servoPositions.updateFromReference(armAngles, clawInsideRobot, clawUnderBridge);
-            else
-                servoPositions.updateFromReference(armAngles, clawUnderBridge, clawAtDelivery);
+            servoPositions.updateFromControlAngles(armAngles);
             return true;
         }
 
+        /*
+         * Return whether destination has been reached
+         */
+        public boolean moveSequence(Sequence sequence, double deltaTime) {
+            Coordinates start = sequence.coordinatesList.get(0);
+            Coordinates end = sequence.coordinatesList.get(sequence.coordinatesList.size() -1);
+            double distanceToStart = Math.hypot(start.x - coordinates.x, start.y - coordinates.y);
+            double distanceToEnd = Math.hypot(end.x - coordinates.x, end.y - coordinates.y);
+            double totalDistance = Math.hypot(end.x - start.x, end.y - start.y);
+//telemetry.addData("distance to start", distanceToStart);
+//telemetry.addData("distance to end", distanceToEnd);
+//telemetry.addData("total distace", totalDistance);
+            if (distanceToStart + distanceToEnd > 1.05 * totalDistance) { // too far off the line, so move to the start
+                moveTo(start.x, start.y, deltaTime);
+                return false;
+            }
+
+            double targetDistance = distanceToStart + deltaTime * ARM_SPEED;
+//            telemetry.addData("target distace", targetDistance);
+//            telemetry.addData("delta time", deltaTime);
+//            telemetry.addData("delta distace", targetDistance - distanceToStart);
+            if (targetDistance > totalDistance) { // move is done
+                coordinates.copy(end);
+                armAngles.copy(sequence.angleList.get(sequence.angleList.size() - 1));
+                servoPositions.updateFromControlAngles(armAngles);
+                return true;
+            }
+            double stepDistance = totalDistance / 10;
+            int index = (int) (targetDistance / stepDistance);
+            double scale = (targetDistance - index * stepDistance) / stepDistance;
+//            telemetry.addData("stepDistance", stepDistance);
+//            telemetry.addData("index", index);
+//            telemetry.addData("scale", scale);
+            Coordinates p1 = sequence.coordinatesList.get(index);
+            Coordinates p2 = sequence.coordinatesList.get(index + 1);
+            coordinates.x = p1.x + (p2.x - p1.x) * scale;
+            coordinates.y = p1.y + (p2.y - p1.y) * scale;
+
+//            telemetry.addData("p1", p1.x+", "+p1.y);
+//            telemetry.addData("p2", p2.x+", "+p2.y);
+//            telemetry.addData("c", coordinates.x+", "+coordinates.y);
+
+            ArmAngles a1 = sequence.angleList.get(index);
+            ArmAngles a2 = sequence.angleList.get(index + 1);
+            armAngles.angle1 = scaleAngleWithWraparound(a1.angle1, a2.angle1, scale);
+            armAngles.angle2 = scaleAngleWithWraparound(a1.angle2, a2.angle2, scale);
+//            armAngles.angle1 = a1.angle1 + (a2.angle1 - a1.angle1) * scale;
+//            armAngles.angle2 = a1.angle2 + (a2.angle2 - a1.angle2) * scale;
+            servoPositions.updateFromControlAngles(armAngles);
+            return false;
+        }
+
+    }
+
+
+    /*
+     * Scale between the two angles accounting for wraparound
+     */
+    private double scaleAngleWithWraparound(double a1, double a2, double scale) {
+        double diff = a2 - a1;
+        if (Math.abs(diff) < Math.PI) return a1 + diff * scale; // no wraparound
+        if (diff < 0) diff += 2 * Math.PI;
+        else diff -= 2 * Math.PI;
+        double result = a1 + diff * scale;
+        if (result >= Math.PI) result -= 2 * Math.PI;
+        if (result < -Math.PI) result += 2 * Math.PI;
+        return result;
     }
 
     public class ArmAngles {
@@ -196,6 +304,18 @@ public class SCARAController {
 
         public ArmAngles(Coordinates coordinates, boolean inverted) {
             setAngles(coordinates, inverted);
+        }
+
+        public boolean copy(ArmAngles other) {
+            this.angle1 = other.angle1;
+            this.angle2 = other.angle2;
+            return true;
+        }
+
+        public boolean adjust(double deltaAngle1, double deltaAngle2) {
+            angle1 += deltaAngle1;
+            angle2 += deltaAngle2;
+            return true;
         }
 
         public boolean setAngles(Coordinates coordinates, boolean inverted) {
@@ -259,8 +379,6 @@ public class SCARAController {
             // because arm2's pivot is connected to the servo through a belt which rotates with arm 1.
             // Alternatively define theta2 relative to the frame.
             servo2 = clawInsideRobot.servoPositions.servo2 + getSignedAngleDifferenceCounterClockwise(clawInsideRobot.armAngles.angle1 + clawInsideRobot.armAngles.angle2, armAngles.angle1 + armAngles.angle2, Math.PI * .75)* servo2TicksPerRadian;
-            telemetry.addData("start", clawInsideRobot.armAngles.angle1 + clawInsideRobot.armAngles.angle2);
-            telemetry.addData("end", armAngles.angle1 + armAngles.angle2);
             if (servo2 > 1) {
                 servo2 = 1;
                 inRange = false;
@@ -303,6 +421,39 @@ public class SCARAController {
             return inRange;
         }
 
+        public boolean updateFromControlAngles(ArmAngles armAngles) {
+            boolean inRange = true;
+
+            // use the position inside of the robot and under the bridge to scale the servo value;
+            servo1 = ARM1_SERVO_POSITION_270_DEGREES + getSignedAngleDifferenceCounterClockwise(Math.PI * 1.5, armAngles.angle1, Math.PI) *
+                    (ARM1_SERVO_POSITION_270_DEGREES - ARM1_SERVO_POSITION_90_DEGREES) / Math.PI;
+            if (servo1 > 1) {
+                servo1 = 1;
+                inRange = false;
+            }
+            if (servo1 < 0) {
+                servo1 = 0;
+                inRange = false;
+            }
+
+            // servo 2's position depends on servo 1's position
+            // Theta2 is arm2's angle relative to arm1.  When arm 1's angle changes, servo 2 must rotate to keep the same angle between arm1 and arm2.  This is
+            // because arm2's pivot is connected to the servo through a belt which rotates with arm 1.
+            // Alternatively define theta2 relative to the frame.
+            servo2 = ARM2_SERVO_POSITION_90_DEGRESS - getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI * .75)*
+                    (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5);
+            if (servo2 > 1) {
+                servo2 = 1;
+                inRange = false;
+            }
+            if (servo2 < 0) {
+                servo2 = 0;
+                inRange = false;
+            }
+
+            return inRange;
+        }
+
     }
 
     public class Coordinates {
@@ -315,6 +466,12 @@ public class SCARAController {
 
         public Coordinates(Coordinates other) {
             this(other.x, other.y);
+        }
+
+        public boolean copy(Coordinates other) {
+            this.x = other.x;
+            this.y = other.y;
+            return true;
         }
 
         /*
@@ -336,6 +493,32 @@ public class SCARAController {
             x = newX;
             y = newY;
             return true;
+        }
+    }
+
+
+    ArrayList<ArmAngles> angleList;
+    double sequenceStartTime;
+
+    public boolean setSequence(ArrayList<ArmAngles> angleList, double currentTime) {
+        this.angleList = angleList;
+        sequenceStartTime = currentTime;
+        return true;
+    }
+
+    public class Sequence {
+        ArrayList<Coordinates> coordinatesList;
+        ArrayList<ArmAngles> angleList;
+        public Sequence(Coordinates start, Coordinates end) {
+            coordinatesList = new ArrayList<Coordinates>();
+            angleList = new ArrayList<ArmAngles>();
+
+            for (int i = 0; i <= 10; i++) {
+                Coordinates coord = new Coordinates(start.x + (end.x - start.x) * 1.0 * i / 10, start.y + (end.y - start.y) * 1.0 * i /10);
+                coordinatesList.add(coord);
+                angleList.add(new ArmAngles(coord, true));
+            }
+
         }
     }
 }
