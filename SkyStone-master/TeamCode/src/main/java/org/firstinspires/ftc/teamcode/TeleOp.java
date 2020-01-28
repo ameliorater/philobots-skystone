@@ -33,7 +33,7 @@ public class TeleOp extends OpMode {
     double lastTime;
 
     public void init() {
-        robot = new Robot(this, false, true);
+        robot = new Robot(this, false, false);
     }
 
     public void init_loop() {
@@ -78,12 +78,20 @@ public class TeleOp extends OpMode {
             robot.latch();
         }
 
-        //toggle abs heading
-        if (gamepad1.y) {
-            absHeadingMode = true;
+//        //toggle abs heading
+//        if (gamepad1.y) {
+//            absHeadingMode = true;
+//        }
+//        if (gamepad1.b) {
+//            absHeadingMode = false;
+//        }
+
+        //marker
+        if (gamepad1.y && gamepad1.b) {
+            robot.deployMarker();
         }
-        if (gamepad1.b) {
-            absHeadingMode = false;
+        if (gamepad1.y && gamepad1.x) {
+            robot.retractMarker();
         }
 
         robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
@@ -155,6 +163,7 @@ public class TeleOp extends OpMode {
             robot.backStop.setPosition(0);
         }
         if (gamepad2.y) {
+            //robot.closeGrabber();
             robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
             robot.backStop.setPosition(1);
         }

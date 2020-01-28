@@ -28,6 +28,7 @@ public class Robot {
     Servo latchServo1, latchServo2;
     Servo grabberServo;
     Servo hungryHippoServo;
+    Servo markerServo;
 
     Servo outtake1, outtake2, outtakeRot;
     Servo backStop;
@@ -117,6 +118,9 @@ public class Robot {
         //the cyrus thing
         hungryHippoServo = hardwareMap.servo.get("hungryHippoServo");
         setupServo(hungryHippoServo);
+
+        markerServo = hardwareMap.servo.get("capServo");
+        setupServo(markerServo);
 
         //deprecated
         //armServo1 = hardwareMap.servo.get("armServo1");
@@ -566,6 +570,14 @@ public class Robot {
 
         lift1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void deployMarker () {
+        markerServo.setPosition(1);
+    }
+
+    public void retractMarker () {
+        markerServo.setPosition(0);
     }
 }
 

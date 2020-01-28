@@ -29,7 +29,7 @@ public class SCARAController {
     final static double CALIBRATION_Y_DISTANCE = 200;
     final static double DELIVER_Y_DISTANCE = 6.5 * 25.4;
 
-    final static double PICK_UP_Y_DISTANCE = -180;
+    final static double PICK_UP_Y_DISTANCE = -180 - 15;
     //    final static double ARM1_SERVO_POSITION_90_DEGREES = .801;
 //    final static double ARM1_SERVO_POSITION_270_DEGREES = .159;
 //    final static double ARM2_SERVO_POSITION_90_DEGRESS = .392;

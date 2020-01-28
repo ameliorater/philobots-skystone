@@ -61,9 +61,10 @@ public class TrackingAutoTest extends LinearOpMode {
         }
         double startTime = System.currentTimeMillis();
 
-        robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
-        robot.wait(50, this);
-        robot.moveLift(0);
+
+//        robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
+//        robot.wait(50, this);
+//        robot.moveLift(0);
         robot.backStop.setPosition(1);
         double lastTime = getRuntime();
         double currentTime = getRuntime();
@@ -126,7 +127,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
 
         //intake and grab block
-        robot.wait(1500, this);
+        robot.wait(2500, this);
         robot.moveIntake(STOP);
         robot.closeGrabber();
 
