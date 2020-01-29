@@ -50,7 +50,7 @@ public class SCARAController {
 
         ArmAngles armAngles = new ArmAngles(0,0);
 //        clawInsideRobot = new ClawPosition(MIDLINE, -CALIBRATION_Y_DISTANCE, .119, .883);
-        clawInsideRobot = new ClawPosition(MIDLINE, PICK_UP_Y_DISTANCE, .119, .883);
+        clawInsideRobot = new ClawPosition(MIDLINE -20, PICK_UP_Y_DISTANCE, .119, .883);
 
         // need to update angles for inside the robot.  This is the reset position
         clawInsideRobot.armAngles.setAngles(clawInsideRobot.coordinates, true);
@@ -73,31 +73,42 @@ public class SCARAController {
 //        servo2TicksPerRadian = getServo2TicksPerRadian(clawInsideRobot, clawAtDelivery);
 
         lastPosition = clawInsideRobot;
-        INSIDE_ROBOT_TO_DELIVERY = new Sequence(new Coordinates(MIDLINE, PICK_UP_Y_DISTANCE), new Coordinates(MIDLINE, DELIVER_Y_DISTANCE));
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(0).adjust(0, Math.PI * -10.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(1).adjust(0, Math.PI * -30.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(2).adjust(0, Math.PI * -40.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(3).adjust(0, Math.PI * -40.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(4).adjust(0, Math.PI * -30.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(0, Math.PI * -20.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(6).adjust(0, Math.PI * -10.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(0, Math.PI * 0.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(0, Math.PI * 10.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(9).adjust(0, Math.PI * 10.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(10).adjust(0, Math.PI * 10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY = new Sequence(new Coordinates(clawInsideRobot.coordinates.x, clawInsideRobot.coordinates.y), new Coordinates(MIDLINE, DELIVER_Y_DISTANCE));
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(0).adjust(0, Math.PI * 0.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(1).adjust(0, Math.PI * -30.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(2).adjust(0, Math.PI * -40.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(3).adjust(0, Math.PI * -40.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(4).adjust(0, Math.PI * -10.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(0, Math.PI * 0.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(6).adjust(0, Math.PI * -10.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(0, Math.PI * 0.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(0, Math.PI * 10.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(9).adjust(0, Math.PI * 10.0 / 180);
+//        INSIDE_ROBOT_TO_DELIVERY.angleList.get(10).adjust(0, Math.PI * 10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(0).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(1).adjust(Math.PI * 0.0 / 180, Math.PI * -10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(2).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(3).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(4).adjust(Math.PI * 10.0 / 180, Math.PI * 0.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(Math.PI * 20.0 / 180, Math.PI * 00.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(6).adjust(Math.PI * 30.0 / 180, Math.PI * -30.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(Math.PI * 10.0 / 180, Math.PI * -20.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(Math.PI * 0.0 / 180, Math.PI * 20.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(9).adjust(Math.PI * 0.0 / 180, Math.PI * 10.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(10).adjust(Math.PI * 0.0 / 180, Math.PI * 10.0 / 180);
 
-        DELIVERY_TO_INSIDE_ROBOT = new Sequence(new Coordinates(MIDLINE, DELIVER_Y_DISTANCE), new Coordinates(MIDLINE, PICK_UP_Y_DISTANCE));
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(0).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(1).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(2).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(3).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(4).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(5).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(6).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(7).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(8).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(9).adjust(0, Math.PI * 0.0 / 180);
-        DELIVERY_TO_INSIDE_ROBOT.angleList.get(10).adjust(0, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT = new Sequence(new Coordinates(MIDLINE, DELIVER_Y_DISTANCE), new Coordinates(clawInsideRobot.coordinates.x, clawInsideRobot.coordinates.y));
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(0).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(1).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(2).adjust(Math.PI * 0.0 / 180, Math.PI * -10.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(3).adjust(Math.PI * 0.0 / 180, Math.PI * -20.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(4).adjust(Math.PI * 0.0 / 180, Math.PI * -20.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(5).adjust(Math.PI * -10.0 / 180, Math.PI * 20.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(6).adjust(Math.PI * -20.0 / 180, Math.PI * 20.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(7).adjust(Math.PI * -20.0 / 180, Math.PI * 10.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(8).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(9).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+        DELIVERY_TO_INSIDE_ROBOT.angleList.get(10).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
 
 
     }
@@ -253,6 +264,12 @@ public class SCARAController {
 //            telemetry.addData("stepDistance", stepDistance);
 //            telemetry.addData("index", index);
 //            telemetry.addData("scale", scale);
+
+            // range check the index
+//            if ((index < 0) || (index >= sequence.coordinatesList.size())) {
+//                return true; // something's wrong so move on
+//            }
+
             Coordinates p1 = sequence.coordinatesList.get(index);
             Coordinates p2 = sequence.coordinatesList.get(index + 1);
             coordinates.x = p1.x + (p2.x - p1.x) * scale;
@@ -480,7 +497,7 @@ public class SCARAController {
          */
         public boolean isValid(double newX, double newY) {
             if ((newY >= clawInsideRobot.coordinates.y) && (newY <= DELIVER_Y_DISTANCE) &&
-                    (newX >= MIDLINE - 10) && (newX <= MIDLINE + 10)) return true;
+                    (newX >= clawInsideRobot.coordinates.x - 20) && (newX <= clawOutsideRobot.coordinates.x + 20)) return true;
             if ((newY <= DELIVER_Y_DISTANCE + 10) && (newY >= DELIVER_Y_DISTANCE - 10) &&
                     (newX >= MIDLINE - SIDE_TO_SIDE_RANGE * 0.5) && (newX <= MIDLINE + SIDE_TO_SIDE_RANGE * 0.5)) return true;
             return false;

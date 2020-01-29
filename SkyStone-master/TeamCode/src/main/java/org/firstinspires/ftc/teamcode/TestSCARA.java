@@ -17,12 +17,15 @@ public class TestSCARA extends LinearOpMode {
 
     final static double SERVO_SPEED = 0.15; // servo counts per second
     final static double ROTATE_SPEED = 180.0/270; // degrees per second for rotate servo
+    double rotateServo = .397; // 0.237;
 
     //    double x, y;
     final static double SERVO1_THETA1_IS_0 = 0;
 
     int step = 0;
     boolean toggle = false;
+    int ind = 0;
+    boolean ind_toggle = false;
 
     public void runOpMode () {
         scara1 = hardwareMap.servo.get("servoLink1");
@@ -32,6 +35,7 @@ public class TestSCARA extends LinearOpMode {
 
         controller = new SCARAController(120, 120, telemetry);
         currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
+
 //        currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
 
         while(!isStarted()) {
@@ -45,7 +49,6 @@ public class TestSCARA extends LinearOpMode {
 //        double SERVO1_START = controller.clawInsideRobot.arm1Servo;
 //        double SERVO2_START = controller.clawInsideRobot.arm2Servo;
 
-        double rotateServo = 0.397;
         double lastTime = getRuntime();
         //keep opmode running so print block location can be read from screen
         while (opModeIsActive()) {
@@ -60,23 +63,27 @@ public class TestSCARA extends LinearOpMode {
             if (rotateServo < 0) rotateServo = 0;
 
             // manipulate servos directly
-            if (gamepad1.x){
+            if (gamepad1.x) {
                 currentClawPosition.servoPositions.servo1 += SERVO_SPEED * (currentTime - lastTime);
-                if (currentClawPosition.servoPositions.servo1 > 1) currentClawPosition.servoPositions.servo1 =1;
+                if (currentClawPosition.servoPositions.servo1 > 1)
+                    currentClawPosition.servoPositions.servo1 = 1;
             }
-            if (gamepad1.y){
+            if (gamepad1.y) {
                 currentClawPosition.servoPositions.servo1 -= SERVO_SPEED * (currentTime - lastTime);
-                if (currentClawPosition.servoPositions.servo1 < 0) currentClawPosition.servoPositions.servo1 =0;
+                if (currentClawPosition.servoPositions.servo1 < 0)
+                    currentClawPosition.servoPositions.servo1 = 0;
             }
 
 
-            if (gamepad1.a){
+            if (gamepad1.a) {
                 currentClawPosition.servoPositions.servo2 += SERVO_SPEED * (currentTime - lastTime);
-                if (currentClawPosition.servoPositions.servo2 > 1) currentClawPosition.servoPositions.servo2 =1;
+                if (currentClawPosition.servoPositions.servo2 > 1)
+                    currentClawPosition.servoPositions.servo2 = 1;
             }
-            if (gamepad1.b){
+            if (gamepad1.b) {
                 currentClawPosition.servoPositions.servo2 -= SERVO_SPEED * (currentTime - lastTime);
-                if (currentClawPosition.servoPositions.servo2 < 0) currentClawPosition.servoPositions.servo2 =0;
+                if (currentClawPosition.servoPositions.servo2 < 0)
+                    currentClawPosition.servoPositions.servo2 = 0;
             }
 
             if (gamepad1.dpad_up) {
@@ -102,7 +109,7 @@ public class TestSCARA extends LinearOpMode {
                     if (step >= 4) step = 0;
                     toggle = true;
                 }
-                switch(step) {
+                switch (step) {
                     case 0:
                         currentClawPosition.moveTo(SCARAController.MIDLINE, SCARAController.PICK_UP_Y_DISTANCE, currentTime - lastTime);
                         break;
@@ -120,6 +127,28 @@ public class TestSCARA extends LinearOpMode {
                 toggle = false;
             }
 
+            SCARAController.Sequence testSequence = controller.INSIDE_ROBOT_TO_DELIVERY;
+            if (gamepad1.left_stick_y < -.5) {
+                if (!ind_toggle) {
+                    ind++;
+                    if (ind >= testSequence.coordinatesList.size()) {
+                        ind = testSequence.coordinatesList.size() - 1;
+                    }
+                    ind_toggle = true;
+                }
+                currentClawPosition.armAngles.copy(testSequence.angleList.get(ind));
+                currentClawPosition.servoPositions.updateFromControlAngles(currentClawPosition.armAngles);
+            } else if (gamepad1.left_stick_y > .5) {
+                if (ind_toggle) {
+                    ind--;
+                    if (ind < 0) ind = 0;
+                    ind_toggle = true;
+                }
+                currentClawPosition.armAngles.copy(testSequence.angleList.get(ind));
+                currentClawPosition.servoPositions.updateFromControlAngles(currentClawPosition.armAngles);
+            } else {
+                ind_toggle = false;
+            }
             for (int i = 0; i <=10; i++) {
 
                 SCARAController.Coordinates c =controller.INSIDE_ROBOT_TO_DELIVERY.coordinatesList.get(i);
