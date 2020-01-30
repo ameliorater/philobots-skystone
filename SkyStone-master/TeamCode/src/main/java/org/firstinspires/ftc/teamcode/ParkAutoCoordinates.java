@@ -5,40 +5,35 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class ParkAutoCoordinates extends LinearOpMode {
-    boolean isBlue = true;
+    boolean parkRight;
     Robot robot;
     SimpleTracking simpleTracking;
     SimplePathFollow simplePathFollow;
-    FieldTracker fieldTracker;
-    SkystoneCV cv;
-    double TILE = 24 * 2.54;
-    double ROBOT = 45;
-    double currentPosX = 0;
-    double currentPosY = 0;
-    double stonePosition;
-    public ParkAutoCoordinates(boolean isBlue){
-        this.isBlue = isBlue;
+    double PARK_DISTANCE = 40; //cm
+
+    public ParkAutoCoordinates(boolean parkRight){
+        this.parkRight = parkRight;
     }
     public void runOpMode(){
         robot = new Robot(this, true);
         simpleTracking = new SimpleTracking();
         simplePathFollow = new SimplePathFollow();
 
+        //set starting position to (0, 0) and heading to 0 to simplify
+        simpleTracking.setPosition(0, 0);
         simpleTracking.setOrientationDegrees(0);
-        simpleTracking.setPosition(0,0);
+        simpleTracking.setModuleOrientation(robot);
 
         telemetry.addData("WAIT! Initializing IMU.... ", "");
         telemetry.update();
         robot.initIMU();
+
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
             telemetry.update();
         }
-        simpleTracking.setPosition(45, isBlue ? 157.5 : -157.5);
-        simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
 
-        moveTo(0, isBlue ? 157.5 : -157.5, isBlue ? 180 : 0);
-
+        moveTo(0, parkRight ? PARK_DISTANCE : -PARK_DISTANCE, 0);
 
     }
     private void moveTo(double x, double y, double orientation, double speed, double threshold) {
