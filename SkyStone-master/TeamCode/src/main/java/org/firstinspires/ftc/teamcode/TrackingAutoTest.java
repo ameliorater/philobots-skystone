@@ -76,6 +76,21 @@ public class TrackingAutoTest extends LinearOpMode {
 //        }
         robot.openGrabber();
 
+        //REMOVED- SCARA sequence
+//        double lastTime = getRuntime();
+//        double currentTime = getRuntime();
+//        while (opModeIsActive() && !robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime)) {
+//            robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//            robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+//
+//            lastTime = currentTime;
+//            robot.wait(10, this);
+//            currentTime = getRuntime();
+//        }
+//        // make sure the last position gets sent
+//        robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//        robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+
         // blue starting position
         simpleTracking.setPosition(-90, isBlue ? 157.5 : -157.5);
         simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
@@ -130,8 +145,8 @@ public class TrackingAutoTest extends LinearOpMode {
         //intake and grab block
         robot.wait(1000, this);
         robot.moveIntake(STOP);
-        robot.closeGrabber();
 
+        //robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
 
 //        robot.armServo1.setPosition(.5);
 //        robot.armServo2.setPosition(.5);
@@ -139,6 +154,12 @@ public class TrackingAutoTest extends LinearOpMode {
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
         moveTo(stonePosition, isBlue ? 90 : -90, isBlue ? 180: 0, DEFAULT_POWER, 2); //WAS 95
         moveTo(stonePosition, isBlue ? 90: -90, 270, DEFAULT_POWER, 1); //WAS ALSO 95
+
+//        // stop lowering lift
+//        robot.moveLift(0);
+//        robot.closeGrabber();
+//        moveTo(stonePosition, isBlue ? 95: -95, 270, DEFAULT_POWER, 1); //WAS ALSO 95
+
         simplePathFollow.stop(robot);
         //robot.wait(250, this); //removed 1-20
 
@@ -174,10 +195,11 @@ public class TrackingAutoTest extends LinearOpMode {
 
 
         //deliver skystone
-        robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
-        robot.wait(60, this);
-        robot.moveLift(0);
+//        robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
+//        robot.wait(60, this);
+//        robot.moveLift(0);
 
+<<<<<<< HEAD
 //        lastTime = getRuntime();
 //        currentTime = getRuntime();
 //        robot.backStop.setPosition(0);
@@ -189,7 +211,43 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.moveIntake(OUTTAKE);
         robot.wait(500, this); //was 1500 timeout
         robot.moveIntake(STOP);
+
+        //REMOVED- SCARA sequence
+//        lastTime = getRuntime();
+//        currentTime = getRuntime();
+//        robot.backStop.setPosition(0);
+//        while (opModeIsActive() && !robot.currentClawPosition.moveSequence(robot.controller.INSIDE_ROBOT_TO_DELIVERY, currentTime - lastTime)) {
+//            robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//            robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+//
+//            lastTime = currentTime;
+//            robot.wait(10, this);
+//            currentTime = getRuntime();
+//        }
+//        // make sure the last position gets sent
+//        robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//        robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+
         robot.openGrabber();
+
+        //REMOVED- SCARA sequence
+//        robot.wait(1000, this);
+//
+//        lastTime = getRuntime();
+//        currentTime = getRuntime();
+//        robot.backStop.setPosition(1);
+//        robot.closeGrabber();
+//        while (opModeIsActive() && !robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime)) {
+//            robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//            robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+//
+//            lastTime = currentTime;
+//            robot.wait(10, this);
+//            currentTime = getRuntime();
+//        }
+//        // make sure the last position gets sent
+//        robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+//        robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
 
 
         moveTo(120, isBlue ? 125:-125, isBlue ?0:180, 0.6, 5, 5000);
