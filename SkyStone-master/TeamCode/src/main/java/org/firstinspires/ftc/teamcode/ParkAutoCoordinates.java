@@ -9,7 +9,7 @@ public class ParkAutoCoordinates extends LinearOpMode {
     Robot robot;
     SimpleTracking simpleTracking;
     SimplePathFollow simplePathFollow;
-    double PARK_DISTANCE = 40; //cm
+    double PARK_DISTANCE = 20; //cm; was 40
 
     public ParkAutoCoordinates(boolean parkRight){
         this.parkRight = parkRight;
@@ -33,7 +33,7 @@ public class ParkAutoCoordinates extends LinearOpMode {
             telemetry.update();
         }
 
-        moveTo(0, parkRight ? PARK_DISTANCE : -PARK_DISTANCE, 0);
+        moveTo(parkRight ? -PARK_DISTANCE : PARK_DISTANCE, 0, 0);
 
     }
     private void moveTo(double x, double y, double orientation, double speed, double threshold) {
