@@ -149,7 +149,7 @@ public class SimpleTracking {
         //added 1-20
         if (useIMU) {
             if (isBlue) robotOrientation = robot.getRobotHeading().rotateBy(180).getAngle(Angle.AngleType.ZERO_TO_360_HEADING);
-            else robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING);
+            else robotOrientation = robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING);
         }
 
         double averageOrientation = getAverageOrientation(lastRobotOrientation, robotOrientation);

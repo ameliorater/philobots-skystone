@@ -33,7 +33,7 @@ public class ParkAutoCoordinates extends LinearOpMode {
             telemetry.update();
         }
 
-        moveTo(parkRight ? -PARK_DISTANCE : PARK_DISTANCE, 0, 0);
+        moveTo(parkRight ? PARK_DISTANCE : -PARK_DISTANCE, 0, 0);
 
     }
     private void moveTo(double x, double y, double orientation, double speed, double threshold) {

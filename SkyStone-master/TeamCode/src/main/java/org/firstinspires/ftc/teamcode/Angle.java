@@ -32,9 +32,9 @@ public class Angle {
     public static final Angle
             RIGHT = new Angle(90, AngleType.NEG_180_TO_180_HEADING),
             LEFT = new Angle(-90, AngleType.NEG_180_TO_180_HEADING),
-            BACKWARD = new Angle(180, AngleType.NEG_180_TO_180_HEADING), //was 0
-            FORWARD = new Angle(0, AngleType.NEG_180_TO_180_HEADING); //was 180
-    //CAUTION: flipped backwards and forwards bc robot was being weird and idk... left and right seemed fine
+            BACKWARD = new Angle(180, AngleType.NEG_180_TO_180_HEADING),
+            FORWARD = new Angle(0, AngleType.NEG_180_TO_180_HEADING);
+
 
     //see top for type definitions
     enum AngleType {
@@ -59,6 +59,8 @@ public class Angle {
 
     public double getAngle () { return angle; }
     public AngleType getType () { return type; }
+
+    public Angle forward () { return FORWARD.rotateBy(BACKWARD.getAngle()).rotateBy(LEFT.getAngle()); }
 
 //    public double getAngle (AngleType type) {
 //        return new Angle(getAngle(), getType()).getAngle();

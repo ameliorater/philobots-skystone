@@ -46,7 +46,7 @@ public class Robot {
     OpMode opMode;
 
     //SENSORS
-    DistanceSensor frontRangeSensor;
+//    DistanceSensor frontRangeSensor;
     DistanceSensor backRangeSensor;
 
     //BULK DATA (RevExtensions2)
@@ -160,7 +160,7 @@ public class Robot {
         intake2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("intakeMotor2");
         setupMotor(intake2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_USING_ENCODER);
 
-        frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
+//        frontRangeSensor = hardwareMap.get(DistanceSensor.class, "frontRangeSensor");
         backRangeSensor = hardwareMap.get(DistanceSensor.class, "backRangeSensor");
 
         dataLogger = new DataLogger("SkystoneRobot");
@@ -560,8 +560,9 @@ public class Robot {
     }
 
     public double getRange (boolean frontSensor) {
-        if (frontSensor) return frontRangeSensor.getDistance(DistanceUnit.CM);
-        else return backRangeSensor.getDistance(DistanceUnit.CM);
+        //if (frontSensor) return frontRangeSensor.getDistance(DistanceUnit.CM);
+        //else
+        return backRangeSensor.getDistance(DistanceUnit.CM);
     }
 
     public void resetLiftEncoders () {
