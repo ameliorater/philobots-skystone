@@ -22,22 +22,22 @@ public class SCARAController {
 
     double servo1TicksPerRadian, servo2TicksPerRadian;
 
-    final static double ARM_SPEED = 250; // mm per second
+    final static double ARM_SPEED = 350; // mm per second
 
     final static double SIDE_TO_SIDE_RANGE = 8 * 25.4;
     final static double MIDLINE = -76;
     final static double CALIBRATION_Y_DISTANCE = 200;
     final static double DELIVER_Y_DISTANCE = 6.5 * 25.4;
 
-    final static double PICK_UP_Y_DISTANCE = -180 - 15;
+    final static double PICK_UP_Y_DISTANCE = -180; //  - 15;
     //    final static double ARM1_SERVO_POSITION_90_DEGREES = .801;
 //    final static double ARM1_SERVO_POSITION_270_DEGREES = .159;
 //    final static double ARM2_SERVO_POSITION_90_DEGRESS = .392;
 //    final static double ARM2_SERVO_POSITION_180_DEGREES = .764;
-    final static double ARM1_SERVO_POSITION_90_DEGREES = .787;
-    final static double ARM1_SERVO_POSITION_270_DEGREES = .121;
-    final static double ARM2_SERVO_POSITION_90_DEGRESS = .171;
-    final static double ARM2_SERVO_POSITION_180_DEGREES = .535;
+    final static double ARM1_SERVO_POSITION_90_DEGREES = .807; //.787;
+    final static double ARM1_SERVO_POSITION_270_DEGREES = .144; //.121;
+    final static double ARM2_SERVO_POSITION_90_DEGRESS = .163;//.134; //.171;
+    final static double ARM2_SERVO_POSITION_180_DEGREES = .529;//.580;//.535;
 
     Sequence INSIDE_ROBOT_TO_DELIVERY;
     Sequence DELIVERY_TO_INSIDE_ROBOT;
@@ -50,7 +50,7 @@ public class SCARAController {
 
         ArmAngles armAngles = new ArmAngles(0,0);
 //        clawInsideRobot = new ClawPosition(MIDLINE, -CALIBRATION_Y_DISTANCE, .119, .883);
-        clawInsideRobot = new ClawPosition(MIDLINE -20, PICK_UP_Y_DISTANCE, .119, .883);
+        clawInsideRobot = new ClawPosition(MIDLINE, PICK_UP_Y_DISTANCE, .119, .883);
 
         // need to update angles for inside the robot.  This is the reset position
         clawInsideRobot.armAngles.setAngles(clawInsideRobot.coordinates, true);
@@ -90,10 +90,10 @@ public class SCARAController {
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(2).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(3).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(4).adjust(Math.PI * 10.0 / 180, Math.PI * 0.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(Math.PI * 20.0 / 180, Math.PI * 00.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(5).adjust(Math.PI * 20.0 / 180, Math.PI * -20.0 / 180);
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(6).adjust(Math.PI * 30.0 / 180, Math.PI * -30.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(Math.PI * 10.0 / 180, Math.PI * -20.0 / 180);
-        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(Math.PI * 0.0 / 180, Math.PI * 20.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(7).adjust(Math.PI * 20.0 / 180, Math.PI * -20.0 / 180);
+        INSIDE_ROBOT_TO_DELIVERY.angleList.get(8).adjust(Math.PI * 10.0 / 180, Math.PI * 20.0 / 180);
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(9).adjust(Math.PI * 0.0 / 180, Math.PI * 10.0 / 180);
         INSIDE_ROBOT_TO_DELIVERY.angleList.get(10).adjust(Math.PI * 0.0 / 180, Math.PI * 10.0 / 180);
 
@@ -109,6 +109,7 @@ public class SCARAController {
         DELIVERY_TO_INSIDE_ROBOT.angleList.get(8).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
         DELIVERY_TO_INSIDE_ROBOT.angleList.get(9).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
         DELIVERY_TO_INSIDE_ROBOT.angleList.get(10).adjust(Math.PI * 0.0 / 180, Math.PI * 0.0 / 180);
+
 
 
     }
@@ -208,8 +209,9 @@ public class SCARAController {
             this.inverted = other.inverted;
         }
 
+        // slow down the side to side motion to make it more useful
         public boolean moveBy(double deltaX, double deltaY, double deltaTime) {
-            if (!coordinates.moveBy(deltaTime * ARM_SPEED * deltaX, deltaTime * ARM_SPEED * deltaY)) return false;
+            if (!coordinates.moveBy(deltaTime * ARM_SPEED * 0.5f * deltaX, deltaTime * ARM_SPEED  * 0.5f * deltaY)) return false;
             armAngles.setAngles(coordinates, true);
 //            servoPositions.update(armAngles);
             servoPositions.updateFromControlAngles(armAngles);
@@ -459,6 +461,9 @@ public class SCARAController {
             // Alternatively define theta2 relative to the frame.
             servo2 = ARM2_SERVO_POSITION_90_DEGRESS - getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI * .75)*
                     (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5);
+            telemetry.addData("angle diff", getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI * .75));
+            telemetry.addData("a1+a2", armAngles.angle1 + armAngles.angle2);
+telemetry.addData("s2 tivks per Rad", (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5));
             if (servo2 > 1) {
                 servo2 = 1;
                 inRange = false;
@@ -497,8 +502,8 @@ public class SCARAController {
          */
         public boolean isValid(double newX, double newY) {
             if ((newY >= clawInsideRobot.coordinates.y) && (newY <= DELIVER_Y_DISTANCE) &&
-                    (newX >= clawInsideRobot.coordinates.x - 20) && (newX <= clawOutsideRobot.coordinates.x + 20)) return true;
-            if ((newY <= DELIVER_Y_DISTANCE + 10) && (newY >= DELIVER_Y_DISTANCE - 10) &&
+                    (newX >= clawInsideRobot.coordinates.x - 30) && (newX <= clawOutsideRobot.coordinates.x + 30)) return true;
+            if ((newY <= DELIVER_Y_DISTANCE + 70) && (newY >= DELIVER_Y_DISTANCE - 70) &&
                     (newX >= MIDLINE - SIDE_TO_SIDE_RANGE * 0.5) && (newX <= MIDLINE + SIDE_TO_SIDE_RANGE * 0.5)) return true;
             return false;
         }

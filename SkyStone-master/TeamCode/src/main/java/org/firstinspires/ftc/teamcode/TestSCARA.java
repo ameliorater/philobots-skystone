@@ -149,12 +149,31 @@ public class TestSCARA extends LinearOpMode {
             } else {
                 ind_toggle = false;
             }
-            for (int i = 0; i <=10; i++) {
+//            for (int i = 0; i <=10; i++) {
+//
+//                SCARAController.Coordinates c =controller.INSIDE_ROBOT_TO_DELIVERY.coordinatesList.get(i);
+//                SCARAController.ArmAngles a = controller.INSIDE_ROBOT_TO_DELIVERY.angleList.get(i);
+//                telemetry.addData("P"+i,c.x+", "+c.y+"   "+a.angle1+", "+a.angle2);
+//            }
 
-                SCARAController.Coordinates c =controller.INSIDE_ROBOT_TO_DELIVERY.coordinatesList.get(i);
-                SCARAController.ArmAngles a = controller.INSIDE_ROBOT_TO_DELIVERY.angleList.get(i);
-                telemetry.addData("P"+i,c.x+", "+c.y+"   "+a.angle1+", "+a.angle2);
+
+            // gamepad 2
+            if (gamepad2.x) { // inside robot
+                currentClawPosition.armAngles.angle1 = -85.0 * Math.PI / 180;
+                currentClawPosition.armAngles.angle2 = -70 * Math.PI / 180;
+                currentClawPosition.servoPositions.updateFromControlAngles(currentClawPosition.armAngles);
             }
+            if (gamepad2.a) { // under bridge
+                currentClawPosition.armAngles.angle1 = -90.0 * Math.PI / 180;
+                currentClawPosition.armAngles.angle2 = -160.0 * Math.PI / 180;
+                currentClawPosition.servoPositions.updateFromControlAngles(currentClawPosition.armAngles);
+            }
+            if (gamepad2.b) { // outside robot
+                currentClawPosition.armAngles.angle1 = 160.0 * Math.PI / 180;
+                currentClawPosition.armAngles.angle2 = -80.0 * Math.PI / 180;
+                currentClawPosition.servoPositions.updateFromControlAngles(currentClawPosition.armAngles);
+            }
+
             scara1.setPosition(currentClawPosition.servoPositions.servo1);
             scara2.setPosition(currentClawPosition.servoPositions.servo2);
             servoRotate.setPosition(rotateServo);

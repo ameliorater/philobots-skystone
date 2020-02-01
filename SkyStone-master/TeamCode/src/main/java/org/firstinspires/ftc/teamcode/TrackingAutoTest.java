@@ -96,19 +96,19 @@ public class TrackingAutoTest extends LinearOpMode {
         double stonePosition;
         if (isBlue) {
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-                stonePosition = -90 + 8*2.54 - 5;
+                stonePosition = -88 +21;//-90 + 8*2.54 - 5; // = -74.68
             } else if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
-                stonePosition = -70 + 8*2.54 - 10;
+                stonePosition = -67+11;//-70 + 8*2.54 - 10; // = -59.68
             } else {
-                stonePosition = -110 + 8*2.54 - 5;
+                stonePosition = -108+11;//-110 + 8*2.54 - 5; // = -94.68
             }
         } else {
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-                stonePosition = -81 + 8*2.54 - 5;
+                stonePosition = -88 + 11;//-81 + 8*2.54 - 5; =-65.68
             } else if (skystonePosition == SkystoneCV.StonePosition.RIGHT) {
-                stonePosition = -61 + 8*2.54 - 10;
+                stonePosition = -67 + 11; //-61 + 8*2.54 - 10; = -50.68
             } else {
-                stonePosition = -101 + 8*2.54 - 7;
+                stonePosition = -108 + 11;//-101 + 8*2.54 - 7;=-87.68
             }
         }
 
@@ -125,7 +125,7 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.hungryHippoRetract();
         robot.moveIntake(INTAKE,Constants.IntakeSpeed.SLOW);
         //robot.wait(1000, this, simpleTracking); //REMOVED 1-20
-        moveTo(stonePosition, isBlue ? 40 : -40, isBlue ? 225 : 315, SLOW_POWER, 5); //was 50
+        moveTo(stonePosition, isBlue ? 40 : -40, isBlue ? 225 : 315, SLOW_POWER, 5, 3000); //was 50
         simplePathFollow.stop(robot);
 //        robot.armServo1.setPosition(.7);
 //        robot.armServo2.setPosition(.3);

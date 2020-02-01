@@ -96,13 +96,13 @@ public class TeleOp extends OpMode {
 
         robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
 
-        if (gamepad2.dpad_up) {
-            //robot.hungryHippoExtend();
-            robot.moveServo(robot.backStop, 1);
-        } else if (gamepad2.dpad_down) {
-            //robot.hungryHippoRetract();
-            robot.moveServo(robot.backStop, 0);
-        }
+//        if (gamepad2.dpad_up) {
+//            //robot.hungryHippoExtend();
+//            robot.moveServo(robot.backStop, 1);
+//        } else if (gamepad2.dpad_down) {
+//            //robot.hungryHippoRetract();
+//            robot.moveServo(robot.backStop, 0);
+//        }
 
         /*
         if (gamepad2.dpad_right) {
@@ -167,9 +167,40 @@ public class TeleOp extends OpMode {
             robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
             robot.backStop.setPosition(1);
         }
-        if (Math.abs(gamepad2.right_stick_x) > 0.1) {
-            robot.currentClawPosition.moveBy(gamepad2.right_stick_x, 0, currentTime - lastTime);
+//        if (Math.abs(gamepad2.right_stick_x) > 0.1) {
+//            robot.currentClawPosition.moveBy(gamepad2.right_stick_x, 0, currentTime - lastTime);
+//        }
+
+        // Adding x-y control to claw ouside of robot
+        //        if (gamepad2.dpad_up) {
+//            //robot.hungryHippoExtend();
+//            robot.moveServo(robot.backStop, 1);
+//        } else if (gamepad2.dpad_down) {
+//            //robot.hungryHippoRetract();
+//            robot.moveServo(robot.backStop, 0);
+//        }
+
+        double clawDeltaX = 0;
+        double clawDeltaY = 0;
+        if (gamepad2.dpad_up)  clawDeltaY = 1;
+        if (gamepad2.dpad_down) clawDeltaY = -1;
+        if (gamepad2.dpad_left) clawDeltaX = -1;
+        if (gamepad2.dpad_right) clawDeltaX = 1;
+
+        if ((clawDeltaX != 0) || (clawDeltaY != 0)) {
+            robot.currentClawPosition.moveBy(clawDeltaX, clawDeltaY, currentTime - lastTime);
         }
+        // moved the backstop to the right stick to make room for the x-y claw controls
+        if (gamepad2.right_stick_x > 0.1) {
+            robot.moveServo(robot.backStop, 1);
+        } else if (gamepad2.right_stick_x < -0.1) {
+            robot.moveServo(robot.backStop, 0);
+        }
+
+
+
+
+
 
         robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
         robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
