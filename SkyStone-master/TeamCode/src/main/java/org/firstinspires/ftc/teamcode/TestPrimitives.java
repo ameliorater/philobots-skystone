@@ -3,41 +3,74 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.opencv.core.Point;
+
 @Autonomous(name="Test Primitives", group="Linear Opmode")
 
 public class TestPrimitives extends LinearOpMode {
     Robot robot;
+    SimpleTracking simpleTracking;
+    SimplePathFollow simplePathFollow;
+    SkystoneCV cv;
+    boolean isBlue;
+    double DEFAULT_POWER = 1; //was 0.6 for most
+    double SLOW_POWER = 0.35; //was 0.35
 
-    public void runOpMode () {
+    double TILE = 24 * 2.54;
+    double ROBOT = 45;
+
+    double RED_CROSS_FIELD_Y = -95;
+
+    public void runOpMode() {
+
         robot = new Robot(this, true);
+        simpleTracking = new SimpleTracking();
+        simplePathFollow = new SimplePathFollow();
+
+        // optionally set starting position and orientation of the robot
+        simpleTracking.setOrientationDegrees(0);
+        simpleTracking.setPosition(0,0);
+
+        telemetry.addData("WAIT! Initializing IMU.... ", "");
+        telemetry.update();
+
         robot.initIMU();
 
-        while(!isStarted()) {
+        cv = new SkystoneCV("Webcam 1", new Point(30, 130), new Point(110, 130), new Point(190, 130), this);
+        cv.init(SkystoneCV.CameraType.WEBCAM);
 
-            telemetry.addData("LEFT Module Orientation: ", robot.driveController.moduleLeft.getCurrentOrientation());
-            telemetry.addData("RIGHT Module Orientation: ", robot.driveController.moduleRight.getCurrentOrientation());
+        simpleTracking.setModuleOrientation(robot);
+
+
+        while (!isStarted()) {
+            telemetry.addData("Ready to Run", "");
             telemetry.update();
+        }
+        double startTime = System.currentTimeMillis();
 
-            //throttle to 10Hz loop to avoid burning excess CPU cycles for no reason
-            sleep(100);
+        while(opModeIsActive()) {
+            moveTo(0, 0, 180, 0.5, 2, 3000);
+            simplePathFollow.stop(robot);
+            waitForButton();
         }
 
-
-
-        robot.driveController.drive(Vector2d.FORWARD, 50, .7, this);
-        robot.wait(1000, this);
-        robot.driveController.rotateRobot(Angle.RIGHT, this);
-
-//        while (opModeIsActive()) {
-//            if (gamepad1.y) {
-//                robot.driveController.rotateModules(Vector2d.FORWARD, 4000, this);
-//            } else if (gamepad1.x) {
-//                //drive 30 cm to the right (while facing forward)
-//                robot.driveController.drive(Vector2d.FORWARD, 20, 1, this);
-//            } else if (gamepad1.a) {
-//                //turn to face robot right
-//                robot.driveController.rotateRobot(Angle.RIGHT,this);
-//            }
-//        }
     }
+
+    private void moveTo(double x, double y, double orientation, double speed, double threshold, double timeout) {
+        boolean done = false;
+        double startTime = System.currentTimeMillis();
+        while (!done && opModeIsActive() && (System.currentTimeMillis() < startTime + timeout)) {
+            robot.updateBulkData();
+            simpleTracking.updatePosition(robot);
+            done = (simplePathFollow.moveToTarget(robot, simpleTracking, x, y, orientation, speed) < threshold);
+        }
+    }
+
+    public void waitForButton () {
+        while (!gamepad1.b && opModeIsActive()) {
+            simpleTracking.updatePosition(robot);
+            telemetry.addData("IMU Heading: ", robot.getRobotHeading());
+        }
+    }
+
 }
