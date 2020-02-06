@@ -157,34 +157,6 @@ public class TrackingAutoTest extends LinearOpMode {
             robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
             moveTo(0, 95 * (isBlue ? 1 : -1), 90, 0.6, 5);
             robot.moveIntake(STOP);
-
-//            double additionalDist = 0;
-//            if (skystonePosition == SkystoneCV.StonePosition.CENTER) additionalDist = 8 * 2.54;
-//            if (skystonePosition == SkystoneCV.StonePosition.LEFT) additionalDist = 16 * 2.54;
-//            double position = -(1.75 * TILE + additionalDist); //was 2 * TILE
-//
-//            simplePathFollow.stop(robot);
-////            waitForButton();
-//            simplePathFollow.stop(robot);
-////            waitForButton();
-//
-//            moveWithIMU(-100, isBlue ? 90 : -98, 270, 0.6, 5); //align next to stone
-//            robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
-//            moveTo(position, (TILE - 4 * 2.54) * (isBlue ? 1 : -1), 270, 0.6, 5); //get in front of stone
-//            moveTo(position - 8 * 2.54, (TILE - 4 * 2.54) * (isBlue ? 1 : -1), 270, 0.6, 5); //intake stone
-//            robot.moveIntake(STOP);
-//
-//            //backtrack and score
-//            moveTo(position - 8 * 2.54, isBlue ? 90 : RED_CROSS_FIELD_Y, 270, 0.6, 5); //prepare to drive back
-//            moveWithIMU(1.5 * TILE, isBlue ? 90 : RED_CROSS_FIELD_Y, 90, 0.6, 5); //cross-field drive
-//            robot.moveIntake(OUTTAKE);
-//            moveWithIMU(0, isBlue ? 90 : RED_CROSS_FIELD_Y, 90, 0.6, 5); //cross-field drive
-//            robot.moveIntake(STOP);
-//
-//            moveTo(-1.5 * TILE, 1.5 * TILE + 4, 270, 0.6, 5); //get in front of foundation
-//
-            //score block
-
         } else {
             //park
             moveWithIMU(0, isBlue ? 95 : -95, 270, 0.6, 5);
