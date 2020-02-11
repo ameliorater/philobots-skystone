@@ -373,7 +373,7 @@ public class DriveController {
 //                dataLogger.addField(translationVector.getY());
 //                dataLogger.newLine();
 //
-//                linearOpMode.telemetry.addData("X power", xPower);
+//                linearOpMode.teslemetry.addData("X power", xPower);
 //                linearOpMode.telemetry.addData("X difference", robotPosition.getAbsXDifference(targetPosition));
 //                linearOpMode.telemetry.addData("Translation direction", translationDirection);
 //                linearOpMode.telemetry.addData("Translation vector", translationVector);

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Skystone TeleOp", group = "TeleOp")
 public class TeleOp extends OpMode {
@@ -160,12 +159,13 @@ public class TeleOp extends OpMode {
         double currentTime = getRuntime();
         if (gamepad2.a) {
             robot.currentClawPosition.moveSequence(robot.controller.INSIDE_ROBOT_TO_DELIVERY, currentTime - lastTime);
-            robot.backStop.setPosition(0);
+            //robot.backStop.setPosition(0);
         }
         if (gamepad2.y) {
             //robot.closeGrabber();
             robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
-            robot.backStop.setPosition(1);
+            robot.grabberServo.setPosition(0.5);
+            //robot.backStop.setPosition(1);
         }
 //        if (Math.abs(gamepad2.right_stick_x) > 0.1) {
 //            robot.currentClawPosition.moveBy(gamepad2.right_stick_x, 0, currentTime - lastTime);
@@ -192,14 +192,10 @@ public class TeleOp extends OpMode {
         }
         // moved the backstop to the right stick to make room for the x-y claw controls
         if (gamepad2.right_stick_x > 0.1) {
-            robot.moveServo(robot.backStop, 1);
-        } else if (gamepad2.right_stick_x < -0.1) {
-            robot.moveServo(robot.backStop, 0);
+            robot.moveServo(robot.placer, 1);
+        } else { //was else if (gamepad2.right_stick_x < -0.1)
+            robot.moveServo(robot.placer, 0);
         }
-
-
-
-
 
 
         robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);

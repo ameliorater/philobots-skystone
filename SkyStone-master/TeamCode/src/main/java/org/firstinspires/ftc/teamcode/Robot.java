@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 import static org.firstinspires.ftc.teamcode.Constants.*;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -31,7 +30,7 @@ public class Robot {
     Servo markerServo;
 
     Servo outtake1, outtake2, outtakeRot;
-    Servo backStop;
+    Servo placer;
 
     //Servo intakeServo1, intakeServo2;
 
@@ -127,8 +126,8 @@ public class Robot {
         //armServo2 = hardwareMap.servo.get("armServo2");
 
         //the cooper things
-        backStop = hardwareMap.servo.get("backStop");
-        setupServo(backStop);
+        placer = hardwareMap.servo.get("backStop");
+        setupServo(placer);
 
         //deprecated
         //intakeServo1 = hardwareMap.servo.get("intakeServo1");
@@ -594,9 +593,9 @@ class Constants {
 
     //TODO FINISH THESE CONSTANTS
     final static double LATCHED_POSITION_1 = 0, UNLATCHED_POSITION_1 = 1, LATCHED_POSITION_2 = 1, UNLATCHED_POSITION_2 = 0;
-    final static double HUNGRY_HIPPO_RETRACT_POSITION = 1, HUNGRY_HIPPO_EXTEND_POSITION = 0;
+    final static double HUNGRY_HIPPO_RETRACT_POSITION = 0, HUNGRY_HIPPO_EXTEND_POSITION = 1;
     final static double INTAKE_SERVO_OUT_POSITION = 1, INTAKE_SERVO_IN_POSITION = 0;
-    final static double GRABBER_OPEN_POSITION = 1, GRABBER_CLOSE_POSITION = 0;
+    final static double GRABBER_OPEN_POSITION = 0, GRABBER_CLOSE_POSITION = 1; //reversed this on 2/10!
 
     enum IntakeState { INTAKE, OUTTAKE, STOP }
 

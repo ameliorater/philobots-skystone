@@ -53,6 +53,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
+        robot.placer.setPosition(0);
 
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
@@ -63,42 +64,17 @@ public class TrackingAutoTest extends LinearOpMode {
         //START AUTO
 
         // set SCARA to be inside robot
-        double lastTime = getRuntime();
-        double currentTime = getRuntime();
-        while (opModeIsActive() && !robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime)) {
-            robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
-            robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
-
-            lastTime = currentTime;
-            robot.wait(10, this);
-            currentTime = getRuntime();
-        }
-        // make sure the last position gets sent
-        robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
-        robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
-
+        moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
 
         //identify skystone
         SkystoneCV.StonePosition skystonePosition = cv.getSkystonePosition();
         telemetry.addData("Skystone at: ", skystonePosition);
         telemetry.update();
-        double stonePosition;
-        if (isBlue) {
-            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-                stonePosition = -77; //was -67
-            } else if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
-                stonePosition = -64; //was -56
-            } else {
-                stonePosition = -97;
-            }
-        } else {
-            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-                stonePosition = -77;
-            } else if (skystonePosition == SkystoneCV.StonePosition.RIGHT) {
-                stonePosition = -60; //was -56
-            } else {
-                stonePosition = -97;
-            }
+        double stonePosition = -70;
+        if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
+            stonePosition -= 8*2.54;
+        } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
+            stonePosition -= 16*2.54;
         }
 
         //close openCV
@@ -106,14 +82,14 @@ public class TrackingAutoTest extends LinearOpMode {
         cv.camera.closeCameraDevice();
 
         // go to first stone
-        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 225 : 315, 0.5, 5, 3000);
+        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5, 3000); //was isBlue ? 225 : 315
         simplePathFollow.stop(robot);
-        robot.hungryHippoRetract(); //pull block in
+        robot.hungryHippoExtend(); //pull block in
         robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
         //go forward to grab block
-        moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 225 : 315, SLOW_POWER, 5, 3000); //was y = +- 40
+        moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 180 : 0, SLOW_POWER, 5, 3000); //was y = +- 40  //was isBlue ? 225 : 315
         simplePathFollow.stop(robot);
-        robot.hungryHippoExtend(); //pull hungry hippo back in
+        robot.hungryHippoRetract(); //pull hungry hippo back in
 
         //intake stone
         robot.wait(500, this); //was 1000
@@ -132,6 +108,10 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.latchServo1.setPosition(0.0);
         robot.latchServo2.setPosition(1.0);
 
+        //deliver block to foundation
+        deliverBlock();
+
+        //outtake just in case
         robot.moveIntake(OUTTAKE);
         robot.wait(500, this); //was 1500 timeout
 
@@ -163,9 +143,16 @@ public class TrackingAutoTest extends LinearOpMode {
             moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20
             robot.moveIntake(STOP); //moved one line down (give more time to intake)
             moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 90, 0.75, 5); //rotate
-            moveWithIMU(30, 95 * (isBlue ? 1 : -1), 90, MID_POWER, 5, 3000); //added timeout //changed to withIMU
-            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
-            moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
+//            moveWithIMU(30, 95 * (isBlue ? 1 : -1), 90, MID_POWER, 5, 3000); //added timeout //changed to withIMU
+//            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
+//            moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
+//            robot.moveIntake(STOP);
+            moveWithIMU(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
+            moveTo(130, 150 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000);
+            deliverBlock();
+            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
+            moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
+            moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
             robot.moveIntake(STOP);
         } else {
             //park
@@ -234,6 +221,34 @@ public class TrackingAutoTest extends LinearOpMode {
                     (robot.backRangeSensor.getDistance(DistanceUnit.CM) < 2);
             logTelemetry();
         }
+    }
+
+    //move SCARA with sequence
+    public void moveSCARA (SCARAController.Sequence sequence) {
+        double lastTime = getRuntime();
+        double currentTime = getRuntime();
+        robot.placer.setPosition(0);
+        while (opModeIsActive() && !robot.currentClawPosition.moveSequence(sequence, currentTime - lastTime)) {
+            robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+            robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+
+            lastTime = currentTime;
+            robot.wait(10, this);
+            currentTime = getRuntime();
+        }
+        // make sure the last position gets sent
+        robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
+        robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
+    }
+
+    public void deliverBlock () {
+        robot.closeGrabber();
+        robot.wait(500, this);
+        moveSCARA(robot.controller.INSIDE_ROBOT_TO_DELIVERY);
+        robot.openGrabber();
+        robot.wait(500, this);
+        robot.grabberServo.setPosition(0.5);
+        moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
     }
 
     //move relative to the current position
