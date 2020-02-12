@@ -149,12 +149,12 @@ public class TestSCARA extends LinearOpMode {
             } else {
                 ind_toggle = false;
             }
-//            for (int i = 0; i <=10; i++) {
-//
-//                SCARAController.Coordinates c =controller.INSIDE_ROBOT_TO_DELIVERY.coordinatesList.get(i);
-//                SCARAController.ArmAngles a = controller.INSIDE_ROBOT_TO_DELIVERY.angleList.get(i);
-//                telemetry.addData("P"+i,c.x+", "+c.y+"   "+a.angle1+", "+a.angle2);
-//            }
+            for (int i = 0; i <=10; i++) {
+
+                SCARAController.Coordinates c =controller.INSIDE_ROBOT_TO_DELIVERY.coordinatesList.get(i);
+                SCARAController.ArmAngles a = controller.INSIDE_ROBOT_TO_DELIVERY.angleList.get(i);
+                telemetry.addData("P"+i,c.x+", "+c.y+"   "+a.angle1 *180/Math.PI+", "+a.angle2*180/Math.PI);
+            }
 
 
             // gamepad 2

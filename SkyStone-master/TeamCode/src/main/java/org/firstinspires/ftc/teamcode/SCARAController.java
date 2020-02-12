@@ -27,9 +27,11 @@ public class SCARAController {
     final static double SIDE_TO_SIDE_RANGE = 8 * 25.4;
     final static double MIDLINE = -76;
     final static double CALIBRATION_Y_DISTANCE = 200;
-    final static double DELIVER_Y_DISTANCE = 6.5 * 25.4;
 
-    final static double PICK_UP_Y_DISTANCE = -180; //  - 15;
+    //shift delivery and pickup forward by 25 cm to account for the new claw attach point
+    final static double DELIVER_Y_DISTANCE = 6.5 * 25.4 - 25;
+
+    final static double PICK_UP_Y_DISTANCE = -180 - 25; //  - 15;
     //    final static double ARM1_SERVO_POSITION_90_DEGREES = .801;
 //    final static double ARM1_SERVO_POSITION_270_DEGREES = .159;
 //    final static double ARM2_SERVO_POSITION_90_DEGRESS = .392;
@@ -459,9 +461,9 @@ public class SCARAController {
             // Theta2 is arm2's angle relative to arm1.  When arm 1's angle changes, servo 2 must rotate to keep the same angle between arm1 and arm2.  This is
             // because arm2's pivot is connected to the servo through a belt which rotates with arm 1.
             // Alternatively define theta2 relative to the frame.
-            servo2 = ARM2_SERVO_POSITION_90_DEGRESS - getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI * .75)*
-                    (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5);
-            telemetry.addData("angle diff", getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI * .75));
+            double angleDiff = getSignedAngleDifferenceCounterClockwise(Math.PI * 0.5, armAngles.angle1 + armAngles.angle2, Math.PI);
+            servo2 = ARM2_SERVO_POSITION_90_DEGRESS - angleDiff * (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5);
+            telemetry.addData("angle diff", angleDiff);
             telemetry.addData("a1+a2", armAngles.angle1 + armAngles.angle2);
 telemetry.addData("s2 tivks per Rad", (ARM2_SERVO_POSITION_90_DEGRESS - ARM2_SERVO_POSITION_180_DEGREES) / (Math.PI * 0.5));
             if (servo2 > 1) {

@@ -124,7 +124,9 @@ public class TeleOp extends OpMode {
             robot.latch();
         }
 
-        if (gamepad2.x) {
+        if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
+            robot.grabberServo.setPosition(0.5);
+        } else if (gamepad2.x) {
             robot.openGrabber();
         } else if (gamepad2.b) {
             robot.closeGrabber();
@@ -164,7 +166,8 @@ public class TeleOp extends OpMode {
         if (gamepad2.y) {
             //robot.closeGrabber();
             robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
-            robot.grabberServo.setPosition(0.5);
+// don't close grabber for the side grabber
+//            robot.grabberServo.setPosition(0.5);
             //robot.backStop.setPosition(1);
         }
 //        if (Math.abs(gamepad2.right_stick_x) > 0.1) {
@@ -191,11 +194,11 @@ public class TeleOp extends OpMode {
             robot.currentClawPosition.moveBy(clawDeltaX, clawDeltaY, currentTime - lastTime);
         }
         // moved the backstop to the right stick to make room for the x-y claw controls
-        if (gamepad2.right_stick_x > 0.1) {
-            robot.moveServo(robot.placer, 1);
-        } else { //was else if (gamepad2.right_stick_x < -0.1)
-            robot.moveServo(robot.placer, 0);
-        }
+//        if (gamepad2.right_stick_x > 0.1) {
+//            robot.moveServo(robot.placer, 1);
+//        } else { //was else if (gamepad2.right_stick_x < -0.1)
+//            robot.moveServo(robot.placer, 0);
+//        }
 
 
         robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
@@ -247,17 +250,23 @@ public class TeleOp extends OpMode {
 
         //robot.setArmPower(-gamepad2.right_stick_y);
         telemetry.addData("Arm power", -gamepad2.right_stick_x);
-        //robot.moveLift(-gamepad2.left_stick_y);
+        robot.moveLift(-gamepad2.left_stick_y);
 
         //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
 
         if (gamepad2.right_bumper) {
-            robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
+            robot.moveServo(robot.placer, 1); // move down
         } else if (gamepad2.left_bumper) {
-            robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
-        } else {
-            robot.moveLift(-gamepad2.left_stick_y);
+            robot.moveServo(robot.placer, 0); // move up
         }
+// moved placer to gamepad2's bumpers
+//        if (gamepad2.right_bumper) {
+//            robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
+//        } else if (gamepad2.left_bumper) {
+//            robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
+//        } else {
+//            robot.moveLift(-gamepad2.left_stick_y);
+//        }
 
         //todo: remove after done tuning
 //        if (gamepad1.b) {
