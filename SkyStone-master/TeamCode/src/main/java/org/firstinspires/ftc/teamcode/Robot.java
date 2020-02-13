@@ -70,7 +70,7 @@ public class Robot {
     //boolean IMUReversed = false;
 
     // only 8 levels are valid
-    int[] encoderTicksAtLiftPositions = new int[8];
+    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {85, 309, 461, 689, 883};
     int liftPosition = 0;
     boolean wasLastPositive = false;
 
@@ -255,6 +255,10 @@ public class Robot {
         moveServo(grabberServo, GRABBER_OPEN_POSITION);
     }
 
+    public void moveGrabberToMid() {
+        grabberServo.setPosition(0.6);
+    }
+
     public void hungryHippoExtend(){
         moveServo(hungryHippoServo, HUNGRY_HIPPO_EXTEND_POSITION);
     }
@@ -321,11 +325,11 @@ public class Robot {
         lift2.setTargetPosition(bulkData1.getMotorCurrentPosition(lift2));
         setupMotor(lift2, DcMotorSimple.Direction.REVERSE, DcMotor.RunMode.RUN_TO_POSITION);
 
-        for (int i = 0; i < encoderTicksAtLiftPositions.length; i++) {
-            encoderTicksAtLiftPositions[i] = (int)determineBlockPlacementTicks(i);
-        }
-        // limit the top position to the physical constraints of the lift
-        encoderTicksAtLiftPositions[encoderTicksAtLiftPositions.length - 1] = (int)(((Math.asin(73.10 /*max height*// 2 / barLength) - startAngle) / (twoPi)) * ticksPerEntireRotation);
+//        for (int i = 0; i < encoderTicksAtLiftPositions.length; i++) {
+//            encoderTicksAtLiftPositions[i] = (int)determineBlockPlacementTicks(i);
+//        }
+//        // limit the top position to the physical constraints of the lift
+//        encoderTicksAtLiftPositions[encoderTicksAtLiftPositions.length - 1] = (int)(((Math.asin(73.10 /*max height*// 2 / barLength) - startAngle) / (twoPi)) * ticksPerEntireRotation);
     }
 
     public int getLiftBlockPositionToGo(int position, boolean goingUp) {
@@ -355,7 +359,7 @@ public class Robot {
         int lift1CurrentPos = bulkData1.getMotorCurrentPosition(lift1);
         int lift2CurrentPos = bulkData1.getMotorCurrentPosition(lift2);
         //int position = (lift1CurrentPos + lift2CurrentPos)/2; //integer division, i know (i think it's fine)
-        int position = lift1CurrentPos; //integer division, i know (i think it's fine)
+        int position = lift1CurrentPos;
 
         if (Math.abs(moveRate) < 0.1) {
             moveRate = 0;
@@ -426,6 +430,14 @@ public class Robot {
     public void moveIntake(IntakeState state) {
         //Defaults to being fast
         moveIntake(state, IntakeSpeed.FAST);
+    }
+
+    public Double getDistance(double wantedAngle) {
+
+        return  (Math.abs(getRobotHeading().getAngle() - wantedAngle) < 5) ? //If within
+                backRangeSensor.getDistance(DistanceUnit.CM) :
+                null;
+
     }
 
     public void moveIntakeUntilStalled(IntakeState state, IntakeSpeed speed, long timeout, LinearOpMode linearOpMode) {
