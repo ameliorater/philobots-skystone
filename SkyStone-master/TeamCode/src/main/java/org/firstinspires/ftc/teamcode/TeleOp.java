@@ -5,7 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Skystone TeleOp", group = "TeleOp")
 public class TeleOp extends OpMode {
     Robot robot;
-    public double DEADBAND_MAG = 0.1;
+    public final double DEADBAND_MAG_NORMAL = 0.1;
+    public final double DEADBAND_MAG_SLOW_MODE = 0.03;
+    boolean slowModeDrive;
     //public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
@@ -31,6 +33,8 @@ public class TeleOp extends OpMode {
 
     double lastTime;
 
+    Vector2d joystick1, joystick2;
+
     public void init() {
         robot = new Robot(this, false, false);
     }
@@ -53,8 +57,9 @@ public class TeleOp extends OpMode {
         robot.updateBulkData(); //read data once per loop, access it through robot class variable
         robot.driveController.updatePositionTracking(telemetry);
 
-        Vector2d joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
-        Vector2d joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
+        joystick1 = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y); //LEFT joystick
+        joystick2 = new Vector2d(gamepad1.right_stick_x, -gamepad1.right_stick_y); //RIGHT joystick
+        slowModeDrive = false;
 
         telemetry.addData("Robot Heading: ", robot.getRobotHeading());
         telemetry.addData("Joystick 2 Angle (180 heading mode): ", joystick2.getAngleDouble(Angle.AngleType.NEG_180_TO_180_HEADING));
@@ -63,12 +68,14 @@ public class TeleOp extends OpMode {
         //slow mode/range stuffs
         if (gamepad1.left_trigger > 0.1) {
             joystick1 = joystick1.scale(0.3);
-            joystick2 = joystick2.scale(0.3);
+            joystick2 = joystick2.scale(0.4); //was 0.3
+            slowModeDrive = true;
         }
         else if (gamepad1.right_trigger > 0.1) {
             if (robot.getRange(false) < 30) {
                 joystick1 = joystick1.scale(0.3);
-                joystick2 = joystick2.scale(0.3);
+                joystick2 = joystick2.scale(0.4); //was 0.3
+                slowModeDrive = true;
             }
         }
         else if (gamepad1.right_bumper) {
@@ -93,7 +100,11 @@ public class TeleOp extends OpMode {
             robot.retractMarker();
         }
 
-        robot.driveController.updateUsingJoysticks(checkDeadband(joystick1).scale(Math.sqrt(2)), checkDeadband(joystick2).scale(Math.sqrt(2)), absHeadingMode);
+        robot.driveController.updateUsingJoysticks(
+                checkDeadband(joystick1, slowModeDrive).scale(Math.sqrt(2)),
+                checkDeadband(joystick2, slowModeDrive).scale(Math.sqrt(2)),
+                absHeadingMode
+        );
 
 //        if (gamepad2.dpad_up) {
 //            //robot.hungryHippoExtend();
@@ -125,7 +136,7 @@ public class TeleOp extends OpMode {
         }
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
-            robot.grabberServo.setPosition(0.5);
+            robot.moveGrabberToMid();
         } else if (gamepad2.x) {
             robot.openGrabber();
         } else if (gamepad2.b) {
@@ -321,8 +332,10 @@ public class TeleOp extends OpMode {
         return new Vector2d(0, 0);
     }*/
 
-    //Instead of using the above implementation, this one checks if the length of the vector is more than that of the deadband magnitude
-    public Vector2d checkDeadband(Vector2d joystick) {
-        return joystick.getMagnitude() > DEADBAND_MAG ? joystick : new Vector2d(0, 0);
+    // Instead of using the above implementation, this one checks
+    // if the length of the vector is more than that of the deadband magnitude
+    public Vector2d checkDeadband(Vector2d joystick, boolean slowMode) {
+        return  joystick.getMagnitude() > (slowMode ? DEADBAND_MAG_SLOW_MODE : DEADBAND_MAG_NORMAL) ?
+                joystick : new Vector2d(0, 0);
     }
 }
