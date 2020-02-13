@@ -251,11 +251,13 @@ public class TeleOp extends OpMode {
         //robot.setArmPower(-gamepad2.right_stick_y);
         telemetry.addData("Arm power", -gamepad2.right_stick_x);
         robot.moveLift(-gamepad2.left_stick_y);
+        telemetry.addData("lift 1 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift1));
+        telemetry.addData("lift 2 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift2));
 
         //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
 
         if (gamepad2.right_bumper) {
-            robot.moveServo(robot.placer, 1); // move down
+            robot.moveServo(robot.placer, 0.8); // move down  //was 1
         } else if (gamepad2.left_bumper) {
             robot.moveServo(robot.placer, 0); // move up
         }

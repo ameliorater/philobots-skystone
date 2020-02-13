@@ -416,6 +416,13 @@ public class Robot {
         telemetry.addData("Lift ticks/ms", LIFT_TICKS_PER_MS);
     }
 
+    public void moveLiftToPosition (int position) {
+        lift1.setPower(1);
+        lift2.setPower(1);
+        lift1.setTargetPosition(position);
+        lift2.setTargetPosition(position);
+    }
+
     public void moveIntake(IntakeState state) {
         //Defaults to being fast
         moveIntake(state, IntakeSpeed.FAST);

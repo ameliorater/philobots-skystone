@@ -51,7 +51,7 @@ public class DriveModule {
 
     //TODO: tune this variable (see commented out section in TeleOp)
     //was 1.7
-    public double ROT_ADVANTAGE = 1.0; //max rotation power divided by max translation power (scaling factor)
+    public double ROT_ADVANTAGE = 1.7; //max rotation power divided by max translation power (scaling factor)
 
     //this variable is set to 0.7 because when in RUN_USING_ENCODERS mode, powers about ~0.7 are the same
     //setting to 1 may increase robot top speed, but may decrease accuracy

@@ -31,7 +31,7 @@ public class SCARAController {
     //shift delivery and pickup forward by 25 cm to account for the new claw attach point
     final static double DELIVER_Y_DISTANCE = 6.5 * 25.4 - 25;
 
-    final static double PICK_UP_Y_DISTANCE = -180 - 25; //  - 15;
+    final static double PICK_UP_Y_DISTANCE = -180; // had -25 (negative closer to front of robot)
     //    final static double ARM1_SERVO_POSITION_90_DEGREES = .801;
 //    final static double ARM1_SERVO_POSITION_270_DEGREES = .159;
 //    final static double ARM2_SERVO_POSITION_90_DEGRESS = .392;
