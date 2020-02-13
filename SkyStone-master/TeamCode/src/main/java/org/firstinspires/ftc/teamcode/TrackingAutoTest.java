@@ -53,7 +53,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
-        robot.placer.setPosition(0);
+        robot.placer.setPosition(0.2); //was 0
 
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
@@ -70,7 +70,7 @@ public class TrackingAutoTest extends LinearOpMode {
         SkystoneCV.StonePosition skystonePosition = cv.getSkystonePosition();
         telemetry.addData("Skystone at: ", skystonePosition);
         telemetry.update();
-        double stonePosition = -70;
+        double stonePosition = -70 + 5;
         if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
             stonePosition -= 8*2.54;
         } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
@@ -82,17 +82,22 @@ public class TrackingAutoTest extends LinearOpMode {
         cv.camera.closeCameraDevice();
 
         // go to first stone
-        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5, 3000); //was isBlue ? 225 : 315
+        moveTo(stonePosition, (isBlue ? 90 : -90), isBlue ? 180 : 0, 0.5, 5, 3000); //was isBlue ? 225 : 315 //was y = 75
         simplePathFollow.stop(robot);
+
+        //move lift up
+        robot.moveLiftToPosition(175); //was 20
+
         robot.hungryHippoExtend(); //pull block in
         robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
+        robot.wait(1500, this); //was 1000
         //go forward to grab block
-        moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 180 : 0, SLOW_POWER, 5, 3000); //was y = +- 40  //was isBlue ? 225 : 315
+        //moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 180 : 0, SLOW_POWER, 5, 3000); //was y = +- 40  //was isBlue ? 225 : 315
         simplePathFollow.stop(robot);
         robot.hungryHippoRetract(); //pull hungry hippo back in
+        robot.moveLiftToPosition(20); //almost all the way down, but don't want to stall
 
         //intake stone
-        robot.wait(500, this); //was 1000
         //robot.moveIntake(STOP);
 
         moveTo(stonePosition, 90 * (isBlue ? 1 : -1), isBlue ? 180 : 0, DEFAULT_POWER, 2); //WAS 95
@@ -117,9 +122,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
         moveTo(120, isBlue ? 115 : -115, isBlue ? 0 : 180, DEFAULT_POWER, 5, 5000); //was y = 125
         simplePathFollow.stop(robot);
-        moveTo(50, isBlue ? 115 : -115, isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform  //WAS x = 50 //WAS angle = isBlue ? 225 : 315
+        moveTo(50, isBlue ? 80 : -80, isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform  //WAS x = 50 //WAS angle = isBlue ? 225 : 315 //was  y = +- 115
         //moveTo(110, isBlue ? 140 : -140, 270, DEFAULT_POWER, 5, 2000); //push platform
-        moveTo(80, isBlue ? 115 : -115, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform
+        moveTo(70, isBlue ? 80 : -80, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform //was 80
         robot.moveIntake(STOP);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(1.0);
@@ -142,7 +147,7 @@ public class TrackingAutoTest extends LinearOpMode {
             robot.wait(500, this); //wait for block to intake
             moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20
             robot.moveIntake(STOP); //moved one line down (give more time to intake)
-            moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 90, 0.75, 5); //rotate
+            //moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 90, 0.75, 5); //rotate
 //            moveWithIMU(30, 95 * (isBlue ? 1 : -1), 90, MID_POWER, 5, 3000); //added timeout //changed to withIMU
 //            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
 //            moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
