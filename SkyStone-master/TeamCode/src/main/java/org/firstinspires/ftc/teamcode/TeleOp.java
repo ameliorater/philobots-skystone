@@ -37,6 +37,7 @@ public class TeleOp extends OpMode {
 
     public void init() {
         robot = new Robot(this, false, false);
+        robot.setPlacerUp();
     }
 
     public void init_loop() {
@@ -78,11 +79,11 @@ public class TeleOp extends OpMode {
                 slowModeDrive = true;
             }
         }
-        else if (gamepad1.right_bumper) {
-            robot.unlatch();
-        } else if (gamepad1.left_bumper) {
-            robot.latch();
-        }
+//        else if (gamepad1.right_bumper) {
+//            robot.unlatch();
+//        } else if (gamepad1.left_bumper) {
+//            robot.latch();
+//        }
 
 //        //toggle abs heading
 //        if (gamepad1.y) {
@@ -237,9 +238,9 @@ public class TeleOp extends OpMode {
         }*/
 
 
-        if (gamepad1.dpad_up) {
+        if (gamepad1.right_bumper) {
             robot.hungryHippoExtend();
-        } else if (gamepad1.dpad_down) {
+        } else if (gamepad1.left_bumper) {
             robot.hungryHippoRetract();
         }
 
@@ -247,7 +248,7 @@ public class TeleOp extends OpMode {
             robot.moveSingleIntakeRoller(true);
         } else if (gamepad1.dpad_right) {
             robot.moveSingleIntakeRoller(false);
-        } else if (Math.abs(gamepad2.right_trigger) > 0.1) {
+        } else if (Math.abs(gamepad2.right_trigger) > 0.1 && !gamepad2.right_bumper) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
         } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW); //was fast
@@ -266,11 +267,14 @@ public class TeleOp extends OpMode {
         telemetry.addData("lift 2 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift2));
 
         //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
-
-        if (gamepad2.right_bumper) {
-            robot.moveServo(robot.placer, 0.8); // move down  //was 1
+        if (gamepad2.right_bumper && gamepad2.right_trigger > 0.6) {
+            robot.dropCapstone();
         } else if (gamepad2.left_bumper) {
-            robot.moveServo(robot.placer, 0); // move up
+            //robot.moveServo(robot.placer, 0.8); // move down  //was 1
+            robot.setPlacerDown();
+        } else if (gamepad2.right_bumper) {
+            //robot.moveServo(robot.placer, 0); // move up
+            robot.setPlacerUp();
         }
 // moved placer to gamepad2's bumpers
 //        if (gamepad2.right_bumper) {

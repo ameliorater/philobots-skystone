@@ -70,7 +70,7 @@ public class Robot {
     //boolean IMUReversed = false;
 
     // only 8 levels are valid
-    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {85, 309, 461, 689, 883};
+    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {0, 155, 309, 461, 689, 883, 1223, 1603};
     int liftPosition = 0;
     boolean wasLastPositive = false;
 
@@ -562,7 +562,15 @@ public class Robot {
         else outtakeRot.setPosition(0);
     }
 
-
+    public void setPlacerUp () {
+        placer.setPosition(0.2);//was0.8
+    }
+    public void setPlacerDown () {
+        placer.setPosition(1);
+    }
+    public void dropCapstone () {
+        placer.setPosition(0);
+    }
 
     public void moveSingleIntakeRoller(boolean roller1) {
         (roller1 ? intake1 : intake2).setPower(INTAKE_POWER_SLOW);
