@@ -563,7 +563,7 @@ public class Robot {
     }
 
     public void setPlacerUp () {
-        placer.setPosition(0.2);//was0.8
+        placer.setPosition(0.3);//was0.8
     }
     public void setPlacerDown () {
         placer.setPosition(1);

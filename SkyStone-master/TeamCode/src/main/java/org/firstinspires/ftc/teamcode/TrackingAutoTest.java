@@ -53,7 +53,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
-        robot.placer.setPosition(0.2); //was 0
+        prepareToGrab();
 
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
@@ -86,7 +86,7 @@ public class TrackingAutoTest extends LinearOpMode {
         simplePathFollow.stop(robot);
 
         //move lift up
-        robot.moveLiftToPosition(175); //was 20
+        robot.moveLiftToPosition(150); //was 175
 
         robot.hungryHippoExtend(); //pull block in
         robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
@@ -95,13 +95,15 @@ public class TrackingAutoTest extends LinearOpMode {
         //moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 180 : 0, SLOW_POWER, 5, 3000); //was y = +- 40  //was isBlue ? 225 : 315
         simplePathFollow.stop(robot);
         robot.hungryHippoRetract(); //pull hungry hippo back in
-        robot.moveLiftToPosition(20); //almost all the way down, but don't want to stall
 
         //intake stone
         //robot.moveIntake(STOP);
 
         moveTo(stonePosition, 90 * (isBlue ? 1 : -1), isBlue ? 180 : 0, DEFAULT_POWER, 2); //WAS 95
-        moveTo(stonePosition, 90 * (isBlue ? 1 : -1), 270, DEFAULT_POWER, 1); //WAS ALSO 95
+
+        robot.moveLiftToPosition(20); //lift down
+
+        moveTo(stonePosition, 90 * (isBlue ? 1 : -1), 270, 0.5, 1); //WAS ALSO 95
         simplePathFollow.stop(robot);
 
         // move to platform
@@ -114,7 +116,7 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.latchServo2.setPosition(1.0);
 
         //deliver block to foundation
-        deliverBlock();
+        deliverBlock(200);
 
         //outtake just in case
         robot.moveIntake(OUTTAKE);
@@ -132,8 +134,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
 
         //TWO SKYSTONE
+        prepareToGrab();
         if (twoSkystone /*&& System.currentTimeMillis() - startTime < 25*/) { //at least 5 seconds left
-            double skystoneDistX = -100; //was -100
+            double skystoneDistX = -100 + 10; //was -100
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
                 skystoneDistX -= 8*2.54;
             } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
@@ -141,7 +144,8 @@ public class TrackingAutoTest extends LinearOpMode {
             }
             moveTo(50, 100 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //position for cross-field drive (was x = 95)
             moveWithIMU(skystoneDistX, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //align next to stone
-            moveTo(skystoneDistX, 57 * (isBlue ? 1 : -1), 270, 0.6, 5); //was y = 52
+            robot.moveLiftToPosition(150); //added
+            moveTo(skystoneDistX, 50 * (isBlue ? 1 : -1), 270, 0.6, 5); //was y = 57
             robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
             moveTo(skystoneDistX - 10, 52 * (isBlue ? 1 : -1), 270, 0.6, 5); //was 0.3 power
             robot.wait(500, this); //wait for block to intake
@@ -152,9 +156,10 @@ public class TrackingAutoTest extends LinearOpMode {
 //            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
 //            moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
 //            robot.moveIntake(STOP);
+            robot.moveLiftToPosition(0); //added
             moveWithIMU(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
-            moveTo(130, 150 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000);
-            deliverBlock();
+            moveTo(130, 150 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 750);
+            deliverBlock(320);
             robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
             moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
             moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
@@ -246,13 +251,23 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
     }
 
-    public void deliverBlock () {
+    public void deliverBlock (int deliveryLiftPos) {
         robot.closeGrabber();
-        robot.wait(500, this);
+        robot.wait(750, this);
+        robot.moveLiftToPosition(deliveryLiftPos); //was 175
+        robot.wait(750, this);
         moveSCARA(robot.controller.INSIDE_ROBOT_TO_DELIVERY);
         robot.openGrabber();
         robot.wait(500, this);
         robot.grabberServo.setPosition(0.5);
+        robot.setPlacerUp();
+        moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
+        robot.moveLiftToPosition(0);
+    }
+
+    public void prepareToGrab () {
+        robot.setPlacerUp();
+        robot.moveGrabberToMid();
         moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
     }
 
