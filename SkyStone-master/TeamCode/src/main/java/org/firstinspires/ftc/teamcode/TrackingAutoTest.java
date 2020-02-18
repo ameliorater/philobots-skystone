@@ -13,17 +13,17 @@ import static org.firstinspires.ftc.teamcode.Constants.IntakeState.STOP;
 @Autonomous(name = "Tracking Test", group = "Linear Opmode")
 public class TrackingAutoTest extends LinearOpMode {
 
-    public TrackingAutoTest(boolean isBlue, boolean twoSkystone) {
+    public TrackingAutoTest(boolean isBlue, boolean twoSkystone, boolean deliverWithScara) {
         this.isBlue = isBlue;
         this.twoSkystone = twoSkystone;
+        this.deliverWithScara = deliverWithScara;
     }
 
     Robot robot;
     SimpleTracking simpleTracking;
     SimplePathFollow simplePathFollow;
     SkystoneCV cv;
-    boolean isBlue;
-    boolean twoSkystone;
+    boolean isBlue, twoSkystone, deliverWithScara;
     double DEFAULT_POWER = 1; //was 0.6 for most
     double MID_POWER = 0.75; //was 0.6 for most
     double SLOW_POWER = 0.35; //was 0.35
@@ -53,7 +53,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
-        prepareToGrab();
+        if (deliverWithScara) {
+            prepareToGrab();
+        }
 
         while (!isStarted()) {
             telemetry.addData("Ready to Run", "");
@@ -70,38 +72,51 @@ public class TrackingAutoTest extends LinearOpMode {
         SkystoneCV.StonePosition skystonePosition = cv.getSkystonePosition();
         telemetry.addData("Skystone at: ", skystonePosition);
         telemetry.update();
-        double stonePosition = -70 + 5;
-        if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-            stonePosition -= 8*2.54;
-        } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
-            stonePosition -= 16*2.54;
+        double stonePosition;
+        if (isBlue) {
+            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
+                stonePosition = -77; //was -67
+            } else if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
+                stonePosition = -64; //was -56
+            } else {
+                stonePosition = -97;
+            }
+        } else {
+            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
+                stonePosition = -77;
+            } else if (skystonePosition == SkystoneCV.StonePosition.RIGHT) {
+                stonePosition = -60; //was -56
+            } else {
+                stonePosition = -97;
+            }
         }
 
         //close openCV
         cv.camera.stopStreaming();
         cv.camera.closeCameraDevice();
 
+        if (deliverWithScara) {
+            //move lift up
+            robot.moveLiftToPosition(175);
+        }
+
         // go to first stone
-        moveTo(stonePosition, (isBlue ? 90 : -90), isBlue ? 180 : 0, 0.5, 5, 3000); //was isBlue ? 225 : 315 //was y = 75
+        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 225 : 315, 0.5, 5, 3000);
         simplePathFollow.stop(robot);
 
-        //move lift up
-        robot.moveLiftToPosition(150); //was 175
-
-        robot.hungryHippoExtend(); //pull block in
         robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
-        robot.wait(1500, this); //was 1000
         //go forward to grab block
-        //moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 180 : 0, SLOW_POWER, 5, 3000); //was y = +- 40  //was isBlue ? 225 : 315
+        moveTo(stonePosition, isBlue ? 25 : -25, isBlue ? 225 : 315, SLOW_POWER, 5, 3000); //was y = +- 40
         simplePathFollow.stop(robot);
-        robot.hungryHippoRetract(); //pull hungry hippo back in
 
         //intake stone
-        //robot.moveIntake(STOP);
+        robot.wait(500, this); //was 1000
 
         moveTo(stonePosition, 90 * (isBlue ? 1 : -1), isBlue ? 180 : 0, DEFAULT_POWER, 2); //WAS 95
 
-        robot.moveLiftToPosition(20); //lift down
+        if (deliverWithScara) {
+            robot.moveLiftToPosition(20); //lift down
+        }
 
         moveTo(stonePosition, 90 * (isBlue ? 1 : -1), 270, 0.5, 1); //WAS ALSO 95
         simplePathFollow.stop(robot);
@@ -115,8 +130,10 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.latchServo1.setPosition(0.0);
         robot.latchServo2.setPosition(1.0);
 
-        //deliver block to foundation
-        deliverBlock(200);
+        if (deliverWithScara) {
+            //deliver block to foundation
+            deliverBlock(200);
+        }
 
         //outtake just in case
         robot.moveIntake(OUTTAKE);
@@ -124,9 +141,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
         moveTo(120, isBlue ? 115 : -115, isBlue ? 0 : 180, DEFAULT_POWER, 5, 5000); //was y = 125
         simplePathFollow.stop(robot);
-        moveTo(50, isBlue ? 80 : -80, isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform  //WAS x = 50 //WAS angle = isBlue ? 225 : 315 //was  y = +- 115
+        moveTo(60, 95 * (isBlue ? 1 : -1), isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform  //WAS x = 50 //WAS angle = isBlue ? 225 : 315
         //moveTo(110, isBlue ? 140 : -140, 270, DEFAULT_POWER, 5, 2000); //push platform
-        moveTo(70, isBlue ? 80 : -80, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform //was 80
+        moveTo(90, isBlue ? 100 : -100, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform
         robot.moveIntake(STOP);
         simplePathFollow.stop(robot);
         robot.latchServo1.setPosition(1.0);
@@ -134,7 +151,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
 
         //TWO SKYSTONE
-        prepareToGrab();
+        if (deliverWithScara) prepareToGrab();
         if (twoSkystone /*&& System.currentTimeMillis() - startTime < 25*/) { //at least 5 seconds left
             double skystoneDistX = -100 + 10; //was -100
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
@@ -142,28 +159,31 @@ public class TrackingAutoTest extends LinearOpMode {
             } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
                 skystoneDistX -= 16*2.54;
             }
-            moveTo(50, 100 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //position for cross-field drive (was x = 95)
-            moveWithIMU(skystoneDistX, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //align next to stone
-            robot.moveLiftToPosition(150); //added
-            moveTo(skystoneDistX, 50 * (isBlue ? 1 : -1), 270, 0.6, 5); //was y = 57
+            moveTo(50, 90 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //position for cross-field drive (was x = 100)
+            moveWithIMU(skystoneDistX, 80 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //align next to stone (was x = 95)
+            if (deliverWithScara) robot.moveLiftToPosition(150); //added
+            moveTo(skystoneDistX, 35 * (isBlue ? 1 : -1), 270, 0.6, 5); //was y = 57 //was y = 50
             robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
-            moveTo(skystoneDistX - 10, 52 * (isBlue ? 1 : -1), 270, 0.6, 5); //was 0.3 power
+            moveTo(skystoneDistX - 10, 35 * (isBlue ? 1 : -1), 270, 0.6, 5); //was 0.3 power
             robot.wait(500, this); //wait for block to intake
-            moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20
+            moveTo(skystoneDistX, 80 * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20
             robot.moveIntake(STOP); //moved one line down (give more time to intake)
-            //moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 90, 0.75, 5); //rotate
-//            moveWithIMU(30, 95 * (isBlue ? 1 : -1), 90, MID_POWER, 5, 3000); //added timeout //changed to withIMU
-//            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
-//            moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
-//            robot.moveIntake(STOP);
-            robot.moveLiftToPosition(0); //added
-            moveWithIMU(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
-            moveTo(130, 150 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 750);
-            deliverBlock(320);
-            robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
-            moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
-            moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
-            robot.moveIntake(STOP);
+            if (deliverWithScara) {
+                robot.moveLiftToPosition(0); //added
+                moveWithIMU(85, 80 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
+                moveTo(120, 140 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 750);
+                deliverBlock(320);
+                robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
+                moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
+                moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
+                robot.moveIntake(STOP);
+            } else {
+                moveTo(skystoneDistX, 95 * (isBlue ? 1 : -1), 90, 0.75, 5); //rotate
+                moveWithIMU(30, 95 * (isBlue ? 1 : -1), 90, MID_POWER, 5, 3000); //added timeout //changed to withIMU
+                robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW);
+                moveTo(0, 90 * (isBlue ? 1 : -1), 90, 0.6, 5); //was y = 95
+                robot.moveIntake(STOP);
+            }
         } else {
             //park
             moveWithIMU(0, isBlue ? 95 : -95, 270, 0.6, 5);
