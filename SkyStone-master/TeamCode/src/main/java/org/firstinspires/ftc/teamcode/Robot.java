@@ -27,7 +27,7 @@ public class Robot {
     Servo latchServo1, latchServo2;
     Servo grabberServo;
     Servo hungryHippoServo;
-    Servo markerServo;
+    Servo tapeMeasureServo;
 
     Servo outtake1, outtake2, outtakeRot;
     Servo placer;
@@ -70,7 +70,7 @@ public class Robot {
     //boolean IMUReversed = false;
 
     // only 8 levels are valid
-    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {0, 155, 309, 461, 689, 883, 1223, 1603};
+    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {0, 155, 309, 461, 689, 883, 1223, 1603}; //155 -> 165
     int liftPosition = 0;
     boolean wasLastPositive = false;
 
@@ -118,8 +118,8 @@ public class Robot {
         hungryHippoServo = hardwareMap.servo.get("hungryHippoServo");
         setupServo(hungryHippoServo);
 
-        markerServo = hardwareMap.servo.get("capServo");
-        setupServo(markerServo);
+        tapeMeasureServo = hardwareMap.servo.get("capServo"); //change name
+        setupServo(tapeMeasureServo);
 
         //deprecated
         //armServo1 = hardwareMap.servo.get("armServo1");
@@ -599,12 +599,12 @@ public class Robot {
         lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void deployMarker () {
-        markerServo.setPosition(1);
+    public void startTapeMeasure () {
+        tapeMeasureServo.setPosition(0.1);
     }
 
-    public void retractMarker () {
-        markerServo.setPosition(0);
+    public void stopTapeMeasure () {
+        tapeMeasureServo.setPosition(0);
     }
 }
 

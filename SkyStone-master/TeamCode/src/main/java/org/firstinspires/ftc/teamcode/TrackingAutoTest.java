@@ -132,7 +132,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         if (deliverWithScara) {
             //deliver block to foundation
-            deliverBlock(200);
+            deliverBlock(400);
         }
 
         //outtake just in case
@@ -172,7 +172,7 @@ public class TrackingAutoTest extends LinearOpMode {
                 robot.moveLiftToPosition(0); //added
                 moveWithIMU(85, 80 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
                 moveTo(120, 140 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 750);
-                deliverBlock(320);
+                deliverBlock(400);
                 robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
                 moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
                 moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
@@ -257,7 +257,7 @@ public class TrackingAutoTest extends LinearOpMode {
     public void moveSCARA (SCARAController.Sequence sequence) {
         double lastTime = getRuntime();
         double currentTime = getRuntime();
-        robot.placer.setPosition(0);
+        robot.setPlacerUp();
         while (opModeIsActive() && !robot.currentClawPosition.moveSequence(sequence, currentTime - lastTime)) {
             robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
             robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);

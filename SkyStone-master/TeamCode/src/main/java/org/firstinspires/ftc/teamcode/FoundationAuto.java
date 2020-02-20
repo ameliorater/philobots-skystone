@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class FoundationAuto extends LinearOpMode {
 
+    boolean willWait;
     boolean isBlue = true;
     Robot robot;
     SimpleTracking simpleTracking;
@@ -18,12 +19,14 @@ public class FoundationAuto extends LinearOpMode {
     double currentPosX = 0;
     double currentPosY = 0;
     double stonePosition;
-    double DEFAULT_POWER = 0.9; //was 0.6 for most
+    double DEFAULT_POWER = 0.8; //was 0.6 for most
 
-    FoundationAuto(boolean isBlue) {
+    FoundationAuto(boolean isBlue, boolean willWait) {
         this.isBlue = isBlue;
+        this.willWait = willWait;
     }
 
+    FoundationAuto(boolean isBlue) { this(isBlue, false); }
 
     public void runOpMode() {
 
@@ -45,9 +48,35 @@ public class FoundationAuto extends LinearOpMode {
             telemetry.addData("Ready to Run", "");
             telemetry.update();
         }
+
         // blue starting position
         simpleTracking.setPosition(90, isBlue ? 157.5 : -157.5);
         simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
+
+        if (willWait) { robot.wait(15000, this); }
+
+        moveTo(120, 100 * (isBlue ? 1 : -1), isBlue ? 180 : 0, DEFAULT_POWER, 5);
+        moveTo(120, 100 * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5);
+
+        moveWithRangeSensorTo(120, 40 * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.6, 5, 3000);
+
+        robot.latch();
+
+        robot.wait(1000, this);
+
+        moveTo(120, isBlue ? 115 : -115, isBlue ? 0 : 180, 0.6, 5, 5000); //was y = 125
+        simplePathFollow.stop(robot);
+        moveTo(60, 95 * (isBlue ? 1 : -1), isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform
+        moveTo(90, isBlue ? 100 : -100, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform
+
+        robot.unlatch();
+        robot.wait(1000, this);
+
+        moveTo(0, 140 * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5, 2000);
+
+
+
+        /*
 
         moveTo(90, isBlue ? 130 : -130, isBlue ? 180 : 0, .6, 5);
         moveTo(90, isBlue ? 130 : -130, isBlue ? 0 : 180, .6, 5);
@@ -89,9 +118,7 @@ public class FoundationAuto extends LinearOpMode {
         moveTo(90, isBlue ? 95 : -95, 270, DEFAULT_POWER, 5);//todo the 95 is from measuring tape, may run into bridge
         moveTo(0, isBlue ? 95 : -95, 270, DEFAULT_POWER, 5);
 
-
-
-
+*/
 
     }
     private void moveTo(double x, double y, double orientation, double speed, double threshold) {

@@ -94,11 +94,18 @@ public class TeleOp extends OpMode {
 //        }
 
         //marker
+        /*
         if (gamepad1.y && gamepad1.b) {
             robot.deployMarker();
         }
         if (gamepad1.y && gamepad1.x) {
             robot.retractMarker();
+        }*/
+
+        if (gamepad1.y && gamepad1.b) {
+            robot.startTapeMeasure();
+        } else {
+            robot.stopTapeMeasure();
         }
 
         robot.driveController.updateUsingJoysticks(
@@ -136,8 +143,12 @@ public class TeleOp extends OpMode {
             robot.latch();
         }
 
+
+
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
             robot.moveGrabberToMid();
+            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
+            robot.setPlacerUp();
         } else if (gamepad2.x) {
             robot.openGrabber();
         } else if (gamepad2.b) {
