@@ -58,7 +58,7 @@ public class FoundationAuto extends LinearOpMode {
         moveTo(120, 100 * (isBlue ? 1 : -1), isBlue ? 180 : 0, DEFAULT_POWER, 5);
         moveTo(120, 100 * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5);
 
-        moveWithRangeSensorTo(120, 40 * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.6, 5, 3000);
+        moveWithRangeSensorTo(120, 35 * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.3, 5, 3000);
 
         robot.latch();
 
@@ -72,7 +72,7 @@ public class FoundationAuto extends LinearOpMode {
         robot.unlatch();
         robot.wait(1000, this);
 
-        moveTo(0, 140 * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5, 2000);
+        moveTo(-20, 140 * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5, 2000);
 
 
 
@@ -165,7 +165,7 @@ public class FoundationAuto extends LinearOpMode {
             robot.updateBulkData();
             simpleTracking.updatePosition(robot);
             done = (simplePathFollow.moveToTarget(robot, simpleTracking, x, y, orientation, speed) < threshold) ||
-                    ( robot.backRangeSensor.getDistance(DistanceUnit.CM) < 2);
+                    ( robot.backRangeSensor.getDistance(DistanceUnit.CM) < 5);
             logTelemetry();
         }
     }

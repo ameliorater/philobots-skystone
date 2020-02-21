@@ -146,13 +146,16 @@ public class TeleOp extends OpMode {
 
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
-            robot.moveGrabberToMid();
-            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
             robot.setPlacerUp();
-        } else if (gamepad2.x) {
-            robot.openGrabber();
-        } else if (gamepad2.b) {
-            robot.closeGrabber();
+            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
+            robot.moveGrabberToMid();
+        } else {
+            robot.moveLift(-gamepad2.left_stick_y);
+            if (gamepad2.x) {
+                robot.openGrabber();
+            } else if (gamepad2.b) {
+                robot.closeGrabber();
+            }
         }
 
         int x_input, y_input;
@@ -273,7 +276,6 @@ public class TeleOp extends OpMode {
 
         //robot.setArmPower(-gamepad2.right_stick_y);
         telemetry.addData("Arm power", -gamepad2.right_stick_x);
-        robot.moveLift(-gamepad2.left_stick_y);
         telemetry.addData("lift 1 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift1));
         telemetry.addData("lift 2 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift2));
 

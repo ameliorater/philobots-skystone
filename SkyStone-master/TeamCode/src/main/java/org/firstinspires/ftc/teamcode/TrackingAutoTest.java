@@ -77,7 +77,7 @@ public class TrackingAutoTest extends LinearOpMode {
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
                 stonePosition = -77; //was -67
             } else if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
-                stonePosition = -64; //was -56
+                stonePosition = -60; //was -56, then -64
             } else {
                 stonePosition = -97;
             }
@@ -132,7 +132,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         if (deliverWithScara) {
             //deliver block to foundation
-            deliverBlock(400);
+            deliverBlock(250);
         }
 
         //outtake just in case
@@ -172,7 +172,7 @@ public class TrackingAutoTest extends LinearOpMode {
                 robot.moveLiftToPosition(0); //added
                 moveWithIMU(85, 80 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //added timeout //changed to withIMU //was 90
                 moveTo(120, 140 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 750);
-                deliverBlock(400);
+                deliverBlock(250);
                 robot.moveIntake(OUTTAKE, Constants.IntakeSpeed.SLOW); //just in case
                 moveTo(85, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
                 moveTo(0, 95 * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000); //rotate to face foundation
@@ -281,6 +281,7 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.wait(500, this);
         robot.grabberServo.setPosition(0.5);
         robot.setPlacerUp();
+        robot.moveLiftToPosition(400); //was 175
         moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
         robot.moveLiftToPosition(0);
     }
