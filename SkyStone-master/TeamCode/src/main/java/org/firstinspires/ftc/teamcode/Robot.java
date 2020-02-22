@@ -600,7 +600,7 @@ public class Robot {
     }
 
     public void startTapeMeasure () {
-        tapeMeasureServo.setPosition(0.1);
+        tapeMeasureServo.setPosition(1);
     }
 
     public void stopTapeMeasure () {

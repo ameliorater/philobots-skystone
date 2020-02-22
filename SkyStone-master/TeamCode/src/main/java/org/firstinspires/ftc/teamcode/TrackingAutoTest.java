@@ -79,7 +79,7 @@ public class TrackingAutoTest extends LinearOpMode {
             } else if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
                 stonePosition = -60; //was -56, then -64
             } else {
-                stonePosition = -97;
+                stonePosition = -93; //was -97
             }
         } else {
             if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
@@ -87,7 +87,7 @@ public class TrackingAutoTest extends LinearOpMode {
             } else if (skystonePosition == SkystoneCV.StonePosition.RIGHT) {
                 stonePosition = -60; //was -56
             } else {
-                stonePosition = -97;
+                stonePosition = -93; //was -97
             }
         }
 
@@ -120,6 +120,9 @@ public class TrackingAutoTest extends LinearOpMode {
 
         moveTo(stonePosition, 90 * (isBlue ? 1 : -1), 270, 0.5, 1); //WAS ALSO 95
         simplePathFollow.stop(robot);
+
+        robot.moveIntake(OUTTAKE);
+
 
         // move to platform
         moveWithIMU(110,90 * (isBlue ? 1 : -1), 270, 0.6, 5, 6000); //was x = 120

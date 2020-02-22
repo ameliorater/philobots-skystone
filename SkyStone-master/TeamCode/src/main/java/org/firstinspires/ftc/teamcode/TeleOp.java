@@ -148,6 +148,7 @@ public class TeleOp extends OpMode {
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
             robot.setPlacerUp();
             robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
+            robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 10;
             robot.moveGrabberToMid();
         } else {
             robot.moveLift(-gamepad2.left_stick_y);
@@ -262,10 +263,10 @@ public class TeleOp extends OpMode {
             robot.moveSingleIntakeRoller(true);
         } else if (gamepad1.dpad_right) {
             robot.moveSingleIntakeRoller(false);
-        } else if (Math.abs(gamepad2.right_trigger) > 0.1 && !gamepad2.right_bumper) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
         } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW); //was fast
+        } else if (Math.abs(gamepad2.right_trigger) > 0.1 && !gamepad2.right_bumper) {
+            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
         } /*else if (gamepad2.right_bumper) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
         } else if (gamepad2.left_bumper) {
