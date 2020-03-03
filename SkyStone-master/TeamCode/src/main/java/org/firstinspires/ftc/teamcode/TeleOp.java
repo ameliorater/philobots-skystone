@@ -11,7 +11,7 @@ public class TeleOp extends OpMode {
     //public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
-    boolean absHeadingMode = false;
+    boolean absHeadingMode = true;
 
     double loopStartTime = 0;
     double loopEndTime = 0;
@@ -34,6 +34,8 @@ public class TeleOp extends OpMode {
     double lastTime;
 
     Vector2d joystick1, joystick2;
+
+    boolean xWasPressed;
 
     public void init() {
         robot = new Robot(this, false, false);
@@ -107,6 +109,17 @@ public class TeleOp extends OpMode {
         } else {
             robot.stopTapeMeasure();
         }
+
+        if (gamepad1.x) {
+            if (!xWasPressed) {
+                xWasPressed = true;
+                absHeadingMode = !absHeadingMode;
+            }
+        } else {
+            xWasPressed = false;
+        }
+
+        telemetry.addData("Absolute Heading Mode", absHeadingMode);
 
         robot.driveController.updateUsingJoysticks(
                 checkDeadband(joystick1, slowModeDrive).scale(Math.sqrt(2)),
