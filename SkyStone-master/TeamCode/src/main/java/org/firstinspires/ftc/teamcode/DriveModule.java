@@ -72,7 +72,7 @@ public class DriveModule {
 
     public double positionChange;
 
-    public boolean isRobotCentric = true;
+    public boolean isRobotCentric = false;
 
     public DriveModule(Robot robot, ModuleSide moduleSide, boolean debuggingMode) {
         this.robot = robot;
