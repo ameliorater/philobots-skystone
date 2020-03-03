@@ -439,6 +439,11 @@ public class DriveController {
 //        setRotateModuleMode(ROTATE_MODULES); //reset mode
 //    }
 
+    //Flips between robot and field centric
+    public void setDrivingStyle(boolean toRobotCentric) {
+        moduleLeft.setDrivingStyle(toRobotCentric);
+        moduleRight.setDrivingStyle(toRobotCentric);
+    }
 
     public void rotateRobot(Angle targetAngle, double power, LinearOpMode linearOpMode) {
         double startTime = System.currentTimeMillis();

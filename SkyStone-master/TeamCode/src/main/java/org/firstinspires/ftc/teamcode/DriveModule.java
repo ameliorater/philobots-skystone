@@ -72,6 +72,8 @@ public class DriveModule {
 
     public double positionChange;
 
+    public boolean isRobotCentric = true;
+
     public DriveModule(Robot robot, ModuleSide moduleSide, boolean debuggingMode) {
         this.robot = robot;
         this.moduleSide = moduleSide;
@@ -124,6 +126,11 @@ public class DriveModule {
         this(robot, moduleSide, false);
     }
 
+    //Flips between robot and field centric
+    public void setDrivingStyle(boolean toRobotCentric) {
+        isRobotCentric = toRobotCentric;
+    }
+
     //this method updates the target vector for the module based on input from auto/teleop program
     public void updateTarget (Vector2d transVec, double rotMag) { //translation vector and rotation magnitude
         //converts robot heading to the angle type used by Vector2d class
@@ -131,7 +138,10 @@ public class DriveModule {
         //transVec = transVec.rotate(-90); // to change to heading instead of cartesian from joystick
 
         //converts the translation vector from a robot centric to a field centric one
-        Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
+        //Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
+
+        //TODO: this disables robot centric
+        Vector2d transVecFC = isRobotCentric ? transVec : transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE);
 
         //vector needed to rotate robot at the desired magnitude
         //based on positionVector of module (see definition for more info)
