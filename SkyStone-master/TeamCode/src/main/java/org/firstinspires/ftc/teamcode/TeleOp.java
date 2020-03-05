@@ -11,7 +11,7 @@ public class TeleOp extends OpMode {
     //public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
-    boolean absHeadingMode = true;
+    boolean absHeadingMode = false;
 
     double loopStartTime = 0;
     double loopEndTime = 0;
@@ -110,16 +110,16 @@ public class TeleOp extends OpMode {
             robot.stopTapeMeasure();
         }
 
-        if (gamepad1.x) {
-            if (!xWasPressed) {
-                xWasPressed = true;
-                absHeadingMode = !absHeadingMode;
-            }
-        } else {
-            xWasPressed = false;
-        }
+//        if (gamepad1.x) {
+//            if (!xWasPressed) {
+//                xWasPressed = true;
+//                absHeadingMode = !absHeadingMode;
+//            }
+//        } else {
+//            xWasPressed = false;
+//        }
 
-        telemetry.addData("Absolute Heading Mode", absHeadingMode);
+        //telemetry.addData("Absolute Heading Mode", absHeadingMode);
 
         robot.driveController.updateUsingJoysticks(
                 checkDeadband(joystick1, slowModeDrive).scale(Math.sqrt(2)),
@@ -156,16 +156,16 @@ public class TeleOp extends OpMode {
             robot.latch();
         }
 
-        if (gamepad1.dpad_left) {
-            robot.driveController.setDrivingStyle(true);
-        } else if (gamepad1.dpad_right) {
-            robot.driveController.setDrivingStyle(false);
-        }
+//        if (gamepad1.dpad_left) {
+//            robot.driveController.setDrivingStyle(true);
+//        } else if (gamepad1.dpad_right) {
+//            robot.driveController.setDrivingStyle(false);
+//        }
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
             robot.setPlacerUp();
-            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
-            robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 10;
+            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 20); //10 -> 20
+            robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 20;
             robot.moveGrabberToMid();
         } else {
             robot.moveLift(-gamepad2.left_stick_y);

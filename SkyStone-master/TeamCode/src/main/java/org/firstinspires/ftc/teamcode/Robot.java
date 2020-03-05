@@ -70,7 +70,7 @@ public class Robot {
     //boolean IMUReversed = false;
 
     // only 8 levels are valid
-    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {0, 155, 309, 461, 689, 883, 1223, 1603}; //155 -> 165
+    int[] encoderTicksAtLiftPositions = /*new int[8]*/ {0, 155, 309, 461, 689, 883, 1223, 1603};
     int liftPosition = 0;
     boolean wasLastPositive = false;
 

@@ -141,7 +141,9 @@ public class DriveModule {
         //Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE); //was converted robot heading, was clockwise
 
         //TODO: this disables robot centric
-        Vector2d transVecFC = isRobotCentric ? transVec : transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE);
+        //Vector2d transVecFC = isRobotCentric ? transVec : transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE);
+
+        Vector2d transVecFC = transVec.rotateBy(robot.getRobotHeading().getAngle(Angle.AngleType.ZERO_TO_360_HEADING), Angle.Direction.COUNTER_CLOCKWISE);
 
         //vector needed to rotate robot at the desired magnitude
         //based on positionVector of module (see definition for more info)
