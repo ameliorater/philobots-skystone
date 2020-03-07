@@ -140,10 +140,17 @@ public class TestingTeleOp extends OpMode {
 //        }
 
         if (gamepad1.dpad_up) {
-            robot.unlatch();
+            robot.clamperGripper.setPosition(0);
         } else if (gamepad1.dpad_down) {
-            robot.latch();
+            robot.clamperGripper.setPosition(1);
         }
+
+        if (gamepad1.dpad_right) {
+            robot.clamperPivot.setPosition(0);
+        } else if (gamepad1.dpad_left) {
+            robot.clamperPivot.setPosition(1);
+        }
+
 
         if (gamepad1.dpad_left) {
             robot.driveController.setDrivingStyle(true);

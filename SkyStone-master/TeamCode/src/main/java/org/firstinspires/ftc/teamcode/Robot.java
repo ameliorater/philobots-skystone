@@ -28,6 +28,7 @@ public class Robot {
     Servo grabberServo;
     Servo hungryHippoServo;
     Servo tapeMeasureServo;
+    Servo clamperPivot, clamperGripper;
 
     Servo outtake1, outtake2, outtakeRot;
     Servo placer;
@@ -112,6 +113,7 @@ public class Robot {
         latchServo1 = hardwareMap.servo.get("latchServo1");
         setupServo(latchServo1);
         latchServo2 = hardwareMap.servo.get("latchServo2");
+
         setupServo(latchServo2);
 
         //the cyrus thing
@@ -141,6 +143,7 @@ public class Robot {
 //        outtake2.setPosition(0.819);
         outtakeRot = hardwareMap.servo.get("gripperRotation");
 
+
         outatkeRotatePosition = 0.397;
         outtakeRot.setPosition(outatkeRotatePosition);
         gripperVertical = true;
@@ -148,6 +151,8 @@ public class Robot {
         controller = new SCARAController(120, 120, telemetry);
         currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
 
+        clamperPivot = hardwareMap.servo.get("clamperPivot");
+        clamperGripper = hardwareMap.servo.get("clamperGripper");
 
         grabberServo = hardwareMap.servo.get("grabberServo");
         setupServo(grabberServo);

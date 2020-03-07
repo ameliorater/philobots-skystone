@@ -39,7 +39,7 @@ public class TeleOp extends OpMode {
 
     public void init() {
         robot = new Robot(this, false, false);
-        robot.setPlacerUp();
+        //robot.setPlacerUp();
     }
 
     public void init_loop() {
@@ -156,6 +156,12 @@ public class TeleOp extends OpMode {
             robot.latch();
         }
 
+        if (gamepad1.dpad_right) {
+
+        } else if (gamepad1.dpad_left) {
+
+        }
+
 //        if (gamepad1.dpad_left) {
 //            robot.driveController.setDrivingStyle(true);
 //        } else if (gamepad1.dpad_right) {
@@ -163,7 +169,7 @@ public class TeleOp extends OpMode {
 //        }
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
-            robot.setPlacerUp();
+            //robot.setPlacerUp();
             robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 20); //10 -> 20
             robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 20;
             robot.moveGrabberToMid();
@@ -269,26 +275,21 @@ public class TeleOp extends OpMode {
             robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
         }*/
 
-
-        if (gamepad1.right_bumper) {
+        if (gamepad1.x) {
             robot.hungryHippoExtend();
-        } else if (gamepad1.left_bumper) {
+        } else if (gamepad1.b) {
             robot.hungryHippoRetract();
         }
 
-        /*if (gamepad1.dpad_left) {
-            robot.moveSingleIntakeRoller(true);
-        } else if (gamepad1.dpad_right) {
-            robot.moveSingleIntakeRoller(false);
-        } else */if (Math.abs(gamepad2.left_trigger) > 0.1) {
+        if (Math.abs(gamepad2.left_trigger) > 0.1) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW); //was fast
         } else if (Math.abs(gamepad2.right_trigger) > 0.1 && !gamepad2.right_bumper) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW); //was fast
-        } /*else if (gamepad2.right_bumper) {
+        } else if (gamepad1.right_bumper) {
             robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
-        } else if (gamepad2.left_bumper) {
+        } else if (gamepad1.left_bumper) {
             robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
-        }*/ else {
+        } else {
             robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
         }
 
@@ -297,16 +298,18 @@ public class TeleOp extends OpMode {
         telemetry.addData("lift 1 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift1));
         telemetry.addData("lift 2 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift2));
 
-        //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
+        //no more placer :(
+//        //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
         if (gamepad2.right_bumper && gamepad2.right_trigger > 0.6) {
             robot.dropCapstone();
-        } else if (gamepad2.left_bumper) {
-            //robot.moveServo(robot.placer, 0.8); // move down  //was 1
-            robot.setPlacerDown();
-        } else if (gamepad2.right_bumper) {
-            //robot.moveServo(robot.placer, 0); // move up
-            robot.setPlacerUp();
         }
+//        else if (gamepad2.left_bumper) {
+//            //robot.moveServo(robot.placer, 0.8); // move down  //was 1
+//            robot.setPlacerDown();
+//        } else if (gamepad2.right_bumper) {
+//            //robot.moveServo(robot.placer, 0); // move up
+//            robot.setPlacerUp();
+//        }
 // moved placer to gamepad2's bumpers
 //        if (gamepad2.right_bumper) {
 //            robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
