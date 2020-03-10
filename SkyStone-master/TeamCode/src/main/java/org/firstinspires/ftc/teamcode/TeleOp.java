@@ -170,7 +170,7 @@ public class TeleOp extends OpMode {
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
             //robot.setPlacerUp();
-            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 20); //10 -> 20
+            robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 30); //10 -> 20 -> 30
             robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 20;
             robot.moveGrabberToMid();
         } else {

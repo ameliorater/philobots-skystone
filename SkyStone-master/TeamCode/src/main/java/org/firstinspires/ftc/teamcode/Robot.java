@@ -28,7 +28,7 @@ public class Robot {
     Servo grabberServo;
     Servo hungryHippoServo;
     Servo tapeMeasureServo;
-    Servo clamperPivot, clamperGripper;
+    //Servo clamperPivot, clamperGripper;
 
     Servo outtake1, outtake2, outtakeRot;
     Servo placer;
@@ -151,8 +151,8 @@ public class Robot {
         controller = new SCARAController(120, 120, telemetry);
         currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
 
-        clamperPivot = hardwareMap.servo.get("clamperPivot");
-        clamperGripper = hardwareMap.servo.get("clamperGripper");
+//        clamperPivot = hardwareMap.servo.get("clamperPivot");
+//        clamperGripper = hardwareMap.servo.get("clamperGripper");
 
         grabberServo = hardwareMap.servo.get("grabberServo");
         setupServo(grabberServo);
@@ -574,7 +574,7 @@ public class Robot {
         placer.setPosition(1);
     }
     public void dropCapstone () {
-        placer.setPosition(0);
+        placer.setPosition(1);
     }
 
     public void moveSingleIntakeRoller(boolean roller1) {

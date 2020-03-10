@@ -38,6 +38,11 @@ public class TrackingAutoTest extends LinearOpMode {
         simpleTracking.setPosition(-90, isBlue ? 157.5 : -157.5);
         simpleTracking.setOrientationDegrees(isBlue ? 180 : 0);
 
+        if (!twoSkystone) {
+            MID_POWER = 0.7;
+            DEFAULT_POWER = 0.8;
+        }
+
         telemetry.addData("WAIT! Initializing IMU.... ", "");
         telemetry.update();
 
@@ -100,10 +105,10 @@ public class TrackingAutoTest extends LinearOpMode {
         robot.wait(1000, this); //was 1000
         robot.hungryHippoRetract();
 
-        //removed 3-7
-        moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5, 3000); //was 75 //was 85
+        //removed 3-7... added back... re-removed 3/9
+        //moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5, 3000); //was 75 //was 85
 
-        double firstYDistance = 95; //was 95
+        double firstYDistance = 100; //was 95
 
         moveTo(stonePosition, firstYDistance * (isBlue ? 1 : -1), isBlue ? 180 : 0, 0.5, 2); //WAS 95 //was 90
 
@@ -117,10 +122,11 @@ public class TrackingAutoTest extends LinearOpMode {
         simplePathFollow.stop(robot);
 
         // move to platform
-        moveWithIMU(95, (firstYDistance /*+ 15*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 6000); //was x = 120 //was 0.6 power //was 90 //was y = 110
+        double crossFieldX = 75;
+        moveWithIMU(crossFieldX, (firstYDistance /*+ 15*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 6000); //was x = 120 //was 0.6 power //was 90 //was y = 110
         moveTo(120, firstYDistance * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5); //was 90
         simplePathFollow.stop(robot);
-        moveWithRangeSensorTo(120, isBlue ? 35 : -35, isBlue ? 0 : 180, 0.4, 5, 3000);
+        moveWithRangeSensorTo(120, (35 + 5) * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.8, 5, 3000);
         simplePathFollow.stop(robot);
 
         if (deliverWithScara) {
@@ -132,9 +138,10 @@ public class TrackingAutoTest extends LinearOpMode {
 
         //outtake just in case
         robot.moveIntake(OUTTAKE);
-        robot.wait(750, this); //was 1500 timeout
+        //robot.wait(750, this); //was 1500 timeout
 
-        if (!deliverWithScara) {
+        if (!twoSkystone) { //was !deliverWithScara (?)
+            latchHooksDown();
             //move foundation
             moveTo(120, isBlue ? 115 : -115, isBlue ? 0 : 180, DEFAULT_POWER, 5, 5000); //was y = 125
             simplePathFollow.stop(robot);
@@ -143,8 +150,7 @@ public class TrackingAutoTest extends LinearOpMode {
             moveTo(90, isBlue ? 100 : -100, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform
             robot.moveIntake(STOP);
             simplePathFollow.stop(robot);
-            robot.latchServo1.setPosition(1.0);
-            robot.latchServo2.setPosition(0.0);
+            latchHooksUp();
         }
 
 
@@ -159,56 +165,74 @@ public class TrackingAutoTest extends LinearOpMode {
             }
 
             double secondYDistance = firstYDistance; //was 80 //was 85
-            double getBlockYDistance = 35; //was 30
+            double getBlockYDistance = 40; //30 -> 35 -> 40
             moveTo(50, secondYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5); //position for cross-field drive (was x = 100) //was y = 90
+
             moveWithIMU(skystoneDistX, (secondYDistance /*+ 10*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5); //align next to stone (was x = 95)
 
             if (deliverWithScara) robot.moveLiftToPosition(175);
             else robot.moveLiftToPosition(0);
 
+            //move into block line
             moveTo(skystoneDistX, getBlockYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was y = 57 //was y = 50 //was 0.6 power
             robot.moveIntake(INTAKE, Constants.IntakeSpeed.SLOW);
-            moveTo(skystoneDistX - 10, getBlockYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was 0.3 power //was skyDist - 10
-            robot.wait(1000, this); //wait for block to intake
-            moveTo(skystoneDistX, secondYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20
+
+            //drive forward to intake block
+            moveTo(skystoneDistX - 10, getBlockYDistance * (isBlue ? 1 : -1), 270, DEFAULT_POWER, 5); //was 0.3 power //was skyDist - 10
+            robot.wait(750, this); //wait for block to intake
+            moveTo(skystoneDistX - 10, secondYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5); //was x-20 //was x
             //robot.moveIntake(STOP); //moved one line down (give more time to intake)
 
             if (deliverWithScara) robot.moveLiftToPosition(20);
 
-            double secondStoneXOffset = 30;
+            double secondStoneXOffset = 20; //30 -> 35 -> 20
             //move back to original (unmoved) foundation position
-            moveWithIMU(95 - secondStoneXOffset, (firstYDistance /*+ 15*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 6000); //was x = 120 //was 0.6 power //was 90 //was y = 110 //was x=95, x=80
+            moveWithIMU(crossFieldX - secondStoneXOffset, (firstYDistance /*+ 15*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 6000); //was x = 120 //was 0.6 power //was 90 //was y = 110 //was x=95, x=80
             moveTo(120 - secondStoneXOffset, firstYDistance * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5); //was 90
             simplePathFollow.stop(robot);
-            moveWithRangeSensorTo(120 - secondStoneXOffset, isBlue ? 35 : -35, isBlue ? 0 : 180, 0.4, 5, 3000);
+            moveWithRangeSensorTo(120 - secondStoneXOffset, (35 + 5) * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.8, 5, 3000);
             simplePathFollow.stop(robot);
             robot.moveIntake(STOP);
 
+            latchHooksDown();
             if (deliverWithScara) {
                 //deliver block to foundation
-                deliverBlock(350); //first delivery is 250
+                //deliverBlock(350); //first delivery is 250
+            } else {
+                robot.wait(500, this);
             }
 
             //outtake just in case (or for no scara delivery)
             robot.moveIntake(OUTTAKE);
-            robot.wait(1000, this); //was 1500 timeout
+            //robot.wait(1000, this); //was 1500 timeout
 
             //move foundation sequence
-            robot.latchServo1.setPosition(0.0);
-            robot.latchServo2.setPosition(1.0);
-            robot.wait(500, this);
+            //robot.wait(500, this);
+
+            robot.closeGrabber();
             moveTo(120 - secondStoneXOffset, isBlue ? 115 : -115, isBlue ? 0 : 180, DEFAULT_POWER, 5, 5000); //was y = 125
-            simplePathFollow.stop(robot);
+            //simplePathFollow.stop(robot);
+
+            robot.moveLiftToPosition(350); //was 175
             moveTo(60 - secondStoneXOffset, 95 * (isBlue ? 1 : -1), isBlue ? 245 : 295, DEFAULT_POWER, 2, 2500); //pivot platform  //WAS x = 50 //WAS angle = isBlue ? 225 : 315
+
+            moveSCARA(robot.controller.INSIDE_ROBOT_TO_DELIVERY);
+            robot.openGrabber();
             //moveTo(110, isBlue ? 140 : -140, 270, DEFAULT_POWER, 5, 2000); //push platform
             moveTo(90 - secondStoneXOffset, isBlue ? 100 : -100, isBlue ? 245 : 295, DEFAULT_POWER, 5, 2000); //push platform
+
+            robot.grabberServo.setPosition(0.5);
+            robot.moveLiftToPosition(400); //was 175
+            moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
+            robot.moveLiftToPosition(0);
+
             robot.moveIntake(STOP);
-            simplePathFollow.stop(robot);
-            robot.latchServo1.setPosition(1.0);
-            robot.latchServo2.setPosition(0.0);
+
+            //simplePathFollow.stop(robot);
+            latchHooksUp();
 
             //park (?)
-            moveTo(0 - secondStoneXOffset, secondYDistance * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000);
+            moveTo(0 - secondStoneXOffset, (secondYDistance - 30) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 3000);
             robot.moveIntake(STOP);
 
         } else {
@@ -221,7 +245,8 @@ public class TrackingAutoTest extends LinearOpMode {
 
     private void moveTo(double x, double y, double orientation, double speed, double threshold) {
         boolean done = false;
-        while (!done && opModeIsActive()) {
+        long startTime = System.currentTimeMillis();
+        while (!done && opModeIsActive() && System.currentTimeMillis() - startTime < 6000) { //default 6 second timeout
             robot.updateBulkData();
             simpleTracking.updatePosition(robot);
             telemetry.addData("Using", "encoders");
@@ -233,7 +258,8 @@ public class TrackingAutoTest extends LinearOpMode {
 
     private void moveWithIMU(double x, double y, double orientation, double speed, double threshold) {
         boolean done = false;
-        while (!done && opModeIsActive()) {
+        long startTime = System.currentTimeMillis();
+        while (!done && opModeIsActive() && System.currentTimeMillis() - startTime < 6000) { //default 6 second timeout
             robot.updateBulkData();
             simpleTracking.updatePosition(robot, true, isBlue);
             telemetry.addData("Using", "encoders");
@@ -300,12 +326,12 @@ public class TrackingAutoTest extends LinearOpMode {
 
     public void deliverBlock (int deliveryLiftPos) {
         robot.closeGrabber();
-        robot.wait(750, this);
+        robot.wait(250, this); //was 750
         robot.moveLiftToPosition(deliveryLiftPos); //was 175
-        robot.wait(750, this);
+        robot.wait(250, this); //was 750
         moveSCARA(robot.controller.INSIDE_ROBOT_TO_DELIVERY);
         robot.openGrabber();
-        robot.wait(500, this);
+        robot.wait(250, this); //was 500
         robot.grabberServo.setPosition(0.5);
         //robot.setPlacerUp();
         robot.moveLiftToPosition(400); //was 175
@@ -338,6 +364,16 @@ public class TrackingAutoTest extends LinearOpMode {
             telemetry.addData("IMU Heading: ", robot.getRobotHeading());
             logTelemetry();
         }
+    }
+
+    public void latchHooksDown () {
+        robot.latchServo1.setPosition(0.0);
+        robot.latchServo2.setPosition(1.0);
+    }
+
+    public void latchHooksUp () {
+        robot.latchServo1.setPosition(1.0);
+        robot.latchServo2.setPosition(0.0);
     }
 
     private void logTelemetry() {
