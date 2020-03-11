@@ -98,7 +98,7 @@ public class TestPrimitives extends LinearOpMode {
     public void moveSCARA (SCARAController.Sequence sequence) {
         double lastTime = getRuntime();
         double currentTime = getRuntime();
-        robot.placer.setPosition(0);
+        robot.capstone.setPosition(0);
         while (opModeIsActive() && !robot.currentClawPosition.moveSequence(sequence, currentTime - lastTime)) {
             robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
             robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);

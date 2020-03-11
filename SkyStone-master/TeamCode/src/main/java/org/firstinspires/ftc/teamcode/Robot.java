@@ -28,12 +28,9 @@ public class Robot {
     Servo grabberServo;
     Servo hungryHippoServo;
     Servo tapeMeasureServo;
-    //Servo clamperPivot, clamperGripper;
 
     Servo outtake1, outtake2, outtakeRot;
-    Servo placer;
-
-    //Servo intakeServo1, intakeServo2;
+    Servo capstone;
 
     //MOTORS
     ExpansionHubMotor lift1, lift2;
@@ -120,27 +117,16 @@ public class Robot {
         hungryHippoServo = hardwareMap.servo.get("hungryHippoServo");
         setupServo(hungryHippoServo);
 
-        tapeMeasureServo = hardwareMap.servo.get("capServo"); //change name
+        tapeMeasureServo = hardwareMap.servo.get("tapeMeasureServo"); //change name
         setupServo(tapeMeasureServo);
 
-        //deprecated
-        //armServo1 = hardwareMap.servo.get("armServo1");
-        //armServo2 = hardwareMap.servo.get("armServo2");
-
         //the cooper things
-        placer = hardwareMap.servo.get("backStop");
-        setupServo(placer);
+        capstone = hardwareMap.servo.get("capstoneServo");
+        setupServo(capstone);
 
-        //deprecated
-        //intakeServo1 = hardwareMap.servo.get("intakeServo1");
-        //setupServo(intakeServo1);
-        //intakeServo2 = hardwareMap.servo.get("intakeServo2");
-        //setupServo(intakeServo2);
 
         outtake1 = hardwareMap.servo.get("servoLink1");
-//        outtake1.setPosition(0.429);
         outtake2 = hardwareMap.servo.get("servoLink2");
-//        outtake2.setPosition(0.819);
         outtakeRot = hardwareMap.servo.get("gripperRotation");
 
 
@@ -150,9 +136,6 @@ public class Robot {
 
         controller = new SCARAController(120, 120, telemetry);
         currentClawPosition = controller.new ClawPosition(controller.clawInsideRobot);
-
-//        clamperPivot = hardwareMap.servo.get("clamperPivot");
-//        clamperGripper = hardwareMap.servo.get("clamperGripper");
 
         grabberServo = hardwareMap.servo.get("grabberServo");
         setupServo(grabberServo);
@@ -567,14 +550,12 @@ public class Robot {
         else outtakeRot.setPosition(0);
     }
 
-    public void setPlacerUp () {
-        placer.setPosition(0.3);//was0.8
+    public void initializeCapstone () {
+        capstone.setPosition(1);
     }
-    public void setPlacerDown () {
-        placer.setPosition(1);
-    }
+
     public void dropCapstone () {
-        placer.setPosition(1);
+        capstone.setPosition(0);
     }
 
     public void moveSingleIntakeRoller(boolean roller1) {

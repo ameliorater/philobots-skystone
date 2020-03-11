@@ -2,15 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import static org.firstinspires.ftc.teamcode.Constants.INTAKE_POWER_SLOW;
-
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TESTING TeleOp", group = "TeleOp")
 public class TestingTeleOp extends OpMode {
     Robot robot;
     public final double DEADBAND_MAG_NORMAL = 0.1;
     public final double DEADBAND_MAG_SLOW_MODE = 0.03;
     boolean slowModeDrive;
-    //public Vector2d DEADBAND_VEC = new Vector2d(DEADBAND_MAG, DEADBAND_MAG);
     public boolean willResetIMU = true;
 
     boolean absHeadingMode = false;
@@ -24,14 +21,6 @@ public class TestingTeleOp extends OpMode {
     //intake (2 motors, continuous)
     //arm (2 servos, continuous)
     //grabber (1 servo, 2 positions)
-//
-//    public boolean hungryHippoDown = false;
-//    public boolean foundationGrabberDown = false;
-//    public double liftPower = 0;
-//    public boolean intakeOn = false;
-
-    boolean toDeploy;
-    boolean toRetract;
 
     double lastTime;
 
@@ -39,7 +28,7 @@ public class TestingTeleOp extends OpMode {
 
     public void init() {
         robot = new Robot(this, false, false);
-        robot.setPlacerUp();
+        robot.initializeCapstone();
     }
 
     public void init_loop() {
@@ -81,28 +70,6 @@ public class TestingTeleOp extends OpMode {
                 slowModeDrive = true;
             }
         }
-//        else if (gamepad1.right_bumper) {
-//            robot.unlatch();
-//        } else if (gamepad1.left_bumper) {
-//            robot.latch();
-//        }
-
-//        //toggle abs heading
-//        if (gamepad1.y) {
-//            absHeadingMode = true;
-//        }
-//        if (gamepad1.b) {
-//            absHeadingMode = false;
-//        }
-
-        //marker
-        /*
-        if (gamepad1.y && gamepad1.b) {
-            robot.deployMarker();
-        }
-        if (gamepad1.y && gamepad1.x) {
-            robot.retractMarker();
-        }*/
 
         if (gamepad1.y && gamepad1.b) {
             robot.startTapeMeasure();
@@ -116,41 +83,6 @@ public class TestingTeleOp extends OpMode {
                 absHeadingMode
         );
 
-//        if (gamepad2.dpad_up) {
-//            //robot.hungryHippoExtend();
-//            robot.moveServo(robot.backStop, 1);
-//        } else if (gamepad2.dpad_down) {
-//            //robot.hungryHippoRetract();
-//            robot.moveServo(robot.backStop, 0);
-//        }
-
-        /*
-        if (gamepad2.dpad_right) {
-            robot.intakeServoOpen();
-        } else if (gamepad2.dpad_left) {
-            robot.intakeServoClose();
-        }
-        */
-
-        // Changed button map - see below
-//        if (gamepad2.y) {
-//            robot.unlatch();
-//        } else if (gamepad2.a) {
-//            robot.latch();
-//        }
-
-//        if (gamepad1.dpad_up) {
-//            robot.clamperGripper.setPosition(0);
-//        } else if (gamepad1.dpad_down) {
-//            robot.clamperGripper.setPosition(1);
-//        }
-//
-//        if (gamepad1.dpad_right) {
-//            robot.clamperPivot.setPosition(0);
-//        } else if (gamepad1.dpad_left) {
-//            robot.clamperPivot.setPosition(1);
-//        }
-
 
         if (gamepad1.dpad_left) {
             robot.driveController.setDrivingStyle(true);
@@ -159,7 +91,6 @@ public class TestingTeleOp extends OpMode {
         }
 
         if ((gamepad2.x) && (gamepad2.right_trigger > 0.1)) {
-            robot.setPlacerUp();
             robot.moveLiftToPosition(robot.encoderTicksAtLiftPositions[1] + 10);
             robot.targetPosLift = robot.encoderTicksAtLiftPositions[1] + 10;
             robot.moveGrabberToMid();
@@ -172,74 +103,21 @@ public class TestingTeleOp extends OpMode {
             }
         }
 
-        int x_input, y_input;
-        if(Math.abs(gamepad2.right_stick_x) < 0.05) //dead band
-            x_input = 0;
-        else x_input = (int)gamepad2.right_stick_x;
-
-        if(Math.abs(gamepad2.right_stick_y) < 0.05)
-            y_input = 0;
-        else y_input = (int)gamepad2.right_stick_y;
-
-
-        //Manual control overrides automated deploy and retract
-//        if(x_input != 0 || y_input != 0){
-//            toDeploy = false;
-//            toRetract = false;
-//        }
-//        else if(/*gamepad2.right_bumper*/gamepad2.y) {
-//            toDeploy = true;
-//            toRetract = false;
-//        }
-//        else if(/*gamepad2.left_bumper*/gamepad2.a){
-//            toRetract = true;
-//            toDeploy = false;
-//        }
-//
-//        robot.moveOuttake(x_input, y_input, toDeploy, toRetract);
 
         double currentTime = getRuntime();
         if (gamepad2.a) {
             robot.currentClawPosition.moveSequence(robot.controller.INSIDE_ROBOT_TO_DELIVERY, currentTime - lastTime);
-            //robot.backStop.setPosition(0);
         }
         if (gamepad2.y) {
-            //robot.closeGrabber();
             robot.currentClawPosition.moveSequence(robot.controller.DELIVERY_TO_INSIDE_ROBOT, currentTime - lastTime);
-// don't close grabber for the side grabber
-//            robot.grabberServo.setPosition(0.5);
-            //robot.backStop.setPosition(1);
         }
-//        if (Math.abs(gamepad2.right_stick_x) > 0.1) {
-//            robot.currentClawPosition.moveBy(gamepad2.right_stick_x, 0, currentTime - lastTime);
-//        }
-
-        // Adding x-y control to claw ouside of robot
-        //        if (gamepad2.dpad_up) {
-//            //robot.hungryHippoExtend();
-//            robot.moveServo(robot.backStop, 1);
-//        } else if (gamepad2.dpad_down) {
-//            //robot.hungryHippoRetract();
-//            robot.moveServo(robot.backStop, 0);
-//        }
 
         double clawDeltaX = 0;
         double clawDeltaY = 0;
-//        if (gamepad2.dpad_up)  clawDeltaY = 1;
-//        if (gamepad2.dpad_down) clawDeltaY = -1;
-//        if (gamepad2.dpad_left) clawDeltaX = -1;
-//        if (gamepad2.dpad_right) clawDeltaX = 1;
 
         if ((clawDeltaX != 0) || (clawDeltaY != 0)) {
             robot.currentClawPosition.moveBy(clawDeltaX, clawDeltaY, currentTime - lastTime);
         }
-        // moved the backstop to the right stick to make room for the x-y claw controls
-//        if (gamepad2.right_stick_x > 0.1) {
-//            robot.moveServo(robot.placer, 1);
-//        } else { //was else if (gamepad2.right_stick_x < -0.1)
-//            robot.moveServo(robot.placer, 0);
-//        }
-
 
         robot.outtake1.setPosition(robot.currentClawPosition.servoPositions.servo1);
         robot.outtake2.setPosition(robot.currentClawPosition.servoPositions.servo2);
@@ -251,20 +129,6 @@ public class TestingTeleOp extends OpMode {
         robot.outtakeRot.setPosition(robot.outatkeRotatePosition);
 
         lastTime = currentTime;
-
-        /*
-        if (Math.abs(gamepad2.right_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.FAST);
-        } else if (Math.abs(gamepad2.left_trigger) > 0.1) {
-            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.FAST);
-        } else if (gamepad2.right_bumper) {
-            robot.moveIntake(Constants.IntakeState.INTAKE, Constants.IntakeSpeed.SLOW);
-        } else if (gamepad2.left_bumper) {
-            robot.moveIntake(Constants.IntakeState.OUTTAKE, Constants.IntakeSpeed.SLOW);
-        } else {
-            robot.moveIntake(Constants.IntakeState.STOP, Constants.IntakeSpeed.STOPPED);
-        }*/
-
 
         if (gamepad1.right_bumper) {
             robot.hungryHippoExtend();
@@ -302,23 +166,10 @@ public class TestingTeleOp extends OpMode {
         telemetry.addData("lift 2 position: ", robot.bulkData1.getMotorCurrentPosition(robot.lift2));
 
         //SCARA arm back position centered on x: (-76, -185); out of robot: (-76, 150)
+
         if (gamepad2.right_bumper && gamepad2.right_trigger > 0.6) {
             robot.dropCapstone();
-        } else if (gamepad2.left_bumper) {
-            //robot.moveServo(robot.placer, 0.8); // move down  //was 1
-            robot.setPlacerDown();
-        } else if (gamepad2.right_bumper) {
-            //robot.moveServo(robot.placer, 0); // move up
-            robot.setPlacerUp();
         }
-// moved placer to gamepad2's bumpers
-//        if (gamepad2.right_bumper) {
-//            robot.moveLift(Constants.SLOW_LIFT_POWER_UP);
-//        } else if (gamepad2.left_bumper) {
-//            robot.moveLift(Constants.SLOW_LIFT_POWER_DOWN);
-//        } else {
-//            robot.moveLift(-gamepad2.left_stick_y);
-//        }
 
         //todo: remove after done tuning
 //        if (gamepad1.b) {
@@ -363,18 +214,6 @@ public class TestingTeleOp extends OpMode {
         super.stop();
     }
 
-
-
-    /*//This implementation caused a bug - vectors that go in any cardinal direction would get reduced to a point vector, for example
-    public Vector2d checkDeadband(Vector2d joystick) {
-        if (Math.abs(joystick.getX()) > DEADBAND_VEC.getX() || Math.abs(joystick.getY()) > DEADBAND_VEC.getY()) {
-            return joystick;
-        }
-        return new Vector2d(0, 0);
-    }*/
-
-    // Instead of using the above implementation, this one checks
-    // if the length of the vector is more than that of the deadband magnitude
     public Vector2d checkDeadband(Vector2d joystick, boolean slowMode) {
         return  joystick.getMagnitude() > (slowMode ? DEADBAND_MAG_SLOW_MODE : DEADBAND_MAG_NORMAL) ?
                 joystick : new Vector2d(0, 0);

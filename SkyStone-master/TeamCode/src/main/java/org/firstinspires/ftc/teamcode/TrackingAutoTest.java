@@ -43,6 +43,8 @@ public class TrackingAutoTest extends LinearOpMode {
             DEFAULT_POWER = 0.8;
         }
 
+        robot.initializeCapstone();
+
         telemetry.addData("WAIT! Initializing IMU.... ", "");
         telemetry.update();
 
