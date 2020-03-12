@@ -43,7 +43,7 @@ public class TestPrimitives extends LinearOpMode {
 
         simpleTracking.setModuleOrientation(robot);
 
-        robot.setPlacerUp();
+        //robot.setPlacerUp();
         robot.moveGrabberToMid();
         moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
 
@@ -57,7 +57,7 @@ public class TestPrimitives extends LinearOpMode {
 //            moveTo(0, 0, 180, 0.5, 2, 3000);
 //            simplePathFollow.stop(robot);
 
-            robot.setPlacerUp();
+            //robot.setPlacerUp();
             robot.moveGrabberToMid(); //new
             //move lift up
             robot.moveLiftToPosition(200); //was 175
@@ -89,7 +89,7 @@ public class TestPrimitives extends LinearOpMode {
         robot.openGrabber();
         robot.wait(500, this);
         robot.grabberServo.setPosition(0.5);
-        robot.setPlacerUp();
+        //robot.setPlacerUp();
         moveSCARA(robot.controller.DELIVERY_TO_INSIDE_ROBOT);
         robot.moveLiftToPosition(0);
     }

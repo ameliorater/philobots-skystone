@@ -551,11 +551,11 @@ public class Robot {
     }
 
     public void initializeCapstone () {
-        capstone.setPosition(1);
+        capstone.setPosition(0); //was 1
     }
 
     public void dropCapstone () {
-        capstone.setPosition(0);
+        capstone.setPosition(1); //was 0
     }
 
     public void moveSingleIntakeRoller(boolean roller1) {

@@ -26,7 +26,7 @@ public class TrackingAutoTest extends LinearOpMode {
     boolean isBlue, twoSkystone, deliverWithScara;
     double DEFAULT_POWER = 1.5; //was 0.6 for most
     double MID_POWER = 1.5; //was 0.75
-    double SLOW_POWER = 0.45; //was 0.35
+    double SLOW_POWER = 0.4; //was 0.35
 
 
     public void runOpMode() {
@@ -75,11 +75,27 @@ public class TrackingAutoTest extends LinearOpMode {
         telemetry.addData("Skystone at: ", skystonePosition);
         telemetry.update();
 
-        double stonePosition = -70 + 5;
-        if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
-            stonePosition -= 8*2.54;
-        } if ((skystonePosition == SkystoneCV.StonePosition.RIGHT && isBlue) || (skystonePosition == SkystoneCV.StonePosition.LEFT && !isBlue)) {
-            stonePosition -= 16*2.54;
+        double stoneOffset;
+        double stonePosition;
+
+        if (isBlue) {
+            stoneOffset = 0;
+            stonePosition = -70 + stoneOffset; //was +5
+            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
+                stonePosition -= 8 * 2.54 - 5;
+            }
+            if (skystonePosition == SkystoneCV.StonePosition.RIGHT) {
+                stonePosition -= 16 * 2.54;
+            }
+        } else {
+            stoneOffset = 0;
+            stonePosition = -70 + stoneOffset; //was +5
+            if (skystonePosition == SkystoneCV.StonePosition.CENTER) {
+                stonePosition -= 8 * 2.54 - 5 + 2.5;
+            }
+            if (skystonePosition == SkystoneCV.StonePosition.LEFT) {
+                stonePosition -= 16 * 2.54;
+            }
         }
 
         //close openCV
@@ -110,7 +126,7 @@ public class TrackingAutoTest extends LinearOpMode {
         //removed 3-7... added back... re-removed 3/9
         //moveTo(stonePosition, (isBlue ? 75 : -75), isBlue ? 180 : 0, 0.5, 5, 3000); //was 75 //was 85
 
-        double firstYDistance = 100; //was 95
+        double firstYDistance = 100; //was 95 //was 100
 
         moveTo(stonePosition, firstYDistance * (isBlue ? 1 : -1), isBlue ? 180 : 0, 0.5, 2); //WAS 95 //was 90
 
@@ -128,8 +144,11 @@ public class TrackingAutoTest extends LinearOpMode {
         moveWithIMU(crossFieldX, (firstYDistance /*+ 15*/) * (isBlue ? 1 : -1), 270, MID_POWER, 5, 6000); //was x = 120 //was 0.6 power //was 90 //was y = 110
         moveTo(120, firstYDistance * (isBlue ? 1 : -1), isBlue ? 0 : 180, DEFAULT_POWER, 5); //was 90
         simplePathFollow.stop(robot);
-        moveWithRangeSensorTo(120, (35 + 5) * (isBlue ? 1 : -1), isBlue ? 0 : 180, 0.8, 5, 3000);
+        if (twoSkystone) moveWithRangeSensorTo(120, (35 + 5) * (isBlue ? 1 : -1), isBlue ? 0 : 180, MID_POWER, 5, 3000);
+        else moveWithRangeSensorTo(120, 35 * (isBlue ? 1 : -1), isBlue ? 0 : 180, SLOW_POWER, 5, 3000);
         simplePathFollow.stop(robot);
+
+        if (!twoSkystone) latchHooksDown();
 
         if (deliverWithScara) {
             //deliver block to foundation
@@ -143,7 +162,6 @@ public class TrackingAutoTest extends LinearOpMode {
         //robot.wait(750, this); //was 1500 timeout
 
         if (!twoSkystone) { //was !deliverWithScara (?)
-            latchHooksDown();
             //move foundation
             moveTo(120, isBlue ? 115 : -115, isBlue ? 0 : 180, DEFAULT_POWER, 5, 5000); //was y = 125
             simplePathFollow.stop(robot);
@@ -239,7 +257,7 @@ public class TrackingAutoTest extends LinearOpMode {
 
         } else {
             //park
-            moveWithIMU(0, isBlue ? 75 : -75, 270, 0.6, 5);
+            moveWithIMU(0, isBlue ? 95 : -95, 270, 0.6, 5); //was y = +- 75
         }
 
         simplePathFollow.stop(robot);
